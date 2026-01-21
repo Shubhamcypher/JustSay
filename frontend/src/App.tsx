@@ -3,7 +3,7 @@ import './App.css'
 function App() {
 
   return (
-   <div>Frontend Check</div>
+   <div>Frontend</div>
   )
 }
 
