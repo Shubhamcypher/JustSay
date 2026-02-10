@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- PROJECTS table
-CREATE TABLE IF NOT EXISTS proje (
+CREATE TABLE IF NOT EXISTS projects (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   stack TEXT NOT NULL,
