@@ -20,7 +20,7 @@ export function generateAccessToken(payload: object) {
   const expires = process.env.JWT_ACCESS_EXPIRES_IN || "15m";
 
   if (!secret) {
-    throw new Error("JWT_ACCESS_SECRET is not defined");
+    throw new Error("JWT_ACCESS_SECRET is not defined yet");
   }
 
   const options: SignOptions = {
