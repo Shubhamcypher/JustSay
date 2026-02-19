@@ -25,3 +25,17 @@ CREATE TABLE IF NOT EXISTS projects (
   created_at TIMESTAMP DEFAULT now(),
   updated_at TIMESTAMP DEFAULT now()
 );
+
+-- table for storing access token
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  token TEXT NOT NULL,
+  user_id UUID NOT NULL,
+  created_at TIMESTAMP DEFAULT now(),
+
+  CONSTRAINT fk_user
+    FOREIGN KEY (user_id)
+    REFERENCES users(id)
+    ON DELETE CASCADE
+);
+
