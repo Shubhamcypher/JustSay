@@ -1,3 +1,18 @@
+// {
+//   "compilerOptions": {
+//     "target": "ES2020",
+//     "module": "CommonJS",
+//     "rootDir": "src",
+//     "outDir": "dist",
+//     "strict": true,
+//     "esModuleInterop": true,
+//     "types": ["node"],
+//   },
+//   "include": ["src"],
+//   "exclude": ["node_modules"]
+// }
+
+
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -5,8 +20,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "strict": true,
-    "esModuleInterop": true,
-    "types": ["node"],
+    "esModuleInterop": true
   },
   "include": ["src"],
   "exclude": ["node_modules"]

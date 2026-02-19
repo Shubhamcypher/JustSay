@@ -1,9 +1,15 @@
 import bcrypt from "bcrypt";
 import jwt, { SignOptions } from "jsonwebtoken";
-import "dotenv/config";
 
 const SALT_ROUNDS = 10;
 
+const expiresIn: SignOptions["expiresIn"] =
+  (process.env.JWT_ACCESS_EXPIRES_IN as SignOptions["expiresIn"]) ?? "15m";
+
+
+// =====================
+// PASSWORD
+// =====================
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, SALT_ROUNDS);
 }
@@ -15,17 +21,36 @@ export async function comparePassword(
   return bcrypt.compare(password, hashedPassword);
 }
 
+
+
+
+// =====================
+// ACCESS TOKEN
+// =====================
 export function generateAccessToken(payload: object) {
   const secret = process.env.JWT_ACCESS_SECRET;
-  const expires = process.env.JWT_ACCESS_EXPIRES_IN || "15m";
+  if (!secret) throw new Error("JWT_ACCESS_SECRET missing");
 
-  if (!secret) {
-    throw new Error("JWT_ACCESS_SECRET is not defined");
-  }
+  return jwt.sign(payload, secret, { expiresIn });
+}
 
-  const options: SignOptions = {
-    expiresIn: expires as SignOptions["expiresIn"],
-  };
+// =====================
+// REFRESH TOKEN
+// =====================
+export function generateRefreshToken(payload: object) {
+  const secret = process.env.JWT_REFRESH_SECRET;
+  if (!secret) throw new Error("JWT_REFRESH_SECRET missing");
 
-  return jwt.sign(payload, secret, options);
+  return jwt.sign(payload, secret, {expiresIn});
+}
+
+// =====================
+// VERIFY TOKENS
+// =====================
+export function verifyAccessToken(token: string) {
+  return jwt.verify(token, process.env.JWT_ACCESS_SECRET!);
+}
+
+export function verifyRefreshToken(token: string) {
+  return jwt.verify(token, process.env.JWT_REFRESH_SECRET!);
 }
