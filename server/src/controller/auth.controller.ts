@@ -15,7 +15,7 @@ export async function register(req: Request, res: Response) {
 
   try {
     const existing = await pool.query(
-      "SELECT id FROM users WHERE email = $1",
+      "SELECT id FROM users WHERE email = $1", //this $1 replaces email
       [email]
     );
 
@@ -25,12 +25,24 @@ export async function register(req: Request, res: Response) {
 
     const hashed = await hashPassword(password);
 
-    const userResult = await pool.query(
-      "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id",
-      [email, hashed]
-    );
+    let user;
+    try {
+      // so userResult technically becomes {rows: [ { id: 7 } ],rowCount: 1}
+      // every time users enters it get its own results
+      // the race condition can occur if two users enters same email at the same time  
+      const userResult = await pool.query(
+        "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id",
+        [email, hashed]
+      );
 
-    const user = userResult.rows[0];
+      user = userResult.rows[0];
+    } catch (err: any) {
+      if (err.code === "23505") {
+        throw new Error("Email already registered");
+      }
+      throw err;
+
+    }
 
     const accessToken = generateAccessToken({ userId: user.id });
     const refreshToken = generateRefreshToken({ userId: user.id });
