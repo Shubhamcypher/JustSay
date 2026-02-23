@@ -1,10 +1,6 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
-
 import authRoutes from "./routes/auth.routes";
-
-
-
 
 const app = express();
 dotenv.config();

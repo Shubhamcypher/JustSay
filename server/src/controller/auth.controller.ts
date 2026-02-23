@@ -101,7 +101,8 @@ export async function login(req: Request, res: Response) {
       refreshToken,
     });
 
-  } catch {
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
     return res.status(500).json({ message: "Server error" });
   }
 }
