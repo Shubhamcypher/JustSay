@@ -145,6 +145,7 @@ export async function refresh(req: Request, res: Response) {
   }
 }
 
+//logout needs refreshToken in body
 export async function logout(req: Request, res: Response) {
   const { refreshToken } = req.body;
 
