@@ -21,7 +21,7 @@ export async function register(req: Request, res: Response) {
 
     if (existing.rows.length > 0) {
       return res.status(400).json({ message: "User already exists" });
-    }
+    }//
 
     const hashed = await hashPassword(password);
 
