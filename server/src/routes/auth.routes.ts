@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, login, refresh, logout } from "../controller/auth.controller";
+import { register, login, refresh, logout, updateProfile } from "../controller/auth.controller";
 import { authenticate, AuthRequest } from "../middleware/auth.middleware";
 import { pool } from "../config/db";
 
@@ -26,5 +26,7 @@ router.get("/me", authenticate, async (req: AuthRequest, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+router.put("/profile", authenticate, updateProfile);
 
 export default router;
