@@ -161,7 +161,7 @@ export async function logout(req: Request, res: Response) {
 
   return res.json({ message: "Logged out" });
 }
-
+//fshgbs
 
 export async function updateProfile(req: AuthRequest, res: Response) {
   const { name } = req.body;
