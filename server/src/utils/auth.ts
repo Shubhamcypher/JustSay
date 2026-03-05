@@ -3,8 +3,11 @@ import jwt, { SignOptions } from "jsonwebtoken";
 
 const SALT_ROUNDS = 10;
 
-const expiresIn: SignOptions["expiresIn"] =
+const accessExpiresIn: SignOptions["expiresIn"] =
   (process.env.JWT_ACCESS_EXPIRES_IN as SignOptions["expiresIn"]) ?? "15m";
+
+const refreshExpiresIn: SignOptions["expiresIn"] =
+  (process.env.JWT_REFRESH_EXPIRES_IN as SignOptions["expiresIn"]) ?? "7d";
 
 
 // =====================
@@ -31,7 +34,7 @@ export function generateAccessToken(payload: object) {
   const secret = process.env.JWT_ACCESS_SECRET;
   if (!secret) throw new Error("JWT_ACCESS_SECRET missing");
 
-  return jwt.sign(payload, secret, { expiresIn });
+  return jwt.sign(payload, secret, { expiresIn: accessExpiresIn });
 }
 
 // =====================
@@ -41,7 +44,7 @@ export function generateRefreshToken(payload: object) {
   const secret = process.env.JWT_REFRESH_SECRET;
   if (!secret) throw new Error("JWT_REFRESH_SECRET missing");
 
-  return jwt.sign(payload, secret, {expiresIn});
+  return jwt.sign(payload, secret, { expiresIn: refreshExpiresIn });
 }
 
 // =====================
