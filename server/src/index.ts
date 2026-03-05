@@ -1,8 +1,8 @@
 import "dotenv/config";
-// import { Pool } from "pg";
 import express, { Request, Response } from "express";
 
 import authRoutes from "./routes/auth.routes";
+import userRoutes from "./routes/user.routes";
 import { pool } from "./config/db";
 
 const app = express();
@@ -20,7 +20,10 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 //auth routes
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
+
+//user routes
+app.use("/api/users", userRoutes);
 
 
 

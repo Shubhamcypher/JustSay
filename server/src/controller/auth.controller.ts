@@ -4,7 +4,7 @@ import { hashPassword, generateAccessToken, generateRefreshToken } from "../util
 import bcrypt from "bcrypt";
 import { comparePassword } from "../utils/auth";
 import { verifyRefreshToken } from "../utils/auth";
-import { AuthRequest } from "../middleware/auth.middleware";
+
 
 
 export async function register(req: Request, res: Response) {
@@ -163,20 +163,7 @@ export async function logout(req: Request, res: Response) {
 }
 
 
-export async function updateProfile(req: AuthRequest, res: Response) {
-  const { name } = req.body;
 
-  try {
-    const result = await pool.query(
-      "UPDATE users SET name = $1 WHERE id = $2 RETURNING id, name, email",
-      [name, req.user?.userId]
-    );
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-}
 
 
 
