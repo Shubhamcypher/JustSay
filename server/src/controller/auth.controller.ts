@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
 import { pool } from "../config/db";
-import { hashPassword, generateAccessToken, generateRefreshToken } from "../utils/auth";
+import {
+  hashPassword,
+  comparePassword,
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken
+} from "../utils/auth"; 
 import bcrypt from "bcrypt";
-import { comparePassword } from "../utils/auth";
-import { verifyRefreshToken } from "../utils/auth";
+
 
 
 
