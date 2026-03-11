@@ -1,5 +1,6 @@
 import { pool } from "../config/db";
 import { AuthRequest } from "../middleware/auth.middleware";
+import { Request, Response } from "express";
 
 export async function createProject(req: AuthRequest, res: Response) {
     const { name, stack } = req.body;
