@@ -40,3 +40,15 @@ export async function createFile(req: AuthRequest, res: Response) {
   
     res.json(result.rows[0]);
   }
+
+  export async function deleteFile(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+  
+    await pool.query(
+      "DELETE FROM project_files WHERE id=$1",
+      [id]
+    );
+  
+    res.json({ message: "File deleted" });
+  }
+  
