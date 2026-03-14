@@ -39,3 +39,19 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS project_files (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  project_id UUID NOT NULL,
+  CONSTRAINT fk_project
+    FOREIGN KEY (project_id)
+    REFERENCES projects(id)
+    ON DELETE CASCADE,
+
+  path TEXT NOT NULL,
+  content TEXT NOT NULL,
+
+  created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now()
+);
+
