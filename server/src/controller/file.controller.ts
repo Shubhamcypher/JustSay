@@ -14,3 +14,14 @@ export async function createFile(req: AuthRequest, res: Response) {
   
     res.status(201).json(result.rows[0]);
   }
+
+  export async function getFiles(req: AuthRequest, res: Response) {
+    const { projectId } = req.params;
+  
+    const result = await pool.query(
+      "SELECT * FROM project_files WHERE project_id=$1",
+      [projectId]
+    );
+  
+    res.json(result.rows);
+  }
