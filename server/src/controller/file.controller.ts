@@ -25,3 +25,18 @@ export async function createFile(req: AuthRequest, res: Response) {
   
     res.json(result.rows);
   }
+
+  export async function updateFile(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    const { content } = req.body;
+  
+    const result = await pool.query(
+      `UPDATE project_files
+       SET content=$1, updated_at=now()
+       WHERE id=$2
+       RETURNING *`,
+      [content, id]
+    );
+  
+    res.json(result.rows[0]);
+  }
