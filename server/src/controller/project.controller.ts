@@ -62,3 +62,21 @@ export async function createProject(req: AuthRequest, res: Response) {
   
     res.json({ message: "Project deleted" });
   }
+
+  export async function startProject(req: AuthRequest, res: Response) {
+    const projectId = req.params.id;
+  
+    res.json({
+      message: "Project start requested",
+      projectId
+    });
+  }
+
+  export async function stopProject(req: AuthRequest, res: Response) {
+    const projectId = req.params.id;
+  
+    res.json({
+      message: "Project stop requested",
+      projectId
+    });
+  }
