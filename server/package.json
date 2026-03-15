@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "dockerode": "^4.0.9",
     "dotenv": "^17.2.3",
     "express": "^4.22.1",
     "jsonwebtoken": "^9.0.3",
