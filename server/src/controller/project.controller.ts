@@ -1,6 +1,7 @@
 import { pool } from "../config/db";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { Request, Response } from "express";
+import { generateReactTemplate } from "../services/ai.service";
 
 export async function createProject(req: AuthRequest, res: Response) {
     const { name, stack } = req.body;
@@ -13,7 +14,14 @@ export async function createProject(req: AuthRequest, res: Response) {
         [name, stack, "stopped", req.user?.userId]
       );
   
-      res.status(201).json(result.rows[0]);
+      const project = result.rows[0];
+
+      // 👇 generate starter files
+      if (stack === "react") {
+        await generateReactTemplate(project.id);
+      }
+  
+      res.status(201).json(project)
   
     } catch (error) {
       res.status(500).json({ message: "Failed to create project" });
