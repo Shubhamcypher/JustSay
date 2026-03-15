@@ -55,3 +55,19 @@ CREATE TABLE IF NOT EXISTS project_files (
   updated_at TIMESTAMP DEFAULT now()
 );
 
+CREATE TABLE containers (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  project_id UUID NOT NULL,
+  container_id TEXT,
+  port INT,
+  status TEXT,
+
+  created_at TIMESTAMP DEFAULT now(),
+
+  CONSTRAINT fk_project
+    FOREIGN KEY (project_id)
+    REFERENCES projects(id)
+    ON DELETE CASCADE
+);
+
