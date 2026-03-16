@@ -3,7 +3,7 @@ import { AuthRequest } from "../middleware/auth.middleware";
 import { Request, Response } from "express";
 import { generateReactTemplate } from "../services/ai.service";
 import { writeProjectToDisk } from "../services/fileSystem.service";
-import { buildProjectImage, runProjectContainer } from "../services/docker.service";
+import docker, { buildProjectImage, runProjectContainer } from "../services/docker.service";
 import { getNextPort } from "../utils/port.util";
 
 export async function createProject(req: AuthRequest, res: Response) {
@@ -105,10 +105,37 @@ export async function createProject(req: AuthRequest, res: Response) {
   
 
   export async function stopProject(req: AuthRequest, res: Response) {
+
     const projectId = req.params.id;
   
-    res.json({
-      message: "Project stop requested",
-      projectId
-    });
+    try {
+  
+      const result = await pool.query(
+        "SELECT container_id FROM containers WHERE project_id=$1 AND status='running'",
+        [projectId]
+      );
+  
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "No running container" });
+      }
+  
+      const containerId = result.rows[0].container_id;
+  
+      const container = docker.getContainer(containerId);
+  
+      await container.stop();
+      await container.remove();
+  
+      await pool.query(
+        "UPDATE containers SET status='stopped' WHERE container_id=$1",
+        [containerId]
+      );
+  
+      res.json({
+        message: "Project stopped"
+      });
+  
+    } catch (error) {
+      res.status(500).json({ message: "Failed to stop project" });
+    }
   }
