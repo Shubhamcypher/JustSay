@@ -3,6 +3,8 @@ import { AuthRequest } from "../middleware/auth.middleware";
 import { Request, Response } from "express";
 import { generateReactTemplate } from "../services/ai.service";
 import { writeProjectToDisk } from "../services/fileSystem.service";
+import { buildProjectImage, runProjectContainer } from "../services/docker.service";
+import { getNextPort } from "../utils/port.util";
 
 export async function createProject(req: AuthRequest, res: Response) {
     const { name, stack } = req.body;
@@ -65,19 +67,32 @@ export async function createProject(req: AuthRequest, res: Response) {
   }
 
   export async function startProject(req: AuthRequest, res: Response) {
+
     const projectId = req.params.id;
   
     try {
   
+      // 1️⃣ Write project files
       const projectPath = await writeProjectToDisk(projectId);
   
+      // 2️⃣ Build docker image
+      await buildProjectImage(projectPath, projectId);
+  
+      // 3️⃣ Allocate port
+      const port = getNextPort();
+  
+      // 4️⃣ Run container
+      const containerId = await runProjectContainer(projectId, port);
+  
+      // 5️⃣ Return preview URL
       res.json({
-        message: "Project prepared",
-        projectPath
+        message: "Project running",
+        preview: `http://localhost:${port}`,
+        containerId
       });
   
     } catch (error) {
-      res.status(500).json({ message: "Failed to prepare project" });
+      res.status(500).json({ message: "Failed to start project" });
     }
   }
   
