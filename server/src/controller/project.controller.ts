@@ -2,6 +2,7 @@ import { pool } from "../config/db";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { Request, Response } from "express";
 import { generateReactTemplate } from "../services/ai.service";
+import { writeProjectToDisk } from "../services/fileSystem.service";
 
 export async function createProject(req: AuthRequest, res: Response) {
     const { name, stack } = req.body;
@@ -66,11 +67,20 @@ export async function createProject(req: AuthRequest, res: Response) {
   export async function startProject(req: AuthRequest, res: Response) {
     const projectId = req.params.id;
   
-    res.json({
-      message: "Project start requested",
-      projectId
-    });
+    try {
+  
+      const projectPath = await writeProjectToDisk(projectId);
+  
+      res.json({
+        message: "Project prepared",
+        projectPath
+      });
+  
+    } catch (error) {
+      res.status(500).json({ message: "Failed to prepare project" });
+    }
   }
+  
 
   export async function stopProject(req: AuthRequest, res: Response) {
     const projectId = req.params.id;
