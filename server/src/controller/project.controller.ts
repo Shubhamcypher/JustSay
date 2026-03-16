@@ -83,6 +83,13 @@ export async function createProject(req: AuthRequest, res: Response) {
   
       // 4️⃣ Run container
       const containerId = await runProjectContainer(projectId, port);
+
+      //Insert into DB
+      await pool.query(
+        `INSERT INTO containers (project_id, container_id, port, status)
+         VALUES ($1,$2,$3,$4)`,
+        [projectId, containerId, port, "running"]
+      );
   
       // 5️⃣ Return preview URL
       res.json({
