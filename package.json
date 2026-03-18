@@ -1,6 +1,0 @@
-{
-  "devDependencies": {
-    "@types/node": "^25.0.10",
-    "@types/react-router-dom": "^5.3.3"
-  }
-}
