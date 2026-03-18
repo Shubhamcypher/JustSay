@@ -12,4 +12,4 @@ export const stopProject = (id: string) =>
   API.post(`/projects/${id}/stop`);
 
 export const getFiles = (projectId: string) =>
-  API.get(`/files/${projectId}`);
+  API.get(`/files/${projectId}`);// fixing the commiting issue!!
