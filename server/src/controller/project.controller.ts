@@ -8,13 +8,16 @@ import { getNextPort } from "../utils/port.util";
 
 export async function createProject(req: AuthRequest, res: Response) {
     const { name, stack } = req.body;
+    if (!name || !stack) {
+      return res.status(400).json({ message: "Invalid input" });
+    }
   
     try {
       const result = await pool.query(
         `INSERT INTO projects (name, stack, status, owner_id)
          VALUES ($1,$2,$3,$4)
          RETURNING *`,
-        [name, stack, "stopped", req.user?.userId]
+        [name, stack, "stopped", req.user!.userId]
       );
   
       const project = result.rows[0];
@@ -34,7 +37,7 @@ export async function createProject(req: AuthRequest, res: Response) {
   export async function getProjects(req: AuthRequest, res: Response) {
     const result = await pool.query(
       "SELECT * FROM projects WHERE owner_id=$1 ORDER BY created_at DESC",
-      [req.user?.userId]
+      [req.user!.userId]
     );
   
     res.json(result.rows);
@@ -58,10 +61,14 @@ export async function createProject(req: AuthRequest, res: Response) {
   export async function deleteProject(req: AuthRequest, res: Response) {
     const { id } = req.params;
   
-    await pool.query(
+    const result = await pool.query(
       "DELETE FROM projects WHERE id=$1 AND owner_id=$2",
       [id, req.user?.userId]
     );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Project not found" });
+    }
   
     res.json({ message: "Project deleted" });
   }
@@ -69,7 +76,7 @@ export async function createProject(req: AuthRequest, res: Response) {
   export async function startProject(req: AuthRequest, res: Response) {
 
     const projectId = req.params.id;
-    
+
     //check for project ownership
     const projectCheck = await pool.query(
       "SELECT * FROM projects WHERE id=$1 AND owner_id=$2",
@@ -148,6 +155,16 @@ export async function createProject(req: AuthRequest, res: Response) {
   
     try {
   
+      // ✅ ownership check
+      const projectCheck = await pool.query(
+        "SELECT * FROM projects WHERE id=$1 AND owner_id=$2",
+        [projectId, req.user!.userId]
+      );
+  
+      if (projectCheck.rows.length === 0) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+  
       const result = await pool.query(
         "SELECT container_id FROM containers WHERE project_id=$1 AND status='running'",
         [projectId]
@@ -161,16 +178,31 @@ export async function createProject(req: AuthRequest, res: Response) {
   
       const container = docker.getContainer(containerId);
   
-      await container.stop();
-      await container.remove();
+      // ✅ safe stop
+      try {
+        await container.stop();
+      } catch {}
+  
+      // ✅ safe remove
+      try {
+        await container.remove();
+      } catch {}
   
       await pool.query(
         "UPDATE containers SET status='stopped' WHERE container_id=$1",
         [containerId]
       );
   
+      // ✅ update project status
+      await pool.query(
+        "UPDATE projects SET status=$1 WHERE id=$2",
+        ["stopped", projectId]
+      );
+  
       res.json({
-        message: "Project stopped"
+        message: "Project stopped",
+        projectId,
+        status: "stopped"
       });
   
     } catch (error) {
