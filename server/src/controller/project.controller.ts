@@ -69,9 +69,37 @@ export async function createProject(req: AuthRequest, res: Response) {
   export async function startProject(req: AuthRequest, res: Response) {
 
     const projectId = req.params.id;
+    
+    //check for project ownership
+    const projectCheck = await pool.query(
+      "SELECT * FROM projects WHERE id=$1 AND owner_id=$2",
+      [projectId, req.user!.userId]
+    );
+    
+    if (projectCheck.rows.length === 0) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
   
     try {
+      //Check if container already running
+      const existing = await pool.query(
+        "SELECT * FROM containers WHERE project_id=$1 AND status='running'",
+        [projectId]
+      );
+      
+      if (existing.rows.length > 0) {
+        return res.json({
+          message: "Project already running",
+          preview: `http://localhost:${existing.rows[0].port}`
+        });
+      }
   
+      //before writing files
+      await pool.query(
+        "UPDATE projects SET status=$1 WHERE id=$2",
+        ["building", projectId]
+      );
       // 1️⃣ Write project files
       const projectPath = await writeProjectToDisk(projectId);
   
@@ -90,6 +118,12 @@ export async function createProject(req: AuthRequest, res: Response) {
          VALUES ($1,$2,$3,$4)`,
         [projectId, containerId, port, "running"]
       );
+
+      //Notify user project is running
+      await pool.query(
+        "UPDATE projects SET status=$1 WHERE id=$2",
+        ["running", projectId]
+      );
   
       // 5️⃣ Return preview URL
       res.json({
@@ -99,6 +133,10 @@ export async function createProject(req: AuthRequest, res: Response) {
       });
   
     } catch (error) {
+      await pool.query(
+        "UPDATE projects SET status=$1 WHERE id=$2",
+        ["failed", projectId]
+      );
       res.status(500).json({ message: "Failed to start project" });
     }
   }
