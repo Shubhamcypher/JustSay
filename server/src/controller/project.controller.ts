@@ -11,6 +11,11 @@ export async function createProject(req: AuthRequest, res: Response) {
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
+
+  if (!name?.trim() || !stack?.trim()) {
+    return res.status(400).json({ message: "Invalid input" });
+  }
+  
   if (!name || !stack) {
     return res.status(400).json({ message: "Invalid input" });
   }
