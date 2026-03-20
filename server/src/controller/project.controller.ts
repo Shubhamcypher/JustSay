@@ -70,6 +70,9 @@ export async function createProject(req: AuthRequest, res: Response) {
     if (stack === "react") {
       await generateReactTemplate(project.id, client);
     }
+    if (stack !== "react") {
+      return res.status(400).json({ message: "Unsupported stack" });
+    }
 
     await client.query("COMMIT");
 
