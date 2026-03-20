@@ -6,8 +6,44 @@ import { writeProjectToDisk } from "../services/fileSystem.service";
 import docker, { buildProjectImage, runProjectContainer } from "../services/docker.service";
 import { getNextPort } from "../utils/port.util";
 
+// export async function createProject(req: AuthRequest, res: Response) {
+//   const { name, stack } = req.body;
+//   if (!req.user) {
+//     return res.status(401).json({ message: "Unauthorized" });
+//   }
+
+//   if (!name?.trim() || !stack?.trim()) {
+//     return res.status(400).json({ message: "Invalid input" });
+//   }
+
+//   if (!name || !stack) {
+//     return res.status(400).json({ message: "Invalid input" });
+//   }
+
+//   try {
+//     const result = await pool.query(
+//       `INSERT INTO projects (name, stack, status, owner_id)
+//          VALUES ($1,$2,$3,$4)
+//          RETURNING *`,
+//       [name, stack, "stopped", req.user!.userId]
+//     );
+
+//     const project = result.rows[0];
+
+//     // 👇 generate starter files
+//     if (stack === "react") {
+//       await generateReactTemplate(project.id);
+//     }
+
+//     res.status(201).json(project)
+
+//   } catch (error) {
+//     res.status(500).json({ message: "Failed to create project" });
+//   }
+// }
 export async function createProject(req: AuthRequest, res: Response) {
   const { name, stack } = req.body;
+
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -15,30 +51,39 @@ export async function createProject(req: AuthRequest, res: Response) {
   if (!name?.trim() || !stack?.trim()) {
     return res.status(400).json({ message: "Invalid input" });
   }
-  
-  if (!name || !stack) {
-    return res.status(400).json({ message: "Invalid input" });
-  }
+
+  const client = await pool.connect();
 
   try {
-    const result = await pool.query(
+    await client.query("BEGIN");
+
+    const result = await client.query(
       `INSERT INTO projects (name, stack, status, owner_id)
-         VALUES ($1,$2,$3,$4)
-         RETURNING *`,
-      [name, stack, "stopped", req.user!.userId]
+       VALUES ($1,$2,$3,$4)
+       RETURNING *`,
+      [name, stack, "stopped", req.user.userId]
     );
 
     const project = result.rows[0];
 
-    // 👇 generate starter files
+    // generate files
     if (stack === "react") {
       await generateReactTemplate(project.id);
     }
 
-    res.status(201).json(project)
+    await client.query("COMMIT");
+
+    res.status(201).json(project);
 
   } catch (error) {
+    await client.query("ROLLBACK");
+
+    console.error("CREATE PROJECT ERROR:", error);
+
     res.status(500).json({ message: "Failed to create project" });
+
+  } finally {
+    client.release();
   }
 }
 
