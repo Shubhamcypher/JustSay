@@ -8,6 +8,9 @@ import { getNextPort } from "../utils/port.util";
 
 export async function createProject(req: AuthRequest, res: Response) {
   const { name, stack } = req.body;
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
   if (!name || !stack) {
     return res.status(400).json({ message: "Invalid input" });
   }

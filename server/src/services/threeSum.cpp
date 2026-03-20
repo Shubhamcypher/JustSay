@@ -1,6 +1,3 @@
-#include <bits/stdc++.h>
-
-
 class Solution {
 public:
 //Most optimized approach will be 2 pointer approach
