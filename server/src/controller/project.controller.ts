@@ -88,6 +88,7 @@ export async function createProject(req: AuthRequest, res: Response) {
 }
 
 export async function getProjects(req: AuthRequest, res: Response) {
+  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
   const result = await pool.query(
     "SELECT * FROM projects WHERE owner_id=$1 ORDER BY created_at DESC",
     [req.user!.userId]
