@@ -68,7 +68,7 @@ export async function createProject(req: AuthRequest, res: Response) {
 
     // generate files
     if (stack === "react") {
-      await generateReactTemplate(project.id);
+      await generateReactTemplate(project.id, client);
     }
 
     await client.query("COMMIT");

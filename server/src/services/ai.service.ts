@@ -1,6 +1,6 @@
 import { pool } from "../config/db";
 
-export async function generateReactTemplate(projectId: string) {
+export async function generateReactTemplate(projectId: string, client: any) {
 
   const files = [
     {
