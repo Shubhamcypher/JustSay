@@ -265,6 +265,7 @@ export async function stopProject(req: AuthRequest, res: Response) {
     });
 
   } catch (error) {
+    console.error("STOP PROJECT ERROR:", error);
     res.status(500).json({ message: "Failed to stop project" });
   }
 }
