@@ -209,7 +209,9 @@ export async function startProject(req: AuthRequest, res: Response) {
 export async function stopProject(req: AuthRequest, res: Response) {
 
   const projectId = req.params.id;
-
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
   try {
 
     // ✅ ownership check
