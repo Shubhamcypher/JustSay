@@ -31,7 +31,7 @@ export default function Dashboard() {
       console.log("RUN RESPONSE:", res);
   
       // navigate to preview page
-      window.open(res.preview, "_blank");
+      navigate(`/project/${projectId}`);
   
     } catch (err) {
       console.error("RUN ERROR:", err);
