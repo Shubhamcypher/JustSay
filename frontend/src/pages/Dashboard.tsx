@@ -24,6 +24,7 @@ export default function Dashboard() {
     navigate(`/project/${res.data.id}`);
   };
 
+  //handle being unused for now
   const handleRun = async (projectId: string) => {
     try {
       const res = await startProject(projectId);
