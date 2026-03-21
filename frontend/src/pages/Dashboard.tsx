@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProjects, createProject } from "../api/project.api";
+import { getProjects, createProject, startProject } from "../api/project.api";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
@@ -22,6 +22,20 @@ export default function Dashboard() {
     });
 
     navigate(`/project/${res.data.id}`);
+  };
+
+  const handleRun = async (projectId: string) => {
+    try {
+      const res = await startProject(projectId);
+  
+      console.log("RUN RESPONSE:", res);
+  
+      // navigate to preview page
+      window.open(res.preview, "_blank");
+  
+    } catch (err) {
+      console.error("RUN ERROR:", err);
+    }
   };
 
   return (
