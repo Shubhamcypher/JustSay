@@ -28,25 +28,35 @@ export async function writeProjectToDisk(projectId: string) {
     await fs.writeFile(filePath, file.content);
   }
 
-    // 👇 create Dockerfile automatically
-    const dockerfile = `
-    FROM node:20
-    
-    WORKDIR /app
-    
-    COPY . .
-    
-    RUN npm install
-    
-    EXPOSE 5173
-    
-    CMD ["npm", "run", "dev", "--", "--host"]
-    `;
-    
-      await fs.writeFile(
-        path.join(projectPath, "Dockerfile"),
-        dockerfile
-      );
+  // 👇 create Dockerfile automatically
+  const dockerfile = `FROM node:20
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 5173
+
+CMD ["npm", "run", "dev", "--", "--host"]
+`;
+
+  await fs.writeFile(
+    path.join(projectPath, "Dockerfile"),
+    dockerfile
+  );
+
+  await fs.writeFile(
+    path.join(projectPath, ".dockerignore"),
+    `node_modules
+.git
+dist
+Dockerfile
+`
+  );
 
   return projectPath;
 }
