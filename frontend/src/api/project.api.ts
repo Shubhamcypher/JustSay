@@ -12,6 +12,9 @@ export const startProject = async (projectId: string) => {
   return res.data;
 };
 
+export const updateFile = (projectId: string, data: any) =>
+  API.put(`/files/${projectId}`, data);
+
 export const stopProject = (id: string) =>
   API.post(`/projects/${id}/stop`);
 
