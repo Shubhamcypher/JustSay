@@ -8,5 +8,6 @@ router.post("/", authenticate, createFile);
 router.get("/:projectId", authenticate, getFiles);
 router.put("/:id", authenticate, updateFile);
 router.delete("/:id", authenticate, deleteFile);
+router.put("/:projectId", updateFile);
 
 export default router;
