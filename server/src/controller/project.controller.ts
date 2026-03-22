@@ -272,3 +272,23 @@ export async function stopProject(req: AuthRequest, res: Response) {
     res.status(500).json({ message: "Failed to stop project" });
   }
 }
+
+export async function updateFile(req: AuthRequest, res: Response) {
+  const { projectId } = req.params;
+  const { path, content } = req.body;
+
+  try {
+    await pool.query(
+      `UPDATE project_files
+       SET content=$1
+       WHERE project_id=$2 AND path=$3`,
+      [content, projectId, path]
+    );
+
+    res.json({ message: "File updated" });
+
+  } catch (error) {
+    console.error("UPDATE FILE ERROR:", error);
+    res.status(500).json({ message: "Failed to update file" });
+  }
+}
