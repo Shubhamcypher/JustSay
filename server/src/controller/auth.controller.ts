@@ -6,7 +6,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken
-} from "../utils/auth"; 
+} from "../utils/auth";
 import bcrypt from "bcrypt";
 
 
@@ -20,6 +20,21 @@ export async function register(req: Request, res: Response) {
     return res.status(400).json({ message: "Email and password required" });
   }
 
+  // Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: "Invalid email format" });
+  }
+
+  // Password validation
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({
+      message:
+        "Password must be at least 6 characters and include uppercase, lowercase, and a number",
+    });
+  }
+
   try {
     const existing = await pool.query(
       "SELECT id FROM users WHERE email = $1", //this $1 replaces email
@@ -28,7 +43,7 @@ export async function register(req: Request, res: Response) {
 
     if (existing.rows.length > 0) {
       return res.status(400).json({ message: "User already exists" });
-    }//
+    }
 
     const hashed = await hashPassword(password);
 
@@ -44,7 +59,7 @@ export async function register(req: Request, res: Response) {
 
       user = userResult.rows[0];
     } catch (err: any) {
-      if (err.code === "23505") {
+      if (err.code === "23505") { //23505 = PostgreSQL unique constraint violation
         throw new Error("Email already registered");
       }
       throw err;
