@@ -90,15 +90,17 @@ export async function register(req: Request, res: Response) {
 export async function login(req: Request, res: Response) {
   const { email, password } = req.body;
 
-//if invalid input dont hit db
+  //if invalid input dont hit db
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password required" });
   }
-  
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ message: "Invalid email format" });
   }
+
+  //Need to add rate limiting to stop brute force attack
 
   try {
     const userResult = await pool.query(
@@ -114,7 +116,7 @@ export async function login(req: Request, res: Response) {
     const user = userResult.rows[0];
 
     console.log(user);
-    
+
 
     const isValid = await comparePassword(password, user.password);
 
@@ -158,23 +160,42 @@ export async function refresh(req: Request, res: Response) {
       [decoded.userId]
     );
 
-    let valid = false;
+    let matchedTokenHash: string | null = null;
 
     for (const row of tokens.rows) {
       const match = await bcrypt.compare(refreshToken, row.token);
       if (match) {
-        valid = true;
+        matchedTokenHash = row.token;
         break;
       }
     }
 
-    if (!valid) {
+    if (!matchedTokenHash) {
       return res.status(403).json({ message: "Invalid refresh token" });
     }
 
-    const newAccessToken = generateAccessToken({ userId: decoded.userId });
+    // 🔥 Delete old token (rotation)
+    await pool.query(
+      "DELETE FROM refresh_tokens WHERE token = $1",
+      [matchedTokenHash]
+    );
 
-    return res.json({ accessToken: newAccessToken });
+    // 🔥 Generate new tokens
+    const newAccessToken = generateAccessToken({ userId: decoded.userId });
+    const newRefreshToken = generateRefreshToken({ userId: decoded.userId });
+
+    // 🔥 Store new refresh token
+    const hashed = await bcrypt.hash(newRefreshToken, 10);
+
+    await pool.query(
+      "INSERT INTO refresh_tokens (token, user_id) VALUES ($1, $2)",
+      [hashed, decoded.userId]
+    );
+
+    return res.json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
 
   } catch {
     return res.status(403).json({ message: "Invalid token" });
