@@ -23,7 +23,7 @@ export default function Register() {
   };
 
   return (
-    <div>
+    <div style={{display:"flex", flexDirection:"column", gap:"8px"}}>
       <h2>Register</h2>
 
       <input
