@@ -9,7 +9,7 @@ export default function AppRoutes() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/project/:id" element={<Project />} />
-        <Route path="/project/:id" element={<ProjectPreview />} />
+        <Route path="/project/:id/preview" element={<ProjectPreview />} />
       </Routes>
     </BrowserRouter>
   );
