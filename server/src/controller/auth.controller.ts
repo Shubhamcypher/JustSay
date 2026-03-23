@@ -90,6 +90,16 @@ export async function register(req: Request, res: Response) {
 export async function login(req: Request, res: Response) {
   const { email, password } = req.body;
 
+//if invalid input dont hit db
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password required" });
+  }
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: "Invalid email format" });
+  }
+
   try {
     const userResult = await pool.query(
       "SELECT id, password FROM users WHERE email = $1",
@@ -100,7 +110,11 @@ export async function login(req: Request, res: Response) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+
     const user = userResult.rows[0];
+
+    console.log(user);
+    
 
     const isValid = await comparePassword(password, user.password);
 
