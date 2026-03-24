@@ -15,6 +15,12 @@ export default function Register() {
 
   const navigate = useNavigate();
 
+  const getStrength = (password: string) => {
+    if (password.length < 4) return "weak";
+    if (password.length < 8) return "medium";
+    return "strong";
+  };
+
   const handleRegister = async () => {
     try {
       console.log(password, "Set Password\n", email, "Set Email");
@@ -43,8 +49,12 @@ export default function Register() {
               <Label className='text-gray-200'>Email</Label>
               <Input placeholder='you@example.com' onChange={(e) => setEmail(e.target.value)} />
             </div>
-
-            <PasswordField onChange={(value: string) => setPassword(value)} />
+            <div className='flex flex-col gap-2'>
+              <PasswordField onChange={(value: string) => setPassword(value)} />
+              <p className="text-xs text-gray-400">
+                Strength: {getStrength(password)}
+              </p>
+            </div>
           </div>
 
           <Button onClick={handleRegister} className='w-full bg-slate-50'>
