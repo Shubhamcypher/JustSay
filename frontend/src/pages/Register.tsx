@@ -16,10 +16,38 @@ export default function Register() {
   const navigate = useNavigate();
 
   const getStrength = (password: string) => {
-    if (password.length < 4) return "weak";
-    if (password.length < 8) return "medium";
-    return "strong";
+    let score = 0;
+
+    if (password.length >= 8) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    if (score <= 2)
+      return {
+        label: "Weak",
+        bar: "bg-red-500",
+        text: "text-red-500",
+        width: "w-1/3",
+      };
+
+    if (score === 3 || score === 4)
+      return {
+        label: "Medium",
+        bar: "bg-yellow-400",
+        text: "text-yellow-400",
+        width: "w-2/3",
+      };
+
+    return {
+      label: "Strong",
+      bar: "bg-green-500",
+      text: "text-green-500",
+      width: "w-full",
+    };
   };
+  const strength = getStrength(password);
 
   const handleRegister = async () => {
     try {
@@ -34,6 +62,7 @@ export default function Register() {
       alert(err.response?.data?.message || 'Register failed');
     }
   };
+
 
   return (
     <div className='flex items-center justify-center h-screen bg-gradient-to-br from-zinc-900 to-black'>
@@ -51,8 +80,8 @@ export default function Register() {
             </div>
             <div className='flex flex-col gap-2'>
               <PasswordField onChange={(value: string) => setPassword(value)} />
-              <p className="text-xs text-gray-400">
-                Strength: {getStrength(password)}
+              <p className={`text-xs ${strength.text}`}>
+                Strength: {strength.label}
               </p>
             </div>
           </div>
