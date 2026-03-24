@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import PasswordField from '@/components/customComponents/InputField/PasswordField';
 import { useToast } from '@/components/ui/use-toast';
+import Auth3DBackground from '@/components/customComponents/InputField/backgrounds/Auth3DBackground';
+// import AuthBackground from '@/components/customComponents/InputField/backgrounds/AuthBackground';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -75,39 +77,49 @@ export default function Register() {
 
 
   return (
-    <div className='flex items-center justify-center h-screen bg-gradient-to-br from-zinc-900 to-black'>
-      <Card className='w-[400px] shadow-xl border-zinc-800'>
-        <CardHeader>
-          <CardTitle className='text-2xl text-center text-red-500'>Create Account</CardTitle>
-        </CardHeader>
+    <Auth3DBackground>
+      <div className="animate-[fadeZoom_0.6s_ease-out]">
+        <Card className="w-[420px] relative backdrop-blur-2xl bg-white/5 border border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.1)] rounded-2xl overflow-hidden">
+          <div className="absolute inset-0 rounded-2xl pointer-events-none">
+            <div className="absolute inset-0 rounded-2xl border border-white/10" />
 
-        <CardContent className='flex flex-col gap-8'>
-          <div className='flex flex-col gap-4'>
-
-            <div className='flex flex-col gap-2'>
-              <Label className='text-gray-200'>Email</Label>
-              <Input placeholder='you@example.com' onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div className='flex flex-col gap-2'>
-              <PasswordField onChange={(value: string) => setPassword(value)} />
-              <p className={`text-xs ${strength.text}`}>
-                Strength: {strength.label}
-              </p>
-            </div>
+            {/* animated gradient glow */}
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-xl opacity-40 animate-[pulse_6s_ease-in-out_infinite]" />
           </div>
+          <CardHeader>
+            <CardTitle className="text-3xl text-center bg-gradient-to-r from-gray-900 via-blue-600 to-red-600 bg-clip-text text-transparent">
+              Create Account
+            </CardTitle>
+          </CardHeader>
 
-          <Button onClick={handleRegister} className='w-full bg-slate-50 hover:bg-blue-400 hover:text-gray-50 transition-colors duration-300'>
-            Register
-          </Button>
+          <CardContent className='flex flex-col gap-8'>
+            <div className='flex flex-col gap-4'>
 
-          <p className='text-sm text-center text-zinc-400'>
-            Already have an account?{' '}
-            <span className='text-blue-500 cursor-pointer' onClick={() => navigate('/login')}>
-              Login
-            </span>
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+              <div className='flex flex-col gap-2'>
+                <Label className='text-gray-200'>Email</Label>
+                <Input placeholder='you@example.com' onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div className='flex flex-col gap-2'>
+                <PasswordField onChange={(value: string) => setPassword(value)} />
+                <p className={`text-xs ${strength.text}`}>
+                  Strength: {strength.label}
+                </p>
+              </div>
+            </div>
+
+            <Button onClick={handleRegister} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-lg hover:shadow-blue-500/30">
+              Register
+            </Button>
+
+            <p className='text-sm text-center text-zinc-400'>
+              Already have an account?{' '}
+              <span className='text-blue-500 cursor-pointer' onClick={() => navigate('/login')}>
+                Login
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </Auth3DBackground>
   );
 }
