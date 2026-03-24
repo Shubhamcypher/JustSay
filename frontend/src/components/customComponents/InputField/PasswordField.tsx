@@ -15,7 +15,7 @@ export default function PasswordField({ onChange }: any) {
         type={show ? "text" : "password"}
         placeholder="••••••••"
         onChange={(e) => onChange(e.target.value)}
-        className="pr-10 placeholder:text-gray-500"
+        className="pr-10"
       />
 
       <button
