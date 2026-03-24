@@ -86,7 +86,7 @@ export default function Register() {
             </div>
           </div>
 
-          <Button onClick={handleRegister} className='w-full bg-slate-50'>
+          <Button onClick={handleRegister} className='w-full bg-slate-50 hover:bg-blue-600 hover:text-gray-50 transition-colors duration-300'>
             Register
           </Button>
 
