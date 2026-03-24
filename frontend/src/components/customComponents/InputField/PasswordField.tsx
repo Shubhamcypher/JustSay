@@ -10,12 +10,12 @@ export default function PasswordField({ onChange }: any) {
     <div className="flex flex-col gap-2 relative">
       <Label className="text-gray-200">Password</Label>
 
-    
+
       <Input
         type={show ? "text" : "password"}
         placeholder="••••••••"
         onChange={(e) => onChange(e.target.value)}
-        className="pr-10"
+        className="pr-10 placeholder:text-gray-500"
       />
 
       <button

@@ -76,7 +76,7 @@ export default function Register() {
 
             <div className='flex flex-col gap-2'>
               <Label className='text-gray-200'>Email</Label>
-              <Input placeholder='you@example.com' onChange={(e) => setEmail(e.target.value)} />
+              <Input placeholder='you@example.com' onChange={(e) => setEmail(e.target.value)} className="pr-10 placeholder:text-gray-500" />
             </div>
             <div className='flex flex-col gap-2'>
               <PasswordField onChange={(value: string) => setPassword(value)} />
