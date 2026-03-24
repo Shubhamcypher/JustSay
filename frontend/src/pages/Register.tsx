@@ -92,7 +92,7 @@ export default function Register() {
       <div className="animate-[fadeZoom_0.6s_ease-out] transition-transform duration-300 hover:scale-[1.02] hover:-translate-y-1 h-full p-4">
         <Card
           className="w-[420px] relative rounded-2xl overflow-hidden h-full
-          backdrop-blur-3xl
+          backdrop-blur-3xl flex flex-col justify-between
           bg-gradient-to-br from-white/10 via-white/5 to-white/0 
           border border-white/10 
           shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
@@ -110,10 +110,14 @@ export default function Register() {
             <div className="absolute inset-0 rounded-2xl border border-white/10" />
             <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-2xl opacity-30 animate-[pulse_8s_ease-in-out_infinite]" />
           </div>
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-gray-900 via-blue-600 to-red-600 bg-clip-text text-transparent">
+          <CardHeader className="relative z-10 flex flex-col items-center gap-2 pb-2">
+            <CardTitle className="text-4xl font-bold tracking-tight text-center bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               Create Account
             </CardTitle>
+
+            <p className="text-sm text-white/50 text-center">
+              Join and start your journey 🚀
+            </p>
           </CardHeader>
 
           <CardContent className='flex flex-col gap-4'>
@@ -193,19 +197,20 @@ export default function Register() {
               </button>
 
             </div>
-
+          </CardContent>
+          <div className='p-4 flex flex-col gap-4'>
 
             <Button onClick={handleRegister} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-lg hover:shadow-blue-500/30">
               Register
             </Button>
 
-            <p className='text-sm text-center text-zinc-400'>
+            <p className='text-sm text-center text-gray-100'>
               Already have an account?{' '}
-              <span className='text-blue-500 cursor-pointer' onClick={() => navigate('/login')}>
+              <span className='text-blue-500 font-bold cursor-pointer' onClick={() => navigate('/login')}>
                 Login
               </span>
             </p>
-          </CardContent>
+          </div>
         </Card>
       </div>
     </Auth3DBackground>
