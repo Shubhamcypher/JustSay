@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import PasswordField from '@/components/customComponents/InputField/PasswordField';
 import { useToast } from '@/components/ui/use-toast';
-import Auth3DBackground from '@/components/customComponents/InputField/backgrounds/Auth3DBackground';
+import Auth3DBackground from '@/components/customComponents/backgrounds/Auth3DBackground';
 // import AuthBackground from '@/components/customComponents/InputField/backgrounds/AuthBackground';
 
 export default function Register() {
@@ -26,6 +26,9 @@ export default function Register() {
     if (/[A-Z]/.test(password)) score++;
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    if (score == 0)
+      return {}
 
     if (score <= 2)
       return {
@@ -73,39 +76,124 @@ export default function Register() {
     }
   };
 
+  const handleOAuth = (provider: string) => {
+    window.location.href = `http://localhost:5000/auth/${provider}`;
+  };
+
+  const handlePhoneLogin = () => {
+    navigate("/phone-login");
+  };
+
   const { toast } = useToast();
 
 
   return (
     <Auth3DBackground>
-      <div className="animate-[fadeZoom_0.6s_ease-out]">
-        <Card className="w-[420px] relative backdrop-blur-2xl bg-white/5 border border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.1)] rounded-2xl overflow-hidden">
+      <div className="animate-[fadeZoom_0.6s_ease-out] transition-transform duration-300 hover:scale-[1.02] hover:-translate-y-1 h-full p-4">
+        <Card
+          className="w-[420px] relative rounded-2xl overflow-hidden h-full
+          backdrop-blur-3xl
+          bg-gradient-to-br from-white/10 via-white/5 to-white/0 
+          border border-white/10 
+          shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+          {/* 🔥 Step 2 → dark accent */}
+          <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-black/30 pointer-events-none" />
+
+          {/* 🔥 Step 4 → inner glass reflection */}
+          <div className="absolute inset-0 rounded-2xl bg-white/5 backdrop-blur-xl pointer-events-none" />
+
+          {/* 🔥 Step 5 → top light reflection */}
+          <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+
+          {/* 🔥 Step 3 → glow + border */}
           <div className="absolute inset-0 rounded-2xl pointer-events-none">
             <div className="absolute inset-0 rounded-2xl border border-white/10" />
-
-            {/* animated gradient glow */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-xl opacity-40 animate-[pulse_6s_ease-in-out_infinite]" />
+            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-2xl opacity-30 animate-[pulse_8s_ease-in-out_infinite]" />
           </div>
           <CardHeader>
-            <CardTitle className="text-3xl text-center bg-gradient-to-r from-gray-900 via-blue-600 to-red-600 bg-clip-text text-transparent">
+            <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-gray-900 via-blue-600 to-red-600 bg-clip-text text-transparent">
               Create Account
             </CardTitle>
           </CardHeader>
 
-          <CardContent className='flex flex-col gap-8'>
+          <CardContent className='flex flex-col gap-4'>
             <div className='flex flex-col gap-4'>
 
               <div className='flex flex-col gap-2'>
-                <Label className='text-gray-200'>Email</Label>
-                <Input placeholder='you@example.com' onChange={(e) => setEmail(e.target.value)} />
+                <div className="flex flex-col gap-2 group">
+                  <Label className="text-white/60 group-focus-within:text-blue-600 transition-colors duration-300 backdrop-blur-sm bg-white/5 px-2 py-1 rounded-md w-fit border border-white/10">
+                    Email
+                  </Label>
+
+                  <Input
+                    placeholder="you@example.com"
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="bg-white/5 border-white/10 focus:border-blue-400"
+                  />
+                </div>
               </div>
-              <div className='flex flex-col gap-2'>
+              <div className="flex flex-col gap-2 group">
+                <Label className="text-white/60 group-focus-within:text-blue-600 transition-colors duration-300 backdrop-blur-sm bg-white/5 px-2 py-1 rounded-md w-fit border border-white/10">
+                  Password
+                </Label>
+
                 <PasswordField onChange={(value: string) => setPassword(value)} />
-                <p className={`text-xs ${strength.text}`}>
+                <p
+                  className={`text-xs ${strength.text} transition-all duration-300 ${password.length === 0
+                    ? "opacity-0  overflow-hidden"
+                    : "opacity-100"
+                    }`}
+                >
                   Strength: {strength.label}
                 </p>
               </div>
             </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-px bg-white/10" />
+              <span className="text-xs text-white/50">or continue with</span>
+              <div className="flex-1 h-px bg-white/10" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+
+              {/* Google */}
+              <button
+                onClick={() => handleOAuth("google")}
+                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 text-sm text-white transition"
+              >
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" />
+                Sign in with Google
+              </button>
+
+              {/* GitHub */}
+              <button
+                onClick={() => handleOAuth("github")}
+                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 text-sm text-white transition"
+              >
+                <img src="https://www.svgrepo.com/show/512317/github-142.svg" className="w-4 h-4 invert" />
+                Sign in with GitHub
+              </button>
+
+              {/* Microsoft */}
+              <button
+                onClick={() => handleOAuth("microsoft")}
+                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 text-sm text-white transition"
+              >
+                <img src="https://www.svgrepo.com/show/448239/microsoft.svg" className="w-4 h-4" />
+                Sign in with Microsoft
+              </button>
+
+              {/* Phone */}
+              <button
+                onClick={() => handlePhoneLogin()}
+                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 text-sm text-white transition"
+              >
+                📱 Sign in using Number
+              </button>
+
+            </div>
+
 
             <Button onClick={handleRegister} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-lg hover:shadow-blue-500/30">
               Register
