@@ -1,9 +1,15 @@
+import { Toaster } from 'sonner';
 import './index.css'
 import AppRoutes from './routes/AppRoutes';
 
 function App() {
 
-  return <AppRoutes />;
+  return (
+    <>
+      <Toaster richColors position="top-center" />
+      <AppRoutes />
+    </>
+  )
 
 }
 

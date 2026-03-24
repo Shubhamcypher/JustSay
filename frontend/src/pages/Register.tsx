@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import PasswordField from '@/components/customComponents/InputField/PasswordField';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -56,12 +57,21 @@ export default function Register() {
       const res = await register({ email, password });
 
       setTokens(res.data.accessToken, res.data.refreshToken);
-
+      toast({
+        title: "Success 🎉",
+        description: "Account created successfully",
+      });
       navigate('/');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Register failed');
+      toast({
+        title: "Registration Failed",
+        description: err.response?.data?.message || "Something went wrong",
+        variant: "destructive",
+      });
     }
   };
+
+  const { toast } = useToast();
 
 
   return (
@@ -76,7 +86,7 @@ export default function Register() {
 
             <div className='flex flex-col gap-2'>
               <Label className='text-gray-200'>Email</Label>
-              <Input placeholder='you@example.com' onChange={(e) => setEmail(e.target.value)}/>
+              <Input placeholder='you@example.com' onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className='flex flex-col gap-2'>
               <PasswordField onChange={(value: string) => setPassword(value)} />
@@ -86,7 +96,7 @@ export default function Register() {
             </div>
           </div>
 
-          <Button onClick={handleRegister} className='w-full bg-slate-50 hover:bg-blue-600 hover:text-gray-50 transition-colors duration-300'>
+          <Button onClick={handleRegister} className='w-full bg-slate-50 hover:bg-blue-400 hover:text-gray-50 transition-colors duration-300'>
             Register
           </Button>
 
