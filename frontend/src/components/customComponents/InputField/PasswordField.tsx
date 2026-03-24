@@ -1,41 +1,29 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { Eye, EyeOff } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
-export default function PasswordInput({ onChange }: any) {
-  const [realValue, setRealValue] = useState("");
-  const [displayValue, setDisplayValue] = useState("");
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    const lastChar = newValue.slice(-1);
-
-    setRealValue(newValue);
-
-    // Show all dots except last char
-    const masked =
-      "•".repeat(newValue.length - 1) + lastChar;
-
-    setDisplayValue(masked);
-
-    // After 500ms → mask everything
-    setTimeout(() => {
-      setDisplayValue("•".repeat(newValue.length));
-    }, 500);
-
-    onChange(newValue);
-  };
+export default function PasswordField({ onChange }: any) {
+  const [show, setShow] = useState(false);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 relative">
       <Label className="text-gray-200">Password</Label>
 
       <Input
-        type="text"
-        value={displayValue}
-        onChange={handleChange}
-        autoComplete="off"
+        type={show ? "text" : "password"}
+        placeholder="••••••••"
+        onChange={(e) => onChange(e.target.value)}
+        className="pr-10"
       />
+
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute right-2 top-9 text-gray-400 hover:text-white"
+      >
+        {show ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
     </div>
   );
 }

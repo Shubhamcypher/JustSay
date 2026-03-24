@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import PasswordInput from '@/components/customComponents/InputField/PasswordField';
+import PasswordField from '@/components/customComponents/InputField/PasswordField';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -17,8 +17,8 @@ export default function Register() {
 
   const handleRegister = async () => {
     try {
-      console.log(password,"Set Password\n", email,"Set Email");
-      
+      console.log(password, "Set Password\n", email, "Set Email");
+
       const res = await register({ email, password });
 
       setTokens(res.data.accessToken, res.data.refreshToken);
@@ -38,12 +38,13 @@ export default function Register() {
 
         <CardContent className='flex flex-col gap-8'>
           <div className='flex flex-col gap-4'>
+
             <div className='flex flex-col gap-2'>
               <Label className='text-gray-200'>Email</Label>
               <Input placeholder='you@example.com' onChange={(e) => setEmail(e.target.value)} />
             </div>
 
-              <PasswordInput onChange={setPassword} />
+            <PasswordField onChange={(value: string) => setPassword(value)} />
           </div>
 
           <Button onClick={handleRegister} className='w-full bg-slate-50'>
