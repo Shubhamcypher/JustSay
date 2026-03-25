@@ -31,12 +31,14 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
+//passport js
+app.use(passport.initialize());
+
 //auth routes
 app.use("/api/auth", authRoutes);
 
 
-//passport js
-app.use(passport.initialize());
+
 
 //user routes
 app.use("/api/users", userRoutes);
