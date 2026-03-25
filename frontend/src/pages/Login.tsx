@@ -67,7 +67,7 @@ export default function Login() {
               Welcome Back
             </CardTitle>
             <p className="text-sm text-white/50">
-              Login to continue 🚀
+              Login to continue to Justsay
             </p>
           </CardHeader>
 

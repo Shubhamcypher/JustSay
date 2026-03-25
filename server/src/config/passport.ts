@@ -1,7 +1,8 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 import jwt from "jsonwebtoken";
-import {pool} from "./db"; 
+import { pool } from "./db";
+import { generateAccessToken, generateRefreshToken } from "../utils/auth";
 
 interface DoneUser {
   user: any;
@@ -54,13 +55,10 @@ passport.use(
         }
 
         // 🎟️ 4. Generate JWT
-        const token = jwt.sign(
-          { id: user.id },
-          process.env.JWT_SECRET as string,
-          { expiresIn: "7d" }
-        );
+        const accessToken = generateAccessToken({ id: user.id });
+        const refreshToken = generateRefreshToken({ id: user.id });
 
-        return done(null, { user, token });
+        return done(null, { user, accessToken, refreshToken });
       } catch (err) {
         return done(err as Error, false);
       }

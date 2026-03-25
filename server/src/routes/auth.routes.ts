@@ -14,22 +14,24 @@ router.post("/logout", logout);
 router.get(
     "/google",
     passport.authenticate("google", { scope: ["profile", "email"] })
-  );
-  
-  // Step 2: Callback
-  router.get(
+);
+
+// Step 2: Callback
+router.get(
     "/google/callback",
     passport.authenticate("google", {
-      session: false,
+        session: false,
     }),
     (req, res) => {
-      const userData = req.user as { token: string };
-  
-      res.redirect(
-        `http://localhost:5173/oauth-success?token=${userData.token}`
-      );
+        const userData = req.user as {
+            accessToken: string;
+            refreshToken: string;
+        };
+        res.redirect(
+            `http://localhost:5173/oauth-success?token=${userData.accessToken}&refreshToken=${userData.refreshToken}`
+        );
     }
-  );
+);
 
 
 export default router;

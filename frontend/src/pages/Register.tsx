@@ -151,12 +151,19 @@ export default function Register() {
               </div>
             </div>
 
+
+            <Button onClick={handleRegister} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
+              Register
+            </Button>
+
+
+          </CardContent>
+          <div className='p-4 flex flex-col gap-4'>
             <div className="flex items-center gap-2">
               <div className="flex-1 h-px bg-white/10" />
               <span className="text-xs text-white/50">or continue with</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
-
             <div className="grid grid-cols-1 gap-6">
 
               {/* Google */}
@@ -195,12 +202,7 @@ export default function Register() {
               </button>
 
             </div>
-          </CardContent>
-          <div className='p-4 flex flex-col gap-4'>
 
-            <Button onClick={handleRegister} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
-              Register
-            </Button>
 
             <p className='text-sm text-center text-gray-100'>
               Already have an account?{' '}
