@@ -89,20 +89,18 @@ export default function Register() {
 
   return (
     <Auth3DBackground>
-      <div className="animate-[fadeZoom_0.6s_ease-out] transition-transform duration-300 hover:scale-[1.02] hover:-translate-y-1 h-full p-4">
+      <div className="animate-[fadeZoom_0.6s_ease-out] transition-transform duration-300 hover:-translate-y-1 h-full p-4 items-center flex">
         <Card
-          className="w-[420px] relative rounded-2xl overflow-hidden h-full
+          className="w-[420px] relative rounded-2xl overflow-hidden h-full max-h-[1229px]
           backdrop-blur-3xl flex flex-col justify-between
-          bg-gradient-to-br from-white/10 via-white/5 to-white/0 
+          bg-gradient-to-br from-white/1 via-white/2 to-white/3 
           border border-white/10 
           shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
-          {/* 🔥 Step 2 → dark accent */}
+
+          {/* 🔥 Step 1 → dark accent */}
           <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-black/30 pointer-events-none" />
 
-          {/* 🔥 Step 4 → inner glass reflection */}
-          <div className="absolute inset-0 rounded-2xl bg-white/5 backdrop-blur-xl pointer-events-none" />
-
-          {/* 🔥 Step 5 → top light reflection */}
+          {/* 🔥 Step 2 → top light reflection */}
           <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
 
           {/* 🔥 Step 3 → glow + border */}
@@ -200,7 +198,7 @@ export default function Register() {
           </CardContent>
           <div className='p-4 flex flex-col gap-4'>
 
-            <Button onClick={handleRegister} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-lg hover:shadow-blue-500/30">
+            <Button onClick={handleRegister} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
               Register
             </Button>
 
