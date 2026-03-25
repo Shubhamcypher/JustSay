@@ -24,7 +24,7 @@ export default function Login() {
       toast({
         title: "Missing Fields",
         description: "Email and password are required",
-        variant: "destructive",
+        variant: "error",
       });
       return;
     }
@@ -46,7 +46,7 @@ export default function Login() {
       toast({
         title: "Login Failed",
         description: err.response?.data?.message || "Invalid credentials",
-        variant: "destructive",
+        variant: "error",
       });
     } finally {
       setLoading(false);

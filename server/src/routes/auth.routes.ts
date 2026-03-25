@@ -28,7 +28,7 @@ router.get(
             refreshToken: string;
         };
         res.redirect(
-            `http://localhost:5173/oauth-success?token=${userData.accessToken}&refreshToken=${userData.refreshToken}`
+            `http://localhost:5173/oauth-success?accessToken=${encodeURIComponent(userData.accessToken)}&refreshToken=${encodeURIComponent(userData.refreshToken)}`
         );
     }
 );

@@ -66,12 +66,12 @@ export default function Register() {
         title: "Success 🎉",
         description: "Account created successfully",
       });
-      navigate('/');
+      navigate('/login');
     } catch (err: any) {
       toast({
         title: "Registration Failed",
         description: err.response?.data?.message || "Something went wrong",
-        variant: "destructive",
+        variant: "error",
       });
     }
   };

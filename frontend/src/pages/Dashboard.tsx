@@ -40,7 +40,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div>
+    <div className="bg-gray-950 h-[780px]">
       <h1>Projects</h1>
 
       <button onClick={handleCreate}>Create Project</button>
