@@ -8,9 +8,11 @@ import projectRoutes from "./routes/project.routes"
 import fileRoutes from "./routes/file.routes";
 
 import { pool } from "./config/db";
+import passport from "./config/passport"
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+// const passport = require("./config/passport");
 
 app.use(cors({
   origin: "http://localhost:5173",
@@ -31,6 +33,10 @@ app.get("/", (req: Request, res: Response) => {
 
 //auth routes
 app.use("/api/auth", authRoutes);
+
+
+//passport js
+app.use(passport.initialize());
 
 //user routes
 app.use("/api/users", userRoutes);

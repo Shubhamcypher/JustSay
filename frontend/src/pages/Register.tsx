@@ -77,7 +77,7 @@ export default function Register() {
   };
 
   const handleOAuth = (provider: string) => {
-    window.location.href = `http://localhost:5000/auth/${provider}`;
+    window.location.href = `http://localhost:5000/api/auth/${provider}`;
   };
 
   const handlePhoneLogin = () => {
