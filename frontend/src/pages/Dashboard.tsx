@@ -1,55 +1,64 @@
-import { useEffect, useState } from "react";
-import { getProjects, createProject, startProject } from "../api/project.api";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Navbar from "@/components/ui/Navbar";
+
+
 
 export default function Dashboard() {
-  const [projects, setProjects] = useState([]);
-  const navigate = useNavigate();
+  const [prompt, setPrompt] = useState("");
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+  const handleGenerate = () => {
+    if (!prompt.trim()) return;
 
-  const fetchProjects = async () => {
-    const res = await getProjects();
-    setProjects(res.data);
-  };
+    console.log("Generating:", prompt);
 
-  const handleCreate = async () => {
-    const res = await createProject({
-      name: "New Project",
-      stack: "react",
-    });
-
-    navigate(`/project/${res.data.id}`);
-  };
-
-  //handle being unused for now
-  const handleRun = async (projectId: string) => {
-    try {
-      const res = await startProject(projectId);
-  
-      console.log("RUN RESPONSE:", res);
-  
-      // navigate to preview page
-      navigate(`/project/${projectId}`);
-  
-    } catch (err) {
-      console.error("RUN ERROR:", err);
-    }
+    // 👉 later: API call
   };
 
   return (
-    <div className="bg-gray-950 h-[780px]">
-      <h1>Projects</h1>
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
 
-      <button onClick={handleCreate}>Create Project</button>
+      {/* 🌌 Background Glow */}
+      <div className="absolute inset-0">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-purple-500/20 blur-[200px]" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-500/20 blur-[200px]" />
+      </div>
 
-      {projects.map((p: any) => (
-        <div key={p.id} onClick={() => navigate(`/project/${p.id}`)}>
-          {p.name}
+      {/* Navbar */}
+      <Navbar />
+
+      {/* Main */}
+      <div className="relative flex flex-col items-center justify-center h-[80vh] px-4">
+
+        {/* Heading */}
+        <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          Build Websites with AI
+        </h1>
+
+        <p className="text-white/50 mt-4 text-center max-w-xl">
+          Describe your idea and watch it turn into a relaity.
+        </p>
+
+        {/* Input Box */}
+        <div className="mt-10 w-full max-w-2xl flex gap-2 bg-white/5 border border-white/10 rounded-xl p-2 backdrop-blur-xl">
+
+          <Input
+            placeholder="e.g. Create a portfolio website for a developer..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className="bg-transparent border-none focus-visible:ring-0 text-white"
+          />
+
+          <Button
+            onClick={handleGenerate}
+            className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+          >
+            Generate
+          </Button>
         </div>
-      ))}
+
+      </div>
     </div>
   );
 }
