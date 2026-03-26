@@ -71,10 +71,10 @@ export default function HomeHero() {
     };
 
     return (
-        <div className="relative h-[80vh] flex items-center justify-center px-4">
+        <div className="relative h-[80vh] flex items-center justify-center r px-4">
 
 
-            <div className="relative w-full max-w-2xl text-center">
+            <div className="relative w-[50vw] text-center">
 
                 {/* Heading */}
                 <h1 className="text-6xl leading-[1.4] font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -85,10 +85,10 @@ export default function HomeHero() {
                     Describe your idea and we’ll generate a full website.
                 </p>
 
-                {/* 💎 Premium Input */}
+                {/* Input field */}
                 <div className="mt-10 relative group">
 
-                    {/* Glow border */}
+                    {/* Glowing border */}
                     <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 blur opacity-30 group-hover:opacity-60 transition" />
 
                     <div className="relative bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-xl">
