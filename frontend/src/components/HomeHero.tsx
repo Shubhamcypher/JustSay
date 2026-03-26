@@ -5,7 +5,10 @@ export default function HomeHero() {
     const [prompt, setPrompt] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const placeholders = [
+    const staticText = "Just say and we will ";
+
+
+    const dynamicParts = [
         "Create a SaaS landing page...",
         "Build a portfolio for a developer...",
         "Make an AI startup homepage...",
@@ -13,36 +16,36 @@ export default function HomeHero() {
     ];
 
     // ✨ Typing effect
-    const [displayText, setDisplayText] = useState("");
+    const [displayDynamic, setDisplayDynamic] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
     const [charIndex, setCharIndex] = useState(0);
-    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+    const [phraseIndex, setPhraseIndex] = useState(0);
 
     useEffect(() => {
-        const current = placeholders[placeholderIndex];
+        const current = dynamicParts[phraseIndex];
         const speed = isDeleting ? 30 : 60;
 
         const timeout = setTimeout(() => {
             if (!isDeleting) {
-                setDisplayText(current.slice(0, charIndex + 1));
+                setDisplayDynamic(current.slice(0, charIndex + 1));
                 setCharIndex((prev) => prev + 1);
 
                 if (charIndex === current.length) {
                     setTimeout(() => setIsDeleting(true), 1200);
                 }
             } else {
-                setDisplayText(current.slice(0, charIndex - 1));
+                setDisplayDynamic(current.slice(0, charIndex - 1));
                 setCharIndex((prev) => prev - 1);
 
                 if (charIndex === 0) {
                     setIsDeleting(false);
-                    setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+                    setPhraseIndex((prev) => (prev + 1) % dynamicParts.length);
                 }
             }
         }, speed);
 
         return () => clearTimeout(timeout);
-    }, [charIndex, isDeleting, placeholderIndex]);
+    }, [charIndex, isDeleting, phraseIndex]);
 
     // 📏 Auto grow
     const handleInput = (e: any) => {
@@ -67,11 +70,11 @@ export default function HomeHero() {
             <div className="relative w-full max-w-2xl text-center">
 
                 {/* Heading */}
-                <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <h1 className="text-6xl leading-[1.4] font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                     Build anything with AI
                 </h1>
 
-                <p className="text-white/60 mt-4">
+                <p className="text-white/60 text-xl">
                     Describe your idea and we’ll generate a full website.
                 </p>
 
@@ -88,8 +91,7 @@ export default function HomeHero() {
                             rows={1}
                             value={prompt}
                             onChange={handleInput}
-                            placeholder={displayText + "|"}
-                            className="w-full resize-none bg-transparent outline-none text-white placeholder:text-white/40 px-2 py-2 max-h-40 overflow-y-auto"
+                            placeholder={staticText + displayDynamic + "|"} className="w-full resize-none bg-transparent outline-none text-white placeholder:text-white/40 px-2 py-2 max-h-40 overflow-y-auto"
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();
