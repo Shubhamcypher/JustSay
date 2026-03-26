@@ -26,7 +26,7 @@ export default function HomeHero() {
     useEffect(() => {
         //current keeps the different dynamic placeholders
         const current = dynamicParts[phraseIndex];
-        const speed = isDeleting ? 30 : 60;
+        const speed = isDeleting ? 20 : 30;
 
         const timeout = setTimeout(() => {
             if (!isDeleting) {
@@ -75,7 +75,7 @@ export default function HomeHero() {
         <div className="relative h-[80vh] flex items-center justify-center r px-4">
 
 
-            <div className="relative w-[50vw] text-center">
+            <div className="relative w-[50vw] max-w-4xl text-center">
 
                 {/* Heading */}
                 <h1 className="text-6xl leading-[1.4] font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -99,7 +99,7 @@ export default function HomeHero() {
                             rows={1}
                             value={prompt}
                             onChange={handleInput}
-                            placeholder={staticText + displayDynamic + "|"} className="w-full resize-none bg-transparent outline-none text-white placeholder:text-white/40 px-2 py-2 max-h-40 overflow-y-auto"
+                            placeholder={staticText + displayDynamic + "|"} className="w-full resize-none bg-transparent outline-none text-xl text-white placeholder:text-white/40 px-2 py-2 max-h-40 overflow-y-auto"
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();
