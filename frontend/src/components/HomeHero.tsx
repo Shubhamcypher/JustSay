@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Mic, Image, Paperclip, Send } from "lucide-react";
+import { Mic, Send, } from "lucide-react";
+import AddMenu from "./customComponents/AddMenu";
 
 export default function HomeHero() {
     const [prompt, setPrompt] = useState("");
@@ -111,17 +112,7 @@ export default function HomeHero() {
                         <div className="flex items-center justify-between mt-2">
 
                             <div className="flex gap-2 text-white/60">
-
-                                <button className="p-2 hover:bg-white/10 rounded-lg transition">
-                                    <Paperclip size={18} />
-                                </button>
-
-                                <button className="p-2 hover:bg-white/10 rounded-lg transition">
-                                    <Image size={18} />
-                                </button>
-
-
-
+                                <AddMenu />
                             </div>
 
                             <div className="flex gap-2">
