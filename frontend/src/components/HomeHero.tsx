@@ -10,10 +10,10 @@ export default function HomeHero() {
 
     //dynamic placeholders
     const dynamicParts = [
-        "Create a SaaS landing page...",
-        "Build a portfolio for a developer...",
-        "Make an AI startup homepage...",
-        "Design a modern dashboard UI...",
+        "create a SaaS landing page...",
+        "build a portfolio for a developer...",
+        "make an AI startup homepage...",
+        "design a modern dashboard UI...",
     ];
 
     //Typing effect
@@ -91,7 +91,7 @@ export default function HomeHero() {
                     {/* Glowing border */}
                     <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 blur opacity-30 group-hover:opacity-60 transition" />
 
-                    <div className="relative bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-xl">
+                    <div className="relative bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-xl h-36 flex flex-col justify-between">
 
                         <textarea
                             ref={textareaRef}
@@ -120,19 +120,23 @@ export default function HomeHero() {
                                     <Image size={18} />
                                 </button>
 
-                                <button className="p-2 hover:bg-white/10 rounded-lg transition">
-                                    <Mic size={18} />
-                                </button>
+
 
                             </div>
 
-                            <button
-                                onClick={handleSubmit}
-                                className="bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-2 rounded-xl flex items-center gap-2 hover:opacity-90 transition"
-                            >
-                                <Send size={16} />
-                                Generate
-                            </button>
+                            <div className="flex gap-2">
+                                <button className="p-2 hover:bg-white/10 rounded-lg transition">
+                                    <Mic size={20} />
+                                </button>
+                                <button
+                                    onClick={handleSubmit}
+                                    className="bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-2 rounded-2xl flex items-center gap-2 hover:opacity-90 transition"
+                                >
+                                    <Send size={20} />
+                                    {/* Generate */}
+                                </button>
+
+                            </div>
 
                         </div>
                     </div>
