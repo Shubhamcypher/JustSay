@@ -17,7 +17,7 @@ export default function Home() {
       </video>
 
       {/* 🌑 Overlay (important for readability) */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm -z-10" />
+      <div className="absolute inset-0 bg-black/60  -z-10" />
 
       {/* 🔥 Main Layout */}
       <div className="flex h-full">
