@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Dashboard from "../pages/Dashboard";
+import Home from "../pages/Home";
 import Project from "../pages/Project";
 import ProjectPreview from "../pages/ProjectPreview";
 import Login from "../pages/Login";
@@ -33,7 +33,7 @@ export default function AppRoutes() {
           path="/"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <Home />
             </PrivateRoute>
           }
         />
