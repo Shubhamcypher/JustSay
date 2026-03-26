@@ -15,7 +15,7 @@ export default function Sidebar() {
 
     return (
         <div
-            className={`h-full border-r border-white/10 bg-gray-800 backdrop-blur-xl transition-all duration-300 flex flex-col ${collapsed ? "w-20" : "w-64 md:w-72 lg:w-80 xl:w-96"
+            className={`h-full border-r border-white/10 bg-gray-950 backdrop-blur-xl transition-all duration-300 flex flex-col ${collapsed ? "w-20" : "w-64 md:w-72 lg:w-80 xl:w-96"
                 }`}
         >
             {/* 🔹 Top */}
