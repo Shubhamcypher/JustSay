@@ -43,17 +43,18 @@ export default function Login() {
         variant: "success"
       });
 
-      navigate("/");
       setEmail("");
+      setPassword("");
+      navigate("/");
     } catch (err: any) {
       toast({
         title: "Login Failed",
         description: err.response?.data?.message || "Invalid credentials",
         variant: "error",
       });
+      setPassword("");
     } finally {
       setLoading(false);
-      setPassword("");
     }
   };
 
@@ -109,8 +110,8 @@ export default function Login() {
           </div>
 
 
-          <Button onClick={handleLogin} disabled={loading} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
-            Login
+          <Button onClick={handleLogin} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
+            {loading ? "Logging in..." : "Login"}
           </Button>
         </AuthCard>
       </div>
