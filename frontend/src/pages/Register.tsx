@@ -2,15 +2,15 @@ import { useState } from 'react';
 import { register } from '../api/auth.api';
 import { setTokens } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {  CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import PasswordField from '@/components/customComponents/InputField/PasswordField';
 import { useToast } from '@/components/ui/use-toast';
 import Auth3DBackground from '@/components/customComponents/backgrounds/Auth3DBackground';
-// import AuthBackground from '@/components/customComponents/InputField/backgrounds/AuthBackground';
+import AuthCard from '@/components/customComponents/cards/AuthCard';
+
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -90,24 +90,7 @@ export default function Register() {
   return (
     <Auth3DBackground>
       <div className="animate-[fadeZoom_0.6s_ease-out] transition-transform duration-300 hover:-translate-y-1 h-full p-4 items-center flex">
-        <Card
-          className="w-[420px] relative rounded-2xl overflow-hidden h-full max-h-[1229px]
-          backdrop-blur-3xl flex flex-col justify-between
-          bg-gradient-to-br from-white/1 via-white/2 to-white/3 
-          border border-white/10 
-          shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
-
-          {/* 🔥 Step 1 → dark accent */}
-          <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-black/30 pointer-events-none" />
-
-          {/* 🔥 Step 2 → top light reflection */}
-          <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-
-          {/* 🔥 Step 3 → glow + border */}
-          <div className="absolute inset-0 rounded-2xl pointer-events-none">
-            <div className="absolute inset-0 rounded-2xl border border-white/10" />
-            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-2xl opacity-30 animate-[pulse_8s_ease-in-out_infinite]" />
-          </div>
+        <AuthCard>
           <CardHeader className="relative z-10 flex flex-col items-center gap-2 pb-2">
             <CardTitle className="text-4xl font-bold tracking-tight text-center bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               Create Account
@@ -211,7 +194,7 @@ export default function Register() {
               </span>
             </p>
           </div>
-        </Card>
+          </AuthCard>
       </div>
     </Auth3DBackground>
   );

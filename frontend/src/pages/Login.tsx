@@ -5,11 +5,12 @@ import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import PasswordField from "@/components/customComponents/InputField/PasswordField";
 import { useToast } from "@/components/ui/use-toast";
 import Auth3DBackground from "@/components/customComponents/backgrounds/Auth3DBackground";
+import AuthCard from "@/components/customComponents/cards/AuthCard";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -60,7 +61,8 @@ export default function Login() {
   return (
     <Auth3DBackground>
       <div className="flex items-center justify-center h-full p-4">
-        <Card className="w-[420px] rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-xl">
+        <AuthCard>
+
 
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -138,7 +140,7 @@ export default function Login() {
             </p>
 
           </CardContent>
-        </Card>
+        </AuthCard>
       </div>
     </Auth3DBackground>
   );

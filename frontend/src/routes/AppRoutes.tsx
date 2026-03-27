@@ -8,7 +8,7 @@ import OAuthSuccess from "@/pages/OAuthSuccess";
 
 function PrivateRoute({ children }: any) {
   const token = localStorage.getItem("accessToken");
-  
+
 
   if (!token) {
     return <Navigate to="/" replace />;
