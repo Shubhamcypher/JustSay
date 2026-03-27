@@ -61,85 +61,53 @@ export default function Login() {
   return (
     <Auth3DBackground>
       <div className="flex items-center justify-center h-full p-4">
-        <AuthCard>
+      <AuthCard
+          title="Login to Justsay"
+          subtitle="Enter the world of possibilities"
+          showOAuth
+          providers={[
+            { name: "Google", icon: "https://www.svgrepo.com/show/475656/google-color.svg", onClick: () => handleOAuth("google") },
+            { name: "GitHub", icon: "https://www.svgrepo.com/show/512317/github-142.svg", onClick: () => handleOAuth("github") },
+            { name: "Microsoft", icon: "https://www.svgrepo.com/show/448239/microsoft.svg", onClick: () => handleOAuth("microsoft") },
+            { name: "Phone", icon: "https://www.svgrepo.com/svg/show/474939/phone-android.svg", onClick: () => handleOAuth("phone") },
+          ]}
+          footer={
+            <>
+              Don't have an account?{" "}
+              <span onClick={() => navigate("/register")} className="text-blue-400 cursor-pointer">
+                Register
+              </span>
+            </>
+          }
+        >
+          <div className='flex flex-col gap-4'>
 
+            <div className='flex flex-col gap-2'>
+              <div className="flex flex-col gap-2 group">
+                <Label className="text-white/60 group-focus-within:text-blue-600 transition-colors duration-300 backdrop-blur-sm bg-white/5 px-2 py-1 rounded-md w-fit border border-white/10">
+                  Email
+                </Label>
 
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Welcome Back
-            </CardTitle>
-            <p className="text-sm text-white/50">
-              Login to continue to Justsay
-            </p>
-          </CardHeader>
-
-          <CardContent className="flex flex-col gap-6">
-
-            {/* Email + Password */}
-            <div className="flex flex-col gap-4">
-
-              <div className="flex flex-col gap-2">
-                <Label className="text-white/60">Email</Label>
                 <Input
                   placeholder="you@example.com"
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-white/5 border-white/10 focus:border-blue-400"
                 />
               </div>
+            </div>
+            <div className="flex flex-col gap-2 group">
+              <Label className="text-white/60 group-focus-within:text-blue-600 transition-colors duration-300 backdrop-blur-sm bg-white/5 px-2 py-1 rounded-md w-fit border border-white/10">
+                Password
+              </Label>
 
               <PasswordField onChange={(value: string) => setPassword(value)} />
-
             </div>
+          </div>
 
-            {/* Login Button */}
-            <Button
-              onClick={handleLogin}
-              disabled={loading}
-              className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all"
-            >
-              {loading ? "Logging in..." : "Login"}
-            </Button>
 
-            {/* Divider */}
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-xs text-white/50">or continue with</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
-
-            {/* OAuth Buttons */}
-            <div className="flex flex-col gap-3">
-
-              <button
-                onClick={() => handleOAuth("google")}
-                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 text-sm text-white transition"
-              >
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" />
-                Continue with Google
-              </button>
-
-              <button
-                onClick={() => handleOAuth("github")}
-                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 text-sm text-white transition"
-              >
-                <img src="https://www.svgrepo.com/show/512317/github-142.svg" className="w-4 h-4 invert" />
-                Continue with GitHub
-              </button>
-
-            </div>
-
-            {/* Redirect */}
-            <p className="text-sm text-center text-white/60">
-              Don’t have an account?{" "}
-              <span
-                className="text-blue-400 cursor-pointer font-semibold"
-                onClick={() => navigate("/register")}
-              >
-                Register
-              </span>
-            </p>
-
-          </CardContent>
+          <Button onClick={handleLogin} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
+            Login
+          </Button>
         </AuthCard>
       </div>
     </Auth3DBackground>

@@ -4,7 +4,6 @@ import { setTokens } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {  CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import PasswordField from '@/components/customComponents/InputField/PasswordField';
 import { useToast } from '@/components/ui/use-toast';
@@ -90,111 +89,62 @@ export default function Register() {
   return (
     <Auth3DBackground>
       <div className="animate-[fadeZoom_0.6s_ease-out] transition-transform duration-300 hover:-translate-y-1 h-full p-4 items-center flex">
-        <AuthCard>
-          <CardHeader className="relative z-10 flex flex-col items-center gap-2 pb-2">
-            <CardTitle className="text-4xl font-bold tracking-tight text-center bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Create Account
-            </CardTitle>
-
-            <p className="text-sm text-white/50 text-center">
-              Join and start your journey 🚀
-            </p>
-          </CardHeader>
-
-          <CardContent className='flex flex-col gap-4'>
-            <div className='flex flex-col gap-4'>
-
-              <div className='flex flex-col gap-2'>
-                <div className="flex flex-col gap-2 group">
-                  <Label className="text-white/60 group-focus-within:text-blue-600 transition-colors duration-300 backdrop-blur-sm bg-white/5 px-2 py-1 rounded-md w-fit border border-white/10">
-                    Email
-                  </Label>
-
-                  <Input
-                    placeholder="you@example.com"
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="bg-white/5 border-white/10 focus:border-blue-400"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 group">
-                <Label className="text-white/60 group-focus-within:text-blue-600 transition-colors duration-300 backdrop-blur-sm bg-white/5 px-2 py-1 rounded-md w-fit border border-white/10">
-                  Password
-                </Label>
-
-                <PasswordField onChange={(value: string) => setPassword(value)} />
-                <p
-                  className={`text-xs ${strength.text} transition-all duration-300 ${password.length === 0
-                    ? "opacity-0  overflow-hidden"
-                    : "opacity-100"
-                    }`}
-                >
-                  Strength: {strength.label}
-                </p>
-              </div>
-            </div>
-
-
-            <Button onClick={handleRegister} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
-              Register
-            </Button>
-
-
-          </CardContent>
-          <div className='p-4 flex flex-col gap-4'>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-xs text-white/50">or continue with</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
-            <div className="grid grid-cols-1 gap-6">
-
-              {/* Google */}
-              <button
-                onClick={() => handleOAuth("google")}
-                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 text-sm text-white transition"
-              >
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" />
-                Sign in with Google
-              </button>
-
-              {/* GitHub */}
-              <button
-                onClick={() => handleOAuth("github")}
-                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 text-sm text-white transition"
-              >
-                <img src="https://www.svgrepo.com/show/512317/github-142.svg" className="w-4 h-4 invert" />
-                Sign in with GitHub
-              </button>
-
-              {/* Microsoft */}
-              <button
-                onClick={() => handleOAuth("microsoft")}
-                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 text-sm text-white transition"
-              >
-                <img src="https://www.svgrepo.com/show/448239/microsoft.svg" className="w-4 h-4" />
-                Sign in with Microsoft
-              </button>
-
-              {/* Phone */}
-              <button
-                onClick={() => handlePhoneLogin()}
-                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg py-2 text-sm text-white transition"
-              >
-                📱 Sign in using Number
-              </button>
-
-            </div>
-
-
-            <p className='text-sm text-center text-gray-100'>
-              Already have an account?{' '}
-              <span className='text-blue-500 font-bold cursor-pointer' onClick={() => navigate('/login')}>
+        <AuthCard
+          title="Create Account"
+          subtitle="Join and start your journey"
+          showOAuth
+          providers={[
+            { name: "Google", icon: "https://www.svgrepo.com/show/475656/google-color.svg", onClick: () => handleOAuth("google") },
+            { name: "GitHub", icon: "https://www.svgrepo.com/show/512317/github-142.svg", onClick: () => handleOAuth("github") },
+            { name: "Microsoft", icon: "https://www.svgrepo.com/show/448239/microsoft.svg", onClick: () => handleOAuth("microsoft") },
+            { name: "Phone", icon: "https://www.svgrepo.com/svg/show/474939/phone-android.svg", onClick: () => handleOAuth("phone") },
+          ]}
+          footer={
+            <>
+              Already have an account?{" "}
+              <span onClick={() => navigate("/login")} className="text-blue-400 cursor-pointer">
                 Login
               </span>
-            </p>
+            </>
+          }
+        >
+          <div className='flex flex-col gap-4'>
+
+            <div className='flex flex-col gap-2'>
+              <div className="flex flex-col gap-2 group">
+                <Label className="text-white/60 group-focus-within:text-blue-600 transition-colors duration-300 backdrop-blur-sm bg-white/5 px-2 py-1 rounded-md w-fit border border-white/10">
+                  Email
+                </Label>
+
+                <Input
+                  placeholder="you@example.com"
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-white/5 border-white/10 focus:border-blue-400"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 group">
+              <Label className="text-white/60 group-focus-within:text-blue-600 transition-colors duration-300 backdrop-blur-sm bg-white/5 px-2 py-1 rounded-md w-fit border border-white/10">
+                Password
+              </Label>
+
+              <PasswordField onChange={(value: string) => setPassword(value)} />
+              <p
+                className={`text-xs ${strength.text} transition-all duration-300 ${password.length === 0
+                  ? "opacity-0  overflow-hidden"
+                  : "opacity-100"
+                  }`}
+              >
+                Strength: {strength.label}
+              </p>
+            </div>
           </div>
-          </AuthCard>
+
+
+          <Button onClick={handleRegister} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
+            Register
+          </Button>
+        </AuthCard>
       </div>
     </Auth3DBackground>
   );
