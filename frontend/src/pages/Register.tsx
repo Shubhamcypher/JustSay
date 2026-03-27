@@ -14,6 +14,7 @@ import AuthCard from '@/components/customComponents/cards/AuthCard';
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -55,9 +56,18 @@ export default function Register() {
   const strength = getStrength(password);
 
   const handleRegister = async () => {
+    if (loading)
+      return;
+    if (!email || !password) {
+      toast({
+        title: "Missing Fields",
+        description: "Email and password are required",
+        variant: "error",
+      });
+      return;
+    }
     try {
-      console.log(password, "Set Password\n", email, "Set Email");
-
+      setLoading(true);
       const res = await register({ email, password });
 
       setTokens(res.data.accessToken, res.data.refreshToken);
@@ -76,6 +86,9 @@ export default function Register() {
         variant: "error",
       });
       setPassword("")
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -123,6 +136,7 @@ export default function Register() {
                 <Input
                   placeholder="you@example.com"
                   onChange={(e) => setEmail(e.target.value)}
+                  value={email}
                   className="bg-white/5 border-white/10 focus:border-blue-400"
                 />
               </div>
@@ -132,7 +146,7 @@ export default function Register() {
                 Password
               </Label>
 
-              <PasswordField onChange={(value: string) => setPassword(value)} />
+              <PasswordField value = {password} onChange={(value: string) => setPassword(value)} />
               <p
                 className={`text-xs ${strength.text} transition-all duration-300 ${password.length === 0
                   ? "opacity-0  overflow-hidden"
@@ -146,7 +160,7 @@ export default function Register() {
 
 
           <Button onClick={handleRegister} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
-            Register
+            {loading ? `Registering...` : `Register`}
           </Button>
         </AuthCard>
       </div>
