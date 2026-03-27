@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import PasswordField from "@/components/customComponents/InputField/PasswordField";
 import { useToast } from "@/components/ui/use-toast";
@@ -21,6 +20,8 @@ export default function Login() {
   const { toast } = useToast();
 
   const handleLogin = async () => {
+    if (loading)
+      return;
     if (!email || !password) {
       toast({
         title: "Missing Fields",
@@ -32,17 +33,18 @@ export default function Login() {
 
     try {
       setLoading(true);
-
       const res = await login({ email, password });
 
       setTokens(res.data.accessToken, res.data.refreshToken);
 
       toast({
-        title: "Welcome back 👋",
+        title: "Welcome back",
         description: "Logged in successfully",
+        variant: "success"
       });
 
       navigate("/");
+      setEmail("");
     } catch (err: any) {
       toast({
         title: "Login Failed",
@@ -51,6 +53,7 @@ export default function Login() {
       });
     } finally {
       setLoading(false);
+      setPassword("");
     }
   };
 
@@ -61,7 +64,7 @@ export default function Login() {
   return (
     <Auth3DBackground>
       <div className="flex items-center justify-center h-full p-4">
-      <AuthCard
+        <AuthCard
           title="Login to Justsay"
           subtitle="Enter the world of possibilities"
           showOAuth
@@ -92,6 +95,7 @@ export default function Login() {
                   placeholder="you@example.com"
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-white/5 border-white/10 focus:border-blue-400"
+                  value={email}
                 />
               </div>
             </div>
@@ -100,12 +104,12 @@ export default function Login() {
                 Password
               </Label>
 
-              <PasswordField onChange={(value: string) => setPassword(value)} />
+              <PasswordField value={password} onChange={(inputValue: string) => setPassword(inputValue)} />
             </div>
           </div>
 
 
-          <Button onClick={handleLogin} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
+          <Button onClick={handleLogin} disabled={loading} className="w-full bg-white/90 text-black hover:bg-blue-500 hover:text-white transition-all duration-300">
             Login
           </Button>
         </AuthCard>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-export default function PasswordField({ onChange }: any) {
+export default function PasswordField({value, onChange }: any) {
   const [show, setShow] = useState(false);
 
   return (
@@ -10,6 +10,7 @@ export default function PasswordField({ onChange }: any) {
       <Input
         type={show ? "text" : "password"}
         placeholder="••••••••"
+        value={value}
         onChange={(e) => onChange(e.target.value)}
         className="pr-10"
       />

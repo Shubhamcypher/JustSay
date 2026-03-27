@@ -62,9 +62,12 @@ export default function Register() {
 
       setTokens(res.data.accessToken, res.data.refreshToken);
       toast({
-        title: "Success 🎉",
+        title: "Account created",
         description: "Account created successfully",
+        variant: "success"
       });
+      setEmail("")
+      setPassword("")
       navigate('/login');
     } catch (err: any) {
       toast({
@@ -72,6 +75,7 @@ export default function Register() {
         description: err.response?.data?.message || "Something went wrong",
         variant: "error",
       });
+      setPassword("")
     }
   };
 
@@ -97,7 +101,7 @@ export default function Register() {
             { name: "Google", icon: "https://www.svgrepo.com/show/475656/google-color.svg", onClick: () => handleOAuth("google") },
             { name: "GitHub", icon: "https://www.svgrepo.com/show/512317/github-142.svg", onClick: () => handleOAuth("github") },
             { name: "Microsoft", icon: "https://www.svgrepo.com/show/448239/microsoft.svg", onClick: () => handleOAuth("microsoft") },
-            { name: "Phone", icon: "https://www.svgrepo.com/svg/show/474939/phone-android.svg", onClick: () => handleOAuth("phone") },
+            { name: "Phone", icon: "https://www.svgrepo.com/svg/show/474939/phone-android.svg", onClick: () => handlePhoneLogin() },
           ]}
           footer={
             <>
