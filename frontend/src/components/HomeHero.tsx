@@ -6,8 +6,6 @@ import PromptInput from "./customComponents/InputField/PromptField";
 export default function HomeHero() {
     const [prompt, setPrompt] = useState("");
 
-    //Static text for dynamic placeholder
-    const staticText = "Just say and we will ";
 
     //dynamic placeholders
     const dynamicParts = [
@@ -42,7 +40,7 @@ export default function HomeHero() {
                     value={prompt}
                     onChange={setPrompt}
                     onSubmit={handleSubmit}
-                    placeholder={staticText + displayDynamic + "|"}
+                    placeholder={displayDynamic}
                     leftSlot={<AddMenu />}
                 />
             </div>
