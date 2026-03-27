@@ -114,7 +114,7 @@ export default function Register() {
             { name: "Google", icon: "https://www.svgrepo.com/show/475656/google-color.svg", onClick: () => handleOAuth("google") },
             { name: "GitHub", icon: "https://www.svgrepo.com/show/512317/github-142.svg", onClick: () => handleOAuth("github") },
             { name: "Microsoft", icon: "https://www.svgrepo.com/show/448239/microsoft.svg", onClick: () => handleOAuth("microsoft") },
-            { name: "Phone", icon: "https://www.svgrepo.com/svg/show/474939/phone-android.svg", onClick: () => handlePhoneLogin() },
+            { name: "Phone", icon: "https://www.svgrepo.com/show/452085/phone.svg", onClick: () => handlePhoneLogin() },
           ]}
           footer={
             <>
