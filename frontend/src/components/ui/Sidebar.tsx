@@ -5,6 +5,12 @@ import {
     Share2,
     ChevronLeft,
     ChevronRight,
+    Folder,
+    FolderOpen,
+    Star,
+    Users,
+    FileText,
+    Clock
 } from "lucide-react";
 import Avatar from "./Avatar";
 import { cn } from "@/lib/utils";
@@ -58,8 +64,9 @@ export default function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
     const [workspaceOpen, setWorkspaceOpen] = useState(false);
     const [active, setActive] = useState("Home");
-    // const [projectsOpen, setProjectsOpen] = useState(false);
-    // const [projectTab, setProjectTab] = useState("created");
+    const [hoveredProject, setHoveredProject] = useState<string | null>(null);
+    const [previewPos, setPreviewPos] = useState({ top: 0, left: 0 });
+
 
     const [projectsOpen, setProjectsOpen] = useState(false);
 
@@ -71,10 +78,10 @@ export default function Sidebar() {
         starred: false,
     });
 
-    const sections: { key: SectionKey; label: string }[] = [
-        { key: "created", label: "Created by me" },
-        { key: "shared", label: "Shared with me" },
-        { key: "starred", label: "Starred" },
+    const sections: { key: SectionKey; label: string; icon: React.ElementType }[] = [
+        { key: "created", label: "Created by me", icon: FolderOpen },
+        { key: "shared", label: "Shared with me", icon: Users },
+        { key: "starred", label: "Starred", icon: Star },
     ];
 
     return (
@@ -84,7 +91,10 @@ export default function Sidebar() {
                 "bg-black/40 backdrop-blur-xl border-r border-white/10",
                 collapsed ? "w-20" : "w-64"
             )}
+
         >
+
+
             {/* 🔹 Top */}
             <div className="p-4 flex flex-col gap-6">
 
@@ -143,13 +153,16 @@ export default function Sidebar() {
                 </nav>
 
                 {/* 🔹 Projects Section */}
-                {/* 🔹 Projects Section */}
-                <div className="mt-4 flex flex-col">
+                <div className="flex flex-col">
+
                     <button
                         onClick={() => setProjectsOpen(!projectsOpen)}
                         className="flex items-center justify-between px-3 py-2 text-sm text-white/70 hover:bg-white/10 rounded-lg transition"
                     >
-                        <span>Projects</span>
+                        <div className="flex items-center gap-2">
+                            <Folder size={16} />
+                            <span>Projects</span>
+                        </div>
                         <ChevronRight
                             size={16}
                             className={cn(
@@ -160,59 +173,100 @@ export default function Sidebar() {
                     </button>
 
                     {projectsOpen && !collapsed && (
-                        <div className="mt-2 flex flex-col">
-
+                        <div className="mt-2 ml-2 flex flex-col">
                             {/* 🔥 Scrollable Area ONLY */}
-                            <div className="max-h-[30vh] overflow-y-auto pr-1 space-y-2">
+                            <div className="max-h-40 overflow-y-auto pr-1 space-y-2">
 
                                 {/* Section Component */}
-                                {sections.map((section) => (
-                                    <div key={section.key}>
+                                {sections.map((section) => {
+                                    const Icon = section.icon;
+                                    return (
+                                        <div key={section.key}>
 
-                                        {/* Section Header */}
-                                        <button
-                                            onClick={() =>
-                                                setOpenSections((prev) => ({
-                                                    ...prev,
-                                                    [section.key]: !prev[section.key],
-                                                }))
-                                            }
-                                            className="w-full flex items-center justify-between px-2 py-1 text-xs text-white/50 hover:text-white transition"
-                                        >
-                                            <span>{section.label}</span>
+                                            {/* Section Header */}
+                                            <button
+                                                onClick={() =>
 
-                                            <ChevronRight
-                                                size={14}
-                                                className={cn(
-                                                    "transition-transform",
-                                                    openSections[section.key as keyof typeof openSections] && "rotate-90"
-                                                )}
-                                            />
-                                        </button>
+                                                    setOpenSections((prev) => ({
+                                                        ...prev,
+                                                        [section.key]: !prev[section.key],
+                                                    }))
+                                                }
+                                                className="w-full flex items-center justify-between px-2 py-1 text-xs text-white/50 hover:text-white transition"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <Icon size={14} className="opacity-70" />
+                                                    <span>{section.label}</span>
+                                                </div>
 
-                                        {/* Projects List */}
-                                        {openSections[section.key as keyof typeof openSections] && (
-                                            <div className="ml-3 mt-1 flex flex-col gap-1">
-                                                {["Project A", "Landing Page", "Dashboard UI"].map((p) => (
-                                                    <div
-                                                        key={p}
-                                                        className="text-sm text-white/70 px-2 py-1 rounded-md hover:bg-white/10 cursor-pointer transition"
-                                                    >
-                                                        {p}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                                <ChevronRight
+                                                    size={14}
+                                                    className={cn(
+                                                        "transition-transform",
+                                                        openSections[section.key as keyof typeof openSections] && "rotate-90"
+                                                    )}
+                                                />
+                                            </button>
 
-                                    </div>
-                                ))}
+
+
+                                            {/* Projects List */}
+                                            {openSections[section.key as keyof typeof openSections] && (
+                                                <div className="ml-3 mt-1 flex flex-col gap-1">
+                                                    {["Project A", "Landing Page", "Dashboard UI"].map((p) => (
+                                                        <div
+                                                            key={p}
+                                                            onMouseEnter={(e) => {
+                                                                const rect = e.currentTarget.getBoundingClientRect();
+
+                                                                setHoveredProject(p);
+
+                                                                setPreviewPos({
+                                                                    top: rect.top,
+                                                                    left: rect.right + 12, // space from sidebar
+                                                                });
+                                                            }}
+                                                            onMouseLeave={() => setHoveredProject(null)}
+                                                            className="flex items-center gap-2 text-sm text-white/70 px-2 py-1 rounded-md hover:bg-white/10 cursor-pointer transition"
+                                                        >
+                                                            <FileText size={14} />
+                                                            <span>{p}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                        </div>
+                                    )
+                                })}
 
                             </div>
                         </div>
                     )}
                 </div>
 
+                {hoveredProject && (
+                    <div
+                        style={{
+                            position: "fixed",
+                            top: previewPos.top,
+                            left: previewPos.left,
+                        }}
+                        className="z-50 pointer-events-none"
+                    >
+                        <div className="w-[420px] h-[260px] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+
+                            {/* Example preview */}
+                            <div className="w-full h-full flex items-center justify-center text-white/50">
+                                {hoveredProject} Preview
+                            </div>
+
+                        </div>
+                    </div>
+                )}
+
                 {/* Recent */}
+
                 {!collapsed && (
                     <div className="mt-4">
                         <p className="text-xs text-white/40 mb-2 px-2">RECENT</p>
@@ -220,9 +274,10 @@ export default function Sidebar() {
                             {["Project A", "Landing Page"].map((item) => (
                                 <div
                                     key={item}
-                                    className="px-3 py-1 rounded-md text-sm text-white/70 hover:bg-white/10 cursor-pointer transition"
+                                    className="flex items-center gap-2 px-3 py-1 rounded-md text-sm text-white/70 hover:bg-white/10 cursor-pointer transition"
                                 >
-                                    {item}
+                                    <Clock size={14} className="opacity-60" />
+                                    <span>{item}</span>
                                 </div>
                             ))}
                         </div>
