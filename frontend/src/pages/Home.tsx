@@ -1,7 +1,7 @@
 import HomeVideoBackground from "@/components/customComponents/backgrounds/HomeVideoBackground";
 import HomeContent from "@/components/customComponents/HomeContent";
 import HomeHero from "@/components/HomeHero";
-import Sidebar from "@/components/ui/Sidebar";
+import Sidebar from "@/components/customComponents/sidebar/Sidebar";
 
 export default function Home() {
   return (
