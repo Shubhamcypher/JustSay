@@ -223,7 +223,7 @@ export default function Sidebar() {
 
                                                                 setPreviewPos({
                                                                     top: rect.top,
-                                                                    left: rect.right + 12, // space from sidebar
+                                                                    left: rect.right + 12, 
                                                                 });
                                                             }}
                                                             onMouseLeave={() => setHoveredProject(null)}
@@ -252,7 +252,7 @@ export default function Sidebar() {
                             top: previewPos.top,
                             left: previewPos.left,
                         }}
-                        className="z-50 pointer-events-none"
+                        className="z-[999] pointer-events-none"
                     >
                         <div className="w-[420px] h-[260px] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden">
 
@@ -268,7 +268,7 @@ export default function Sidebar() {
                 {/* Recent */}
 
                 {!collapsed && (
-                    <div className="mt-4">
+                    <div>
                         <p className="text-xs text-white/40 mb-2 px-2">RECENT</p>
                         <div className="flex flex-col gap-1">
                             {["Project A", "Landing Page"].map((item) => (

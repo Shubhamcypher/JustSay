@@ -24,7 +24,7 @@ export default function HomeHero() {
 
     return (
         <div className="relative h-[80vh] flex items-center justify-center r px-4">
-            <div className="relative w-[50vw] max-w-4xl text-center">
+            <div className="relative w-[50vw] max-w-4xl text-center -z-10">
 
                 {/* Heading */}
                 <h1 className="text-6xl leading-[1.4] font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
