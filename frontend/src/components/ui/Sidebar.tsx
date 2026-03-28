@@ -9,12 +9,14 @@ import {
     FolderOpen,
     Star,
     Users,
-    FileText,
     Clock
 } from "lucide-react";
 import Avatar from "./Avatar";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { useHoverPreview } from "@/hooks/useHoverPreview";
+import ProjectItem from "../ProjectItem";
+import HoverPreview from "../customComponents/common/HoverPreview";
 
 
 
@@ -64,8 +66,14 @@ export default function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
     const [workspaceOpen, setWorkspaceOpen] = useState(false);
     const [active, setActive] = useState("Home");
-    const [hoveredProject, setHoveredProject] = useState<string | null>(null);
-    const [previewPos, setPreviewPos] = useState({ top: 0, left: 0 });
+
+
+    const {
+        hovered,
+        position,
+        handleEnter,
+        handleLeave,
+    } = useHoverPreview();
 
 
     const [projectsOpen, setProjectsOpen] = useState(false);
@@ -214,24 +222,12 @@ export default function Sidebar() {
                                             {openSections[section.key as keyof typeof openSections] && (
                                                 <div className="ml-3 mt-1 flex flex-col gap-1">
                                                     {["Project A", "Landing Page", "Dashboard UI"].map((p) => (
-                                                        <div
+                                                        <ProjectItem
                                                             key={p}
-                                                            onMouseEnter={(e) => {
-                                                                const rect = e.currentTarget.getBoundingClientRect();
-
-                                                                setHoveredProject(p);
-
-                                                                setPreviewPos({
-                                                                    top: rect.top,
-                                                                    left: rect.right + 12, 
-                                                                });
-                                                            }}
-                                                            onMouseLeave={() => setHoveredProject(null)}
-                                                            className="flex items-center gap-2 text-sm text-white/70 px-2 py-1 rounded-md hover:bg-white/10 cursor-pointer transition"
-                                                        >
-                                                            <FileText size={14} />
-                                                            <span>{p}</span>
-                                                        </div>
+                                                            name={p}
+                                                            onHover={handleEnter}
+                                                            onLeave={handleLeave}
+                                                        />
                                                     ))}
                                                 </div>
                                             )}
@@ -245,25 +241,16 @@ export default function Sidebar() {
                     )}
                 </div>
 
-                {hoveredProject && (
-                    <div
-                        style={{
-                            position: "fixed",
-                            top: previewPos.top,
-                            left: previewPos.left,
-                        }}
-                        className="z-[999] pointer-events-none"
-                    >
-                        <div className="w-[420px] h-[260px] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden">
-
-                            {/* Example preview */}
-                            <div className="w-full h-full flex items-center justify-center text-white/50">
-                                {hoveredProject} Preview
-                            </div>
-
+                <HoverPreview
+                    visible={!!hovered}
+                    top={position.top}
+                    left={position.left}
+                    content={
+                        <div className="w-full h-full flex items-center justify-center text-white/50">
+                            {hovered} Preview
                         </div>
-                    </div>
-                )}
+                    }
+                />
 
                 {/* Recent */}
 
