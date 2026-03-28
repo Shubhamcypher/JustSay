@@ -6,10 +6,10 @@ import Sidebar from "@/components/ui/Sidebar";
 export default function Home() {
   return (
     <HomeVideoBackground src="/videos/bg2.mp4">
-      {/* 🌑 Overlay (important for readability) */}
+      {/* Overlay (important for readability) */}
       <div className="absolute inset-0 bg-black/60  -z-10" />
 
-      {/* 🔥 Main Layout */}
+      {/* Main Layout */}
       <div className="flex h-full">
 
         <Sidebar />
