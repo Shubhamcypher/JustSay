@@ -32,12 +32,13 @@ export default function PromptInput({
             {/* Container */}
             <div className="relative bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-xl min-h-36 flex flex-col justify-between">
 
+                {/*faking placeholder */}
                 {!value && (
                     <div className="absolute left-5 top-4 text-xl pointer-events-none">
-                        <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        <span className="text-white/50">
                             Just say and{" "}
                         </span>
-                        <span className="text-white/20">
+                        <span className=" bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                             {placeholder}
                         </span>
                         <span className="animate-pulse">|</span>
@@ -50,7 +51,6 @@ export default function PromptInput({
                     rows={1}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    // placeholder={placeholder}
                     className="w-full resize-none bg-transparent outline-none text-xl text-white placeholder:text-white/40 px-2 py-2 max-h-60 overflow-y-auto"
                     onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
