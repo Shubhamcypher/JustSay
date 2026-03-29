@@ -12,10 +12,10 @@ import passport from "./config/passport"
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-// const passport = require("./config/passport");
+
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: true,
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
 }));

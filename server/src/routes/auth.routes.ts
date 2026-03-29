@@ -4,6 +4,7 @@ import passport from "../config/passport"
 
 
 const router = Router();
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 router.post("/register", register);
 router.post("/login", login);
@@ -28,7 +29,7 @@ router.get(
             refreshToken: string;
         };
         res.redirect(
-            `http://localhost:5173/oauth-success?accessToken=${encodeURIComponent(userData.accessToken)}&refreshToken=${encodeURIComponent(userData.refreshToken)}`
+            `${CLIENT_URL}/oauth-success?accessToken=${encodeURIComponent(userData.accessToken)}&refreshToken=${encodeURIComponent(userData.refreshToken)}`
         );
     }
 );
