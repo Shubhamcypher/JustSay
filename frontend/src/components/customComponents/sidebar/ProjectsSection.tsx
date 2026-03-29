@@ -51,7 +51,7 @@ export default function ProjectsSection({
             : "max-h-0 opacity-0"
         )}
       >
-        <div className="max-h-40 overflow-y-auto space-y-2">
+        <div className="max-h-40 overflow-y-auto space-y-2 custom-scrollbar pr-1">
 
           {sections.map((section) => {
             const Icon = section.icon;
@@ -81,8 +81,15 @@ export default function ProjectsSection({
                   />
                 </button>
 
-                {openSections[section.key] && (
-                  <div className="ml-3 mt-1 flex flex-col gap-1">
+                <div
+                  className={cn(
+                    "overflow-hidden transition-all duration-300 ease-in-out",
+                    openSections[section.key]
+                      ? "max-h-40 opacity-100 mt-1 ml-3"
+                      : "max-h-0 opacity-0"
+                  )}
+                >
+                  <div className="flex flex-col gap-1">
                     {["Project A", "Landing Page"].map((p) => (
                       <ProjectItem
                         key={p}
@@ -92,7 +99,7 @@ export default function ProjectsSection({
                       />
                     ))}
                   </div>
-                )}
+                </div>
               </div>
             );
           })}
