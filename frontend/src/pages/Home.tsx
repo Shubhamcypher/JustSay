@@ -1,5 +1,5 @@
 import HomeVideoBackground from "@/components/customComponents/backgrounds/HomeVideoBackground";
-import HomeContent from "@/components/customComponents/HomeContent";
+import HomeContent from "@/components/customComponents/home/HomeContent";
 import HomeHero from "@/components/HomeHero";
 import Sidebar from "@/components/customComponents/sidebar/Sidebar";
 

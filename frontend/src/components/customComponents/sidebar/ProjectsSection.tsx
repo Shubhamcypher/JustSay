@@ -33,65 +33,72 @@ export default function ProjectsSection({
       >
         <div className="flex items-center gap-2">
           <Folder size={16} />
-          <span>Projects</span>
+          {!collapsed && <span>Projects</span>}
         </div>
 
         <ChevronRight
           size={16}
-          className={cn(projectsOpen && "rotate-90")}
+          className={cn(projectsOpen && "rotate-90 transition-all")}
         />
       </button>
 
       {/* Content */}
-      {projectsOpen && !collapsed && (
-        <div className="mt-2 ml-2">
-          <div className="max-h-40 overflow-y-auto space-y-2">
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-300 ease-in-out",
+          projectsOpen && !collapsed
+            ? "max-h-[300px] opacity-100 mt-2 ml-2"
+            : "max-h-0 opacity-0"
+        )}
+      >
+        <div className="max-h-40 overflow-y-auto space-y-2">
 
-            {sections.map((section) => {
-              const Icon = section.icon;
+          {sections.map((section) => {
+            const Icon = section.icon;
 
-              return (
-                <div key={section.key}>
-                  {/* Section header */}
-                  <button
-                    onClick={() =>
-                      setOpenSections((prev) => ({
-                        ...prev,
-                        [section.key]: !prev[section.key],
-                      }))
-                    }
-                    className="w-full flex items-center justify-between px-2 py-1 text-xs text-white/50 hover:text-white"
-                  >
-                    <div className="flex gap-2 items-center">
-                      <Icon size={14} />
-                      {section.label}
-                    </div>
-                    <ChevronRight
-                      size={14}
-                      className={cn(openSections[section.key] && "rotate-90")}
-                    />
-                  </button>
+            return (
+              <div key={section.key}>
+                <button
+                  onClick={() =>
+                    setOpenSections((prev) => ({
+                      ...prev,
+                      [section.key]: !prev[section.key],
+                    }))
+                  }
+                  className="w-full flex items-center justify-between px-2 py-1 text-xs text-white/50 hover:text-white"
+                >
+                  <div className="flex gap-2 items-center">
+                    <Icon size={14} />
+                    {section.label}
+                  </div>
 
-                  {/* Items */}
-                  {openSections[section.key] && (
-                    <div className="ml-3 mt-1 flex flex-col gap-1">
-                      {["Project A", "Landing Page"].map((p) => (
-                        <ProjectItem
-                          key={p}
-                          name={p}
-                          onHover={onHover}
-                          onLeave={onLeave}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                  <ChevronRight
+                    size={14}
+                    className={cn(
+                      "transition-transform duration-200",
+                      openSections[section.key] && "rotate-90"
+                    )}
+                  />
+                </button>
 
-          </div>
+                {openSections[section.key] && (
+                  <div className="ml-3 mt-1 flex flex-col gap-1">
+                    {["Project A", "Landing Page"].map((p) => (
+                      <ProjectItem
+                        key={p}
+                        name={p}
+                        onHover={onHover}
+                        onLeave={onLeave}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import AddMenu from "./customComponents/AddMenu";
+import AddMenu from "./AddMenu";
 import { useTypingEffect } from "@/hooks/useTypingEffect";
-import PromptInput from "./customComponents/InputField/PromptField";
+import PromptInput from "../InputField/PromptField";
 
 export default function HomeHero() {
     const [prompt, setPrompt] = useState("");
