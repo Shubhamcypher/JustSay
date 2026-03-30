@@ -54,7 +54,7 @@ export default function Login() {
       
       toast({
         title: "Login Failed",
-        description: err.response?.data?.message || `${err}`,
+        description: err.response?.data?.message || "Something went wrong",
         variant: "error",
       });
       setPassword("");
