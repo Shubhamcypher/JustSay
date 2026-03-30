@@ -32,7 +32,7 @@ export default function HomeHero() {
 
                 {/* Subtitle */}
                 <p className="text-white/60 text-sm sm:text-base md:text-xl mt-2 md:mt-3 px-2 md:px-0">
-                    Describe your idea and we'll generate a full website.
+                    Describe your idea and generate a full website.
                 </p>
 
                 {/* Prompt */}

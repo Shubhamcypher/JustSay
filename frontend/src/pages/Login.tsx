@@ -59,7 +59,7 @@ export default function Login() {
   };
 
   const handleOAuth = (provider: string) => {
-    window.location.href = `http://localhost:5000/api/auth/${provider}`;
+    window.location.href = `http://ix/api/auth/${provider}`;
   };
 
   return (

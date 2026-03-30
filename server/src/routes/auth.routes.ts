@@ -4,7 +4,8 @@ import passport from "../config/passport"
 
 
 const router = Router();
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+
+
 
 router.post("/register", register);
 router.post("/login", login);
@@ -12,24 +13,32 @@ router.post("/refresh", refresh);
 router.post("/logout", logout);
 
 // Step 1: Redirect to Google
-router.get(
-    "/google",
-    passport.authenticate("google", { scope: ["profile", "email"] })
-);
+router.get("/google", (req, res, next) => {
+    const clientUrl = req.query.clientUrl as string;
+
+    passport.authenticate("google", {
+        scope: ["profile", "email"],
+        state: clientUrl, // 🔥 pass frontend URL
+    })(req, res, next);
+});
 
 // Step 2: Callback
 router.get(
     "/google/callback",
-    passport.authenticate("google", {
-        session: false,
-    }),
+    passport.authenticate("google", { session: false }),
     (req, res) => {
         const userData = req.user as {
             accessToken: string;
             refreshToken: string;
         };
+
+        const clientUrl = req.query.state as string;
+        console.log(clientUrl);
+        
         res.redirect(
-            `${CLIENT_URL}/oauth-success?accessToken=${encodeURIComponent(userData.accessToken)}&refreshToken=${encodeURIComponent(userData.refreshToken)}`
+            `${clientUrl}/oauth-success?accessToken=${encodeURIComponent(
+                userData.accessToken
+            )}&refreshToken=${encodeURIComponent(userData.refreshToken)}`
         );
     }
 );

@@ -18,6 +18,12 @@ export default function Register() {
 
   const navigate = useNavigate();
 
+  const API_URL = `http://${window.location.hostname}:5000`;
+  const CLIENT_URL = window.location.origin
+
+  console.log("above",API_URL,CLIENT_URL);
+  
+
   const getStrength = (password: string) => {
     let score = 0;
 
@@ -93,7 +99,7 @@ export default function Register() {
   };
 
   const handleOAuth = (provider: string) => {
-    window.location.href = `http://localhost:5000/api/auth/${provider}`;
+    window.location.href = `${API_URL}/api/auth/${provider}?clientUrl=${CLIENT_URL}`;    
   };
 
   const handlePhoneLogin = () => {
