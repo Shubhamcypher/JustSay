@@ -1,6 +1,9 @@
-import { Home, Search, Folder, Share2, X, User, Settings } from "lucide-react";
+import { Home, Search, X, User, Settings } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import ProjectsSection from "../sidebar/ProjectsSection";
+import { useHoverPreview } from "@/hooks/useHoverPreview";
+import HoverPreview from "../common/HoverPreview";
 
 type Props = {
     onClose: () => void;
@@ -9,12 +12,14 @@ type Props = {
 const items = [
     { label: "Home", icon: Home },
     { label: "Search", icon: Search },
-    { label: "Projects", icon: Folder },
-    { label: "Shared", icon: Share2 },
 ];
+
+
 
 export default function MobileMenu({ onClose }: Props) {
     const [active, setActive] = useState("Home");
+    const { hovered, position, handleEnter, handleLeave } =
+        useHoverPreview();
 
     return (
         <div className="w-80 h-full bg-black/70 backdrop-blur-2xl border-r border-white/10 flex flex-col shadow-2xl">
@@ -68,6 +73,12 @@ export default function MobileMenu({ onClose }: Props) {
                     );
                 })}
 
+                <ProjectsSection
+                    collapsed={onClose}
+                    onHover={handleEnter}
+                    onLeave={handleLeave}
+                />
+
             </div>
 
             {/* 🔹 Secondary Actions */}
@@ -91,6 +102,13 @@ export default function MobileMenu({ onClose }: Props) {
                     Upgrade to Pro 🚀
                 </div>
             </div>
+
+            <HoverPreview
+                visible={!!hovered}
+                top={position.top}
+                left={position.left}
+                content={<div className="flex items-center justify-center h-full">{hovered}</div>}
+            />
         </div>
     );
 }

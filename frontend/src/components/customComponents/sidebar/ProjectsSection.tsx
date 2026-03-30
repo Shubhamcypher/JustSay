@@ -11,6 +11,8 @@ const sections = [
   { key: "starred", label: "Starred", icon: Star },
 ] as const;
 
+
+
 export default function ProjectsSection({
   collapsed,
   onHover,
@@ -23,6 +25,10 @@ export default function ProjectsSection({
     starred: false,
   });
 
+  const isMobile = window.innerWidth < 768;
+  const showProjects = (isMobile && projectsOpen) || (projectsOpen && !collapsed);
+
+
   return (
     <div className="flex flex-col">
 
@@ -33,7 +39,7 @@ export default function ProjectsSection({
       >
         <div className="flex items-center gap-2">
           <Folder size={16} />
-          {!collapsed && <span>Projects</span>}
+          {(isMobile || !collapsed) && <span>Projects</span>}
         </div>
 
         <ChevronRight
@@ -46,12 +52,12 @@ export default function ProjectsSection({
       <div
         className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
-          projectsOpen && !collapsed
+          showProjects
             ? "max-h-[300px] opacity-100 mt-2 ml-2"
             : "max-h-0 opacity-0"
         )}
       >
-        <div className="max-h-40 overflow-y-auto space-y-2 custom-scrollbar pr-1">
+        <div className="max-h-80 lg:max-h-40 overflow-y-auto space-y-2 custom-scrollbar pr-1">
 
           {sections.map((section) => {
             const Icon = section.icon;
@@ -90,7 +96,7 @@ export default function ProjectsSection({
                   )}
                 >
                   <div className="flex flex-col gap-1">
-                    {["Project A", "Landing Page"].map((p) => (
+                    {["Project A", "Landing Page","yoo"].map((p) => (
                       <ProjectItem
                         key={p}
                         name={p}
