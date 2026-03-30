@@ -34,7 +34,7 @@ export default function PromptInput({
 
                 {/*faking placeholder */}
                 {!value && (
-                    <div className="absolute left-5 top-4 text-xl pointer-events-none">
+                    <div className="absolute left-5 top-4 text-lg md:text-xl pointer-events-none text-left">
                         <span className="text-white/50">
                             Just say and{" "}
                         </span>
