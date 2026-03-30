@@ -44,7 +44,7 @@ export default function SidebarWorkspace({ collapsed }: { collapsed: boolean }) 
           className={cn(
             "absolute left-0 top-full mt-2 w-full z-20",
             "rounded-2xl border border-white/10",
-            "bg-gradient-to-br from-zinc-900/90 to-zinc-800/80",
+            "bg-gradient-to-br from-zinc-900/90 to-zinc-800/100  bg-gray-900",
             "backdrop-blur-xl shadow-2xl",
             "p-4 space-y-4",
             "animate-in fade-in slide-in-from-top-2 duration-300"
