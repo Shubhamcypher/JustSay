@@ -16,6 +16,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const API_URL = `http://${window.location.hostname}:5000`;
+  const CLIENT_URL = window.location.origin
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -47,9 +50,11 @@ export default function Login() {
       setPassword("");
       navigate("/");
     } catch (err: any) {
+      console.log("The error is", err);
+      
       toast({
         title: "Login Failed",
-        description: err.response?.data?.message || "Invalid credentials",
+        description: err.response?.data?.message || `${err}`,
         variant: "error",
       });
       setPassword("");
@@ -59,7 +64,7 @@ export default function Login() {
   };
 
   const handleOAuth = (provider: string) => {
-    window.location.href = `http://ix/api/auth/${provider}`;
+    window.location.href = `${API_URL}/api/auth/${provider}?clientUrl=${CLIENT_URL}`;    
   };
 
   return (

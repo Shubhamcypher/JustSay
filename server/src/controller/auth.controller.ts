@@ -90,6 +90,10 @@ export async function register(req: Request, res: Response) {
 export async function login(req: Request, res: Response) {
   const { email, password } = req.body;
 
+  console.log("EMAIL:", email);
+  console.log("PASSWORD RAW:", password);
+  console.log("PASSWORD LENGTH:", password.length);
+
   //if invalid input dont hit db
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password required" });
@@ -114,8 +118,6 @@ export async function login(req: Request, res: Response) {
 
 
     const user = userResult.rows[0];
-
-    console.log(user);
 
 
     const isValid = await comparePassword(password, user.password);
