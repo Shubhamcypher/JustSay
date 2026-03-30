@@ -25,8 +25,8 @@ export default function ProjectsSection({
     starred: false,
   });
 
-  const isMobile = window.innerWidth < 768;
-  const showProjects = (isMobile && projectsOpen) || (projectsOpen && !collapsed);
+  const isSmallScreen = window.innerWidth < 1024;
+  const showProjects = (isSmallScreen && projectsOpen) || (projectsOpen && !collapsed);
 
 
   return (
@@ -39,7 +39,7 @@ export default function ProjectsSection({
       >
         <div className="flex items-center gap-2">
           <Folder size={16} />
-          {(isMobile || !collapsed) && <span>Projects</span>}
+          {(isSmallScreen || !collapsed) && <span>Projects</span>}
         </div>
 
         <ChevronRight
@@ -53,11 +53,11 @@ export default function ProjectsSection({
         className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
           showProjects
-            ? "max-h-[300px] opacity-100 mt-2 ml-2"
+            ? "max-h-[300px] md:max-h-[640px] lg:max-h-40 overflow-y-scroll custom-scrollbar opacity-100 mt-2 ml-2"
             : "max-h-0 opacity-0"
         )}
       >
-        <div className="max-h-80 lg:max-h-40 overflow-y-auto space-y-2 custom-scrollbar pr-1">
+        <div className=" overflow-y-auto space-y-2  pr-1">
 
           {sections.map((section) => {
             const Icon = section.icon;
@@ -88,15 +88,11 @@ export default function ProjectsSection({
                 </button>
 
                 <div
-                  className={cn(
-                    "overflow-hidden transition-all duration-300 ease-in-out",
-                    openSections[section.key]
-                      ? "max-h-40 opacity-100 mt-1 ml-3"
-                      : "max-h-0 opacity-0"
-                  )}
+                  className=
+                  "overflow-hidden transition-all duration-300 ease-in-out"
                 >
                   <div className="flex flex-col gap-1">
-                    {["Project A", "Landing Page","yoo"].map((p) => (
+                    {["Project A", "Landing Page", "yoo", "looo", "pooo", "kooo", "chooo", "wooo", "thoooo"].map((p) => (
                       <ProjectItem
                         key={p}
                         name={p}
