@@ -15,7 +15,7 @@ export default function Home() {
       <div className="absolute inset-0 bg-black/60 -z-10" />
 
       {/* ================= MOBILE ================= */}
-      <div className="md:hidden flex flex-col h-screen">
+      <div className="lg:hidden md:flex flex flex-col h-screen">
 
         {/* Top Navbar */}
         <MobileNavbar onMenuClick={() => setIsOpen(true)} />
@@ -46,7 +46,7 @@ export default function Home() {
       </div>
 
       {/* ================= DESKTOP ================= */}
-      <div className="hidden md:flex h-screen">
+      <div className="hidden md:hidden lg:flex h-screen">
 
         {/* Sidebar */}
         <Sidebar />
