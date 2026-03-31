@@ -25,12 +25,12 @@ export default function PromptInput({
     useAutoResize(textareaRef, value);
 
     return (
-        <div className="mt-10 relative group">
+        <div className="mt-4 relative group">
             {/* Glow */}
             <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 blur opacity-30 group-hover:opacity-60 transition" />
 
             {/* Container */}
-            <div className="relative bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-xl min-h-36 flex flex-col justify-between">
+            <div className="relative bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-xl min-h-40 md:min-h-48 lg:min-h-40 flex flex-col justify-between">
 
                 {/*faking placeholder */}
                 {!value && (
