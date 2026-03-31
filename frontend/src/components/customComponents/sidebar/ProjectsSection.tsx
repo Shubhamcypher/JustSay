@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Folder, ChevronRight, FolderOpen, Users, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ProjectItem from "./ProjectItem";
@@ -18,22 +18,29 @@ export default function ProjectsSection({
   onHover,
   onLeave,
 }: any) {
-  const [projectsOpen, setProjectsOpen] = useState(false);
+  const [projectsOpen, setProjectsOpen] = useState(collapsed);
   const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
     created: true,
     shared: false,
     starred: false,
   });
+  const [hovered, setHovered] = useState<string | null>(null);
 
   const isSmallScreen = window.innerWidth < 1024;
   const showProjects = (isSmallScreen && projectsOpen) || (projectsOpen && !collapsed);
+
+  useEffect(() => {
+    if (collapsed)
+      setProjectsOpen(false)
+  }, [collapsed])
+
 
 
   return (
     <div className="flex flex-col">
 
       {/* Header */}
-      <button
+      {!collapsed && <button
         onClick={() => setProjectsOpen(!projectsOpen)}
         className="flex items-center justify-between px-3 py-2 text-sm text-white/70 hover:bg-white/10 rounded-lg transition"
       >
@@ -46,25 +53,51 @@ export default function ProjectsSection({
           size={16}
           className={cn(projectsOpen && "rotate-90 transition-all")}
         />
-      </button>
+      </button>}
 
       {/* Content */}
-      {collapsed && (
+      {collapsed && !isSmallScreen && (
         <div className="flex flex-col items-center gap-3 mt-2">
           {sections.map((section) => {
             const Icon = section.icon;
 
             return (
-              <button
-                key={section.key}
-                className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition"
-                onMouseEnter={() => onHover?.(section.label)}
-                onMouseLeave={onLeave}
-              >
-                <Icon size={16} />
-              </button>
+              <div className="relative group">
+                <button
+                  key={section.key}
+                  className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition"
+                >
+                  <Icon size={16} />
+                </button>
+
+                {/* Tooltip */}
+                <div
+                  className={cn(
+                    "absolute left-full ml-3 top-1/2 -translate-y-1/2",
+                    "px-3 py-1.5 rounded-md text-xs",
+                    "bg-black/80 text-white whitespace-nowrap",
+                    "shadow-lg border border-white/10 backdrop-blur-md",
+                    "pointer-events-none",
+                    "opacity-0 translate-x-[-4px]",
+                    "transition-all duration-200",
+                    "group-hover:opacity-100 group-hover:translate-x-0"
+                  )}
+                >
+                  {section.label}
+                </div>
+              </div>
             );
           })}
+        </div>
+      )}
+
+      {hovered && (
+        <div
+          className="absolute left-full ml-3 top-0 z-50 pointer-events-none"
+        >
+          <div className="px-3 py-1.5 rounded-md text-xs bg-black/80 text-white whitespace-nowrap shadow-lg border border-white/10 backdrop-blur-md animate-in fade-in slide-in-from-left-2 duration-200">
+            {hovered}
+          </div>
         </div>
       )}
 
@@ -106,9 +139,13 @@ export default function ProjectsSection({
                   />
                 </button>
 
-                <div
-                  className=
-                  "overflow-hidden transition-all duration-300 ease-in-out"
+                 <div
+                  className={cn(
+                    "overflow-hidden transition-all duration-300 ease-in-out",
+                    openSections[section.key]
+                      ? "max-h-full opacity-100 mt-1 ml-3"
+                      : "max-h-0 opacity-0"
+                  )}
                 >
                   <div className="flex flex-col gap-1">
                     {["Project A", "Landing Page", "yoo", "looo", "pooo", "kooo", "chooo", "wooo", "thoooo"].map((p) => (
