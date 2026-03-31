@@ -18,7 +18,7 @@ const items = [
 
 export default function MobileMenu({ onClose }: Props) {
     const [active, setActive] = useState("Home");
-    const { hovered, position, handleEnter, handleLeave } =
+    const { hovered, position } =
         useHoverPreview();
 
     return (
@@ -73,11 +73,7 @@ export default function MobileMenu({ onClose }: Props) {
                     );
                 })}
 
-                <ProjectsSection
-                    collapsed={onClose}
-                    onHover={handleEnter}
-                    onLeave={handleLeave}
-                />
+                <ProjectsSection variant="mobile" />
 
             </div>
 

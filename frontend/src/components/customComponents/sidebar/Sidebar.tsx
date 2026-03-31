@@ -14,7 +14,7 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [active, setActive] = useState("Home");
 
-  const { hovered, position, handleEnter, handleLeave } =
+  const { hovered, position } =
     useHoverPreview();
 
   return (
@@ -43,8 +43,7 @@ export default function Sidebar() {
 
         <ProjectsSection
           collapsed={collapsed}
-          onHover={handleEnter}
-          onLeave={handleLeave}
+          variant="desktop"
         />
 
         <RecentSection collapsed={collapsed} />
