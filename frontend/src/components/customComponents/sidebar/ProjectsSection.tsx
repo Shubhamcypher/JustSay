@@ -49,6 +49,25 @@ export default function ProjectsSection({
       </button>
 
       {/* Content */}
+      {collapsed && (
+        <div className="flex flex-col items-center gap-3 mt-2">
+          {sections.map((section) => {
+            const Icon = section.icon;
+
+            return (
+              <button
+                key={section.key}
+                className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition"
+                onMouseEnter={() => onHover?.(section.label)}
+                onMouseLeave={onLeave}
+              >
+                <Icon size={16} />
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <div
         className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
