@@ -50,7 +50,7 @@ export default function MobileMenu({ onClose }: Props) {
             </div>
 
             {/* 🔹 Navigation */}
-            <div className="flex flex-col gap-2 px-3 py-4">
+            <div className="flex flex-col gap-2 px-3 py-4 overflow-hidden">
 
                 {items.map((item) => {
                     const Icon = item.icon;
