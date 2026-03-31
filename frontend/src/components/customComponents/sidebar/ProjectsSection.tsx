@@ -109,7 +109,7 @@ export default function ProjectsSection({
         <div
           className={cn(
             "overflow-hidden transition-all duration-300",
-            projectsOpen ? "h-[120px] mt-2 ml-2" : "h-0"
+            projectsOpen ? "h-[160px] mt-2 ml-2" : "h-0"
           )}
         >
           <div className="h-full overflow-y-auto custom-scrollbar pr-1">
@@ -172,7 +172,7 @@ export default function ProjectsSection({
             left: position.left,
           }}
         >
-          <div className="w-64 h-10 flex items-center px-4 rounded-lg bg-zinc-900 border border-white/10 shadow-xl">
+          <div className="w-80 h-40 flex items-center justify-center px-4 rounded-lg bg-zinc-900 border border-white/10 shadow-xl">
             {hovered}
           </div>
         </div>
