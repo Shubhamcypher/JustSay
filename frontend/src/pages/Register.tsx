@@ -9,6 +9,7 @@ import PasswordField from '@/components/customComponents/InputField/PasswordFiel
 import { useToast } from '@/components/ui/use-toast';
 import Auth3DBackground from '@/components/customComponents/backgrounds/Auth3DBackground';
 import AuthCard from '@/components/customComponents/cards/AuthCard';
+import { useAuth } from '@/context/AuthContext';
 
 
 export default function Register() {
@@ -17,6 +18,8 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { registerUser } = useAuth();
+
 
   const API_URL = `http://${window.location.hostname}:5000`;
   const CLIENT_URL = window.location.origin
@@ -74,9 +77,10 @@ export default function Register() {
     }
     try {
       setLoading(true);
-      const res = await register({ email, password });
+      // const res = await register({ email, password });
 
-      setTokens(res.data.accessToken, res.data.refreshToken);
+      // setTokens(res.data.accessToken, res.data.refreshToken);
+      await registerUser({ email, password });
       toast({
         title: "Account created",
         description: "Account created successfully",
