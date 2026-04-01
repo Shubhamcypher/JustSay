@@ -22,7 +22,8 @@ API.interceptors.response.use(
     const originalRequest = error.config;
 
     // if unauthorized & not already retried
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry &&
+      !originalRequest.url.includes("/auth/refresh")) {
       originalRequest._retry = true;
 
       try {
