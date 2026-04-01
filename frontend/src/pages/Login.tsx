@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { login } from "../api/auth.api";
-import { setTokens } from "../utils/auth";
+// import { login } from "../api/auth.api";
+// import { setTokens } from "../utils/auth";
+
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import PasswordField from "@/components/customComponents/InputField/PasswordFiel
 import { useToast } from "@/components/ui/use-toast";
 import Auth3DBackground from "@/components/customComponents/backgrounds/Auth3DBackground";
 import AuthCard from "@/components/customComponents/cards/AuthCard";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -20,6 +22,7 @@ export default function Login() {
   const CLIENT_URL = window.location.origin
 
   const navigate = useNavigate();
+  const { loginUser } = useAuth();
   const { toast } = useToast();
 
   const handleLogin = async () => {
@@ -36,9 +39,10 @@ export default function Login() {
 
     try {
       setLoading(true);
-      const res = await login({ email, password });
+      // const res = await login({ email, password });
 
-      setTokens(res.data.accessToken, res.data.refreshToken);
+      // setTokens(res.data.accessToken, res.data.refreshToken);
+      await loginUser({ email, password });
 
       toast({
         title: "Welcome back",
@@ -50,8 +54,6 @@ export default function Login() {
       setPassword("");
       navigate("/");
     } catch (err: any) {
-      console.log("The error is", err);
-      
       toast({
         title: "Login Failed",
         description: err.response?.data?.message || "Something went wrong",
