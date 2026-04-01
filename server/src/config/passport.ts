@@ -57,8 +57,8 @@ passport.use(
         }
 
         // 🎟️ 4. Generate JWT
-        const accessToken = generateAccessToken({ id: user.id });
-        const refreshToken = generateRefreshToken({ id: user.id });
+        const accessToken = generateAccessToken({ userId: user.id });
+        const refreshToken = generateRefreshToken({ userId: user.id });
 
         return done(null, { user, accessToken, refreshToken });
       } catch (err) {
