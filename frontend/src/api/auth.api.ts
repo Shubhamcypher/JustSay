@@ -11,3 +11,5 @@
 
   export const logout = (refreshToken: string) =>
     API.post("/auth/logout", { refreshToken });
+
+  export const getMe = () => API.get("/users/me");
