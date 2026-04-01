@@ -1,115 +1,124 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { login, register, refresh } from "@/api/auth.api";
 import {
-  setTokens,
-  getAccessToken,
-  getRefreshToken,
-  clearTokens,
+    setTokens,
+    getAccessToken,
+    getRefreshToken,
+    clearTokens,
 } from "@/utils/auth";
 import { decodeToken } from "@/utils/jwt";
 
 type User = {
-  id?: string;
-  email?: string;
+    id?: string;
+    email?: string;
 };
 
 type AuthContextType = {
-  user: User | null;
-  loading: boolean;
-  loginUser: (data: { email: string; password: string }) => Promise<void>;
-  registerUser: (data: { email: string; password: string }) => Promise<void>;
-  logoutUser: () => void;
+    user: User | null;
+    loading: boolean;
+    loginUser: (data: { email: string; password: string }) => Promise<void>;
+    registerUser: (data: { email: string; password: string }) => Promise<void>;
+    logoutUser: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: any) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
-  // 🔁 restore session
-  useEffect(() => {
-    const init = async () => {
-      const refreshToken = getRefreshToken();
+    // 🔁 restore session
+    useEffect(() => {
+        const init = async () => {
+            const access = getAccessToken();
+            const refreshToken = getRefreshToken();
 
-      if (!refreshToken) {
-        setLoading(false);
-        return;
-      }
+            if (!access || !refreshToken) {
+                setLoading(false);
+                return;
+            }
 
-      try {
-        const res = await refresh(refreshToken);
+            try {
+                const res = await refresh(refreshToken);
 
-        setTokens(res.data.accessToken, res.data.refreshToken);
+                const { accessToken, refreshToken: newRefresh } = res.data;
 
-        // optional: decode or fetch user
-        setUser({}); 
-      } catch {
-        clearTokens();
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+                setTokens(accessToken, newRefresh);
+
+                const decoded = decodeToken(accessToken);
+
+                if (decoded) {
+                    setUser({
+                        id: decoded.id,
+                        email: decoded.email,
+                    });
+                }
+            } catch {
+                clearTokens();
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        init();
+    }, []);
+
+    const registerUser = async (data: {
+        email: string;
+        password: string;
+    }) => {
+        const res = await register(data);
+
+        const { accessToken, refreshToken } = res.data;
+
+        setTokens(accessToken, refreshToken);
+
+        const decoded = decodeToken(accessToken);
+
+        if (decoded) {
+            setUser({
+                id: decoded.id,
+                email: decoded.email,
+            });
+        }
     };
 
-    init();
-  }, []);
+    // 🔐 login
+    const loginUser = async (data: { email: string; password: string }) => {
+        const res = await login(data);
 
-  const registerUser = async (data: {
-  email: string;
-  password: string;
-}) => {
-  const res = await register(data);
+        const { accessToken, refreshToken } = res.data;
 
-  const { accessToken, refreshToken } = res.data;
+        setTokens(accessToken, refreshToken);
 
-  setTokens(accessToken, refreshToken);
+        const decoded = decodeToken(accessToken);
 
-  const decoded = decodeToken(accessToken);
+        if (decoded) {
+            setUser({
+                id: decoded.id,
+                email: decoded.email,
+            });
+        }
+    };
 
-  if (decoded) {
-    setUser({
-      id: decoded.id,
-      email: decoded.email,
-    });
-  }
-};
+    // 🚪 logout
+    const logoutUser = () => {
+        clearTokens();
+        setUser(null);
+    };
 
-  // 🔐 login
-  const loginUser = async (data: { email: string; password: string }) => {
-    const res = await login(data);
-  
-    const { accessToken, refreshToken } = res.data;
-  
-    setTokens(accessToken, refreshToken);
-  
-    const decoded = decodeToken(accessToken);
-  
-    if (decoded) {
-      setUser({
-        id: decoded.id,
-        email: decoded.email,
-      });
-    }
-  };
-
-  // 🚪 logout
-  const logoutUser = () => {
-    clearTokens();
-    setUser(null);
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{ user, loading, loginUser, registerUser, logoutUser }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider
+            value={{ user, loading, loginUser, registerUser, logoutUser }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside provider");
-  return ctx;
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error("useAuth must be used inside provider");
+    return ctx;
 }
