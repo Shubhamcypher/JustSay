@@ -55,7 +55,25 @@ export function AuthProvider({ children }: any) {
     init();
   }, []);
 
-  
+  const registerUser = async (data: {
+  email: string;
+  password: string;
+}) => {
+  const res = await register(data);
+
+  const { accessToken, refreshToken } = res.data;
+
+  setTokens(accessToken, refreshToken);
+
+  const decoded = decodeToken(accessToken);
+
+  if (decoded) {
+    setUser({
+      id: decoded.id,
+      email: decoded.email,
+    });
+  }
+};
 
   // 🔐 login
   const loginUser = async (data: { email: string; password: string }) => {
