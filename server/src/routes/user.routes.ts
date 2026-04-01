@@ -8,7 +8,7 @@ const router = Router();
 
 router.get("/me", authenticate, async (req, res) => {
     try {
-        const userId = (req.user as any).userId;
+        const userId = (req.user as { userId: string }).userId;
 
         
         const result = await pool.query(
