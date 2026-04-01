@@ -6,6 +6,7 @@ import {
   getRefreshToken,
   clearTokens,
 } from "@/utils/auth";
+import { decodeToken } from "@/utils/jwt";
 
 type User = {
   id?: string;
@@ -54,25 +55,24 @@ export function AuthProvider({ children }: any) {
     init();
   }, []);
 
+  
+
   // 🔐 login
   const loginUser = async (data: { email: string; password: string }) => {
     const res = await login(data);
-
-    setTokens(res.data.accessToken, res.data.refreshToken);
-
-    setUser({});
-  };
-
-  // 🆕 register
-  const registerUser = async (data: {
-    email: string;
-    password: string;
-  }) => {
-    const res = await register(data);
-
-    setTokens(res.data.accessToken, res.data.refreshToken);
-
-    setUser({});
+  
+    const { accessToken, refreshToken } = res.data;
+  
+    setTokens(accessToken, refreshToken);
+  
+    const decoded = decodeToken(accessToken);
+  
+    if (decoded) {
+      setUser({
+        id: decoded.id,
+        email: decoded.email,
+      });
+    }
   };
 
   // 🚪 logout
