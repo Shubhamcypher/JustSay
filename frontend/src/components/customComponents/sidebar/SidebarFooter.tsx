@@ -1,15 +1,16 @@
 import Avatar from "@/components/ui/Avatar";
 import { useAuth } from "@/context/AuthContext";
+import { formatName } from "@/utils/formatName";
 import { useEffect } from "react";
 
 export default function SidebarFooter({ collapsed }: { collapsed: boolean }) {
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     console.log(user);
-    
+
   }, [user])
-  
+
   return (
     <div className="p-4 flex flex-col gap-4">
 
@@ -20,8 +21,8 @@ export default function SidebarFooter({ collapsed }: { collapsed: boolean }) {
       )}
 
       <div className="flex items-center gap-3 border-t border-white/10 pt-4">
-        <Avatar name={user?.username?.split(" ")[0]} />
-        {!collapsed && <span className="text-sm">{user?.username}</span>}
+        <Avatar src={user?.img} name={user?.username} />
+        {!collapsed && <span className="text-sm"> {formatName(user?.username)}</span>}
       </div>
     </div>
   );

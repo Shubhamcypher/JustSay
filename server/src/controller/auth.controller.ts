@@ -46,6 +46,7 @@ export async function register(req: Request, res: Response) {
     }
 
     const hashed = await hashPassword(password);
+    const username = email.split("@")[0]; 
 
     let user;
     try {
@@ -53,8 +54,8 @@ export async function register(req: Request, res: Response) {
       // every time users enters it get its own results
       // the race condition can occur if two users enters same email at the same time  
       const userResult = await pool.query(
-        "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id",
-        [email, hashed]
+        "INSERT INTO users (email, password, username) VALUES ($1, $2, $3) RETURNING id",
+        [email, hashed, username]
       );
 
       user = userResult.rows[0];

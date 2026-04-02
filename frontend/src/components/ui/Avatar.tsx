@@ -1,4 +1,5 @@
-import { cn } from "@/lib/utils"; // optional (for class merging)
+import { cn } from "@/lib/utils";
+import { getInitials, formatName } from "@/utils/formatName";
 
 type AvatarProps = {
   src?: string;
@@ -21,19 +22,14 @@ export default function Avatar({
     lg: "w-14 h-14 text-lg",
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  const formattedName = formatName(name);
 
   return (
     <div
       className={cn(
-        "relative flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-white font-semibold overflow-hidden border border-white/10 backdrop-blur-md",
+        "relative rounded-full overflow-hidden flex items-center justify-center",
+        "bg-gradient-to-br from-blue-500/20 to-purple-500/20",
+        "text-white font-semibold border border-white/10 backdrop-blur-md",
         sizes[size],
         className
       )}
@@ -41,11 +37,12 @@ export default function Avatar({
       {src ? (
         <img
           src={src}
-          alt={name}
-          className="w-full h-full object-cover"
+          alt={formattedName}
+          className="w-full h-full object-cover rounded-full"
+          draggable={false}
         />
       ) : (
-        <span>{getInitials(name)}</span>
+        <span>{getInitials(formattedName)}</span>
       )}
 
       {/* 🟢 Online status */}
