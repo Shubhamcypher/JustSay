@@ -14,7 +14,7 @@ router.get("/me", authenticate, async (req, res) => {
 
         
         const result = await pool.query(
-            "SELECT id, email, created_at FROM users WHERE id = $1",
+            "SELECT id, email,username, img, created_at FROM users WHERE id = $1",
             [userId]
         );
 
