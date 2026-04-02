@@ -1,4 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
 import { setTokens } from "@/utils/auth";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +8,7 @@ export default function OAuthSuccess() {
   const navigate = useNavigate();
   const hasRun = useRef(false);
   const { toast } = useToast();
+  const { setUserFromToken } = useAuth();
 
 
   useEffect(() => {
@@ -20,20 +22,18 @@ export default function OAuthSuccess() {
 
     if (accessToken && refreshToken) {
       setTokens(accessToken, refreshToken);
-      toast({
-        title: "Success",
-        description: "Google Login successful",
-        variant: "success",
-      });
-      setTimeout(() => {
-        toast({
-            title: "Welcome to JustSay",
-            description: "Just say and create",
-            variant: "info",
-          });  
-      }, 3000);
       
-      navigate('/')
+      (async () => {
+        await setUserFromToken(); // 🔥 THIS IS THE MISSING PIECE
+
+        toast({
+          title: "Success",
+          description: "Google Login successful",
+          variant: "success",
+        });
+
+        navigate("/");
+      })();
     } else {
       navigate("/login");
     }
