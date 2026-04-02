@@ -2,9 +2,15 @@ import { useState } from "react";
 import AddMenu from "./AddMenu";
 import { useTypingEffect } from "@/hooks/useTypingEffect";
 import PromptInput from "../InputField/PromptField";
+// import { useAuth } from "@/context/AuthContext";
+
 
 export default function HomeHero() {
     const [prompt, setPrompt] = useState("");
+
+    // const { user } = useAuth();
+
+    // console.log(user);
 
     const dynamicParts = [
         "create a SaaS landing page...",

@@ -8,13 +8,18 @@ const router = Router();
 
 router.get("/me", authenticate, async (req, res) => {
     try {
+        
         const userId = (req.user as { userId: string }).userId;
+        console.log(userId);
 
         
         const result = await pool.query(
             "SELECT id, email, created_at FROM users WHERE id = $1",
             [userId]
         );
+
+        // console.log(result);
+        
 
         
 

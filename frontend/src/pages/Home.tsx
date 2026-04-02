@@ -4,6 +4,7 @@ import MobileLayout from "@/components/customComponents/home/MobileLayout";
 
 
 export default function Home() {
+  
   return (
     <HomeVideoBackground src="/videos/bg2.mp4">
       <div className="absolute inset-0 bg-black/60 -z-10" />
