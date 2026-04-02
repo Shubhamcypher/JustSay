@@ -23,7 +23,6 @@ export default function Register() {
   const API_URL = `http://${window.location.hostname}:5000`;
   const CLIENT_URL = window.location.origin
 
-  console.log("above",API_URL,CLIENT_URL);
   
 
   const getStrength = (password: string) => {
