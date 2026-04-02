@@ -1,15 +1,11 @@
 import Avatar from "@/components/ui/Avatar";
 import { useAuth } from "@/context/AuthContext";
 import { formatName } from "@/utils/formatName";
-import { useEffect } from "react";
+
 
 export default function SidebarFooter({ collapsed }: { collapsed: boolean }) {
   const { user } = useAuth();
 
-  useEffect(() => {
-    console.log(user);
-
-  }, [user])
 
   return (
     <div className="p-4 flex flex-col gap-4">

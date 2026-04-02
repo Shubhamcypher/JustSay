@@ -4,6 +4,9 @@ import { cn } from "@/lib/utils";
 import ProjectsSection from "../sidebar/ProjectsSection";
 import { useHoverPreview } from "@/hooks/useHoverPreview";
 import HoverPreview from "../common/HoverPreview";
+import { useAuth } from "@/context/AuthContext";
+import Avatar from "@/components/ui/Avatar";
+import { formatName } from "@/utils/formatName";
 
 type Props = {
     onClose: () => void;
@@ -18,8 +21,8 @@ const items = [
 
 export default function MobileMenu({ onClose }: Props) {
     const [active, setActive] = useState("Home");
-    const { hovered, position } =
-        useHoverPreview();
+    const { hovered, position } = useHoverPreview();
+    const { user } = useAuth();
 
     return (
         <div className="w-80 h-full bg-black/70 backdrop-blur-2xl border-r border-white/10 flex flex-col shadow-2xl">
@@ -40,11 +43,9 @@ export default function MobileMenu({ onClose }: Props) {
 
             {/* 🔹 Profile */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                    S
-                </div>
+                <Avatar src={user?.img} name={user?.username} />
                 <div>
-                    <p className="text-sm font-medium">Shubham</p>
+                    <span className="text-sm"> {formatName(user?.username)}</span>
                     <p className="text-xs text-white/50">Free Plan</p>
                 </div>
             </div>
