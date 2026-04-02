@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { register } from '../api/auth.api';
-import { setTokens } from '../utils/auth';
+
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
