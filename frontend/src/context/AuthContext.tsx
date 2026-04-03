@@ -22,7 +22,7 @@ type AuthContextType = {
     loginUser: (data: { email: string; password: string }) => Promise<void>;
     registerUser: (data: { email: string; password: string }) => Promise<void>;
     logoutUser: () => void;
-    setUserFromToken: ()=>Promise<void>;
+    setUserFromToken: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,23 +35,29 @@ export function AuthProvider({ children }: any) {
     useEffect(() => {
         const init = async () => {
             const access = getAccessToken();
-    
+
             if (!access) {
                 setLoading(false);
                 return;
             }
-    
+
             try {
-                const res = await getMe(); // 🔥 REAL SOURCE
+                const res = await getMe();
                 setUser(res.data.data);
-            } catch {
-                clearTokens();
-                setUser(null);
+            } catch (err: any) {
+                console.log(err);
+
+                // Let axios handle refresh first
+                // Only logout if request STILL fails after retry
+                if (err.response?.status === 401) {
+                    clearTokens();
+                    setUser(null);
+                }
             } finally {
                 setLoading(false);
             }
         };
-    
+
         init();
     }, []);
 
