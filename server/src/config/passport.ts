@@ -3,6 +3,7 @@ import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 import jwt from "jsonwebtoken";
 import { pool } from "./db";
 import { generateAccessToken, generateRefreshToken } from "../utils/auth";
+import bcrypt from "bcrypt";
 
 interface DoneUser {
   user: any;
@@ -59,6 +60,15 @@ passport.use(
         // 🎟️ 4. Generate JWT
         const accessToken = generateAccessToken({ userId: user.id });
         const refreshToken = generateRefreshToken({ userId: user.id });
+
+        //Hash refresh token
+        const hashedRefresh = await bcrypt.hash(refreshToken, 10);
+
+        //Insert refresh token in DB
+        await pool.query(
+          "INSERT INTO refresh_tokens (token, user_id) VALUES ($1, $2)",
+          [hashedRefresh, user.id]
+        );
 
         return done(null, { user, accessToken, refreshToken });
       } catch (err) {

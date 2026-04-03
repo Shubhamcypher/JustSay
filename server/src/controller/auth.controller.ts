@@ -147,17 +147,25 @@ export async function login(req: Request, res: Response) {
 export async function refresh(req: Request, res: Response) {
   const { refreshToken } = req.body;
 
+  
   if (!refreshToken) {
     return res.status(401).json({ message: "No token provided" });
   }
 
+  console.log("Refresh token provided:", refreshToken);
+  
+
   try {
     const decoded = verifyRefreshToken(refreshToken) as any;
-
+    console.log("Decode token is:", decoded);
+    
     const tokens = await pool.query(
       "SELECT token FROM refresh_tokens WHERE user_id = $1",
       [decoded.userId]
     );
+
+    console.log("tokens is:", tokens);
+    
 
     let matchedTokenHash: string | null = null;
 
@@ -169,6 +177,9 @@ export async function refresh(req: Request, res: Response) {
       }
     }
 
+    console.log("Matched token is:", matchedTokenHash);
+    
+
     if (!matchedTokenHash) {
       return res.status(403).json({ message: "Invalid refresh token" });
     }
@@ -178,6 +189,9 @@ export async function refresh(req: Request, res: Response) {
       "DELETE FROM refresh_tokens WHERE token = $1",
       [matchedTokenHash]
     );
+
+    console.log("DB query done");
+    
 
     // 🔥 Generate new tokens
     const newAccessToken = generateAccessToken({ userId: decoded.userId });
@@ -197,6 +211,8 @@ export async function refresh(req: Request, res: Response) {
     });
 
   } catch {
+    console.log("Fall in refresh catch");
+    
     return res.status(403).json({ message: "Invalid token" });
   }
 }
@@ -216,9 +232,3 @@ export async function logout(req: Request, res: Response) {
 
   return res.json({ message: "Logged out" });
 }
-
-
-
-
-
-
