@@ -21,12 +21,11 @@ export function authenticate(
       process.env.JWT_ACCESS_SECRET!
     ) as any;
 
+
     req.user = { userId: decoded.userId };
 
     next();
-  } catch(e:any) {
-    console.log(e);
-    
+  } catch(e:any) {    
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 }

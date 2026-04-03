@@ -151,20 +151,15 @@ export async function refresh(req: Request, res: Response) {
   if (!refreshToken) {
     return res.status(401).json({ message: "No token provided" });
   }
-
-  console.log("Refresh token provided:", refreshToken);
   
 
   try {
     const decoded = verifyRefreshToken(refreshToken) as any;
-    console.log("Decode token is:", decoded);
     
     const tokens = await pool.query(
       "SELECT token FROM refresh_tokens WHERE user_id = $1",
       [decoded.userId]
     );
-
-    console.log("tokens is:", tokens);
     
 
     let matchedTokenHash: string | null = null;
@@ -176,8 +171,6 @@ export async function refresh(req: Request, res: Response) {
         break;
       }
     }
-
-    console.log("Matched token is:", matchedTokenHash);
     
 
     if (!matchedTokenHash) {
@@ -190,7 +183,6 @@ export async function refresh(req: Request, res: Response) {
       [matchedTokenHash]
     );
 
-    console.log("DB query done");
     
 
     // 🔥 Generate new tokens
@@ -211,8 +203,6 @@ export async function refresh(req: Request, res: Response) {
     });
 
   } catch {
-    console.log("Fall in refresh catch");
-    
     return res.status(403).json({ message: "Invalid token" });
   }
 }
