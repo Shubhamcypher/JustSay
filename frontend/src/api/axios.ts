@@ -44,10 +44,12 @@ API.interceptors.response.use(
         return API(originalRequest);
       } catch (err) {
         // refresh failed → logout
+        console.log(err);
+        
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
 
-        window.location.href = "/login";
+        // window.location.href = "/login";
         return Promise.reject(err);
       }
     }
