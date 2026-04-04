@@ -8,6 +8,7 @@ import {
     getAccessToken,
     clearTokens,
 } from "@/utils/auth";
+import { authStore } from "@/authStore";
 
 type User = {
     id: string;
@@ -41,6 +42,9 @@ export function AuthProvider({ children }: any) {
     const [loading, setLoading] = useState(true);
     const [sessionStatus, setSessionStatus] = useState<SessionStatus>("idle");
 
+    useEffect(() => {
+        authStore.setSessionSetter(setSessionStatus);
+      }, []);
 
     useEffect(() => {
         const init = async () => {
