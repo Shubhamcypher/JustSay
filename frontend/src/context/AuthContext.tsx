@@ -38,6 +38,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: any) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [sessionStatus, setSessionStatus] = useState<SessionStatus>("idle");
 
 
     useEffect(() => {
