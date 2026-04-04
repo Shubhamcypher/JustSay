@@ -16,6 +16,14 @@ type User = {
     img?: string;
 };
 
+type SessionStatus =
+  | "idle"
+  | "checking"
+  | "expired"
+  | "refreshing"
+  | "authenticated"
+  | "failed";
+
 type AuthContextType = {
     user: User | null;
     loading: boolean;
