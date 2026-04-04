@@ -27,6 +27,7 @@ type SessionStatus =
 type AuthContextType = {
     user: User | null;
     loading: boolean;
+    sessionStatus: string;
     loginUser: (data: { email: string; password: string }) => Promise<void>;
     registerUser: (data: { email: string; password: string }) => Promise<void>;
     logoutUser: () => void;
@@ -129,7 +130,7 @@ export function AuthProvider({ children }: any) {
 
     return (
         <AuthContext.Provider
-            value={{ user, loading, loginUser, registerUser, logoutUser, setUserFromToken }}
+            value={{ user, loading, sessionStatus, loginUser, registerUser, logoutUser, setUserFromToken }}
         >
             {children}
         </AuthContext.Provider>
