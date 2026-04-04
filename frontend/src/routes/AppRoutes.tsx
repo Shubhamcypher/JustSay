@@ -5,17 +5,23 @@ import ProjectPreview from "../pages/ProjectPreview";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import OAuthSuccess from "@/pages/OAuthSuccess";
+import { useAuth } from "@/context/AuthContext";
 
 function PrivateRoute({ children }: any) {
-  const token = localStorage.getItem("accessToken");
+  const { user, loading } = useAuth();
 
-
-  if (!token) {
-    return <Navigate to="/" replace />;
+  // 🧠 wait for auth to resolve
+  if (loading) {
+    return null; // or loader
   }
 
-  return children;
+  // 🧠 not logged in
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
+  // 🧠 logged in
+  return children;
 }
 
 export default function AppRoutes() {
