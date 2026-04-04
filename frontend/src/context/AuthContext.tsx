@@ -17,12 +17,12 @@ type User = {
 };
 
 type SessionStatus =
-  | "idle"
-  | "checking"
-  | "expired"
-  | "refreshing"
-  | "authenticated"
-  | "failed";
+    | "idle"
+    | "checking"
+    | "expired"
+    | "refreshing"
+    | "authenticated"
+    | "failed";
 
 type AuthContextType = {
     user: User | null;
@@ -46,21 +46,35 @@ export function AuthProvider({ children }: any) {
             const access = getAccessToken();
 
             if (!access) {
+                setSessionStatus("failed");
                 setLoading(false);
                 return;
             }
 
             try {
-                const res = await getMe();
-                setUser(res.data.data);
-            } catch (err: any) {
-                console.log(err);
+                setSessionStatus("checking");
 
-                // Let axios handle refresh first
-                // Only logout if request STILL fails after retry
+                const res = await getMe(); // 🔥 interceptor handles refresh
+                setUser(res.data.data);
+
+                setSessionStatus("authenticated");
+            } catch (err: any) {
+                // 🔥 THIS IS KEY
                 if (err.response?.status === 401) {
-                    clearTokens();
-                    setUser(null);
+                    setSessionStatus("expired");
+
+                    try {
+                        setSessionStatus("refreshing");
+
+                        const res = await getMe(); // retry after refresh
+                        setUser(res.data.data);
+
+                        setSessionStatus("authenticated");
+                    } catch {
+                        clearTokens();
+                        setUser(null);
+                        setSessionStatus("failed");
+                    }
                 }
             } finally {
                 setLoading(false);
