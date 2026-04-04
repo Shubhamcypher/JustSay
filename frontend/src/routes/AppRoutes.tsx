@@ -6,6 +6,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import OAuthSuccess from "@/pages/OAuthSuccess";
 import { useAuth } from "@/context/AuthContext";
+import SessionHandler from "@/components/customComponents/SessionHandler";
 
 function PrivateRoute({ children }: any) {
   const { user, loading } = useAuth();
@@ -27,6 +28,7 @@ function PrivateRoute({ children }: any) {
 export default function AppRoutes() {
   return (
     <BrowserRouter>
+    <SessionHandler />
       <Routes>
 
         {/* AUTH ROUTES */}
