@@ -7,8 +7,8 @@ export default function SessionHandler() {
 
   const [visible, setVisible] = useState(false);
 
-  const showTimer = useRef<NodeJS.Timeout | null>(null);
-  const hideTimer = useRef<NodeJS.Timeout | null>(null);
+  const showTimer =useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimer =useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 🧠 debounce + min display logic
   useEffect(() => {
