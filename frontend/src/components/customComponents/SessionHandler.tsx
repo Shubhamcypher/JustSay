@@ -1,8 +1,44 @@
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 export default function SessionHandler() {
   const { sessionStatus } = useAuth();
+
+  const [visible, setVisible] = useState(false);
+
+  const showTimer = useRef<NodeJS.Timeout | null>(null);
+  const hideTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // 🧠 debounce + min display logic
+  useEffect(() => {
+    if (showTimer.current) clearTimeout(showTimer.current);
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+
+    // 🔴 expired / refreshing → delay show (debounce)
+    if (sessionStatus === "expired" || sessionStatus === "refreshing") {
+      showTimer.current = setTimeout(() => {
+        setVisible(true);
+      }, 300); // 👈 key debounce
+    }
+
+    // 🟢 authenticated → keep visible briefly, then hide
+    if (sessionStatus === "authenticated") {
+      hideTimer.current = setTimeout(() => {
+        setVisible(false);
+      }, 700); // 👈 minimum display time
+    }
+
+    // 🔴 failed → hide immediately
+    if (sessionStatus === "failed") {
+      setVisible(false);
+    }
+
+    return () => {
+      if (showTimer.current) clearTimeout(showTimer.current);
+      if (hideTimer.current) clearTimeout(hideTimer.current);
+    };
+  }, [sessionStatus]);
 
   const getContent = () => {
     switch (sessionStatus) {
@@ -33,8 +69,9 @@ export default function SessionHandler() {
 
   return (
     <AnimatePresence>
-      {content && sessionStatus !== "authenticated" && (
+      {content && visible && (
         <motion.div
+          key="session-popup"
           initial={{ opacity: 0, y: -40, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
