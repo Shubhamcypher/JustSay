@@ -1,4 +1,4 @@
-import { authStore } from "@/authStore";
+
 import axios from "axios";
 
 const API = axios.create({
@@ -28,8 +28,7 @@ API.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        authStore.setSessionStatus("expired");   // 👈 NEW
-        authStore.setSessionStatus("refreshing"); // 👈 NEW
+       
         const refreshToken = localStorage.getItem("refreshToken");
 
         const res = await axios.post(
@@ -41,15 +40,12 @@ API.interceptors.response.use(
         localStorage.setItem("accessToken", res.data.accessToken);
         localStorage.setItem("refreshToken", res.data.refreshToken);
 
-        authStore.setSessionStatus("authenticated"); // 👈 NEW
 
         // retry original request
         originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
 
         return API(originalRequest);
       } catch (err) {
-        // refresh failed → logout
-        authStore.setSessionStatus("failed"); // 👈 NEW
         console.log(err);
 
         localStorage.removeItem("accessToken");
