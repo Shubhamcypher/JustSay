@@ -86,7 +86,7 @@ export default function SessionHandler() {
               <div>
                 <p className="text-sm font-semibold">{content.title}</p>
                 <p className="text-xs text-white/60">
-                  {content.title}
+                  {content.subtitle}
                 </p>
               </div>
             </div>
