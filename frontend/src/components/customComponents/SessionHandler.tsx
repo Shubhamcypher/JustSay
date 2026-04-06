@@ -15,21 +15,21 @@ export default function SessionHandler() {
     if (showTimer.current) clearTimeout(showTimer.current);
     if (hideTimer.current) clearTimeout(hideTimer.current);
 
-    // 🔴 expired / refreshing → delay show (debounce)
-    if (sessionStatus === "expired" || sessionStatus === "refreshing") {
+    // expired / refreshing → delay show (debounce)
+    if (sessionStatus === "refreshing") {
       showTimer.current = setTimeout(() => {
         setVisible(true);
-      }, 300); // 👈 key debounce
+      }, 500); // key debounce
     }
 
-    // 🟢 authenticated → keep visible briefly, then hide
+    // authenticated → keep visible briefly, then hide
     if (sessionStatus === "authenticated") {
       hideTimer.current = setTimeout(() => {
         setVisible(false);
-      }, 700); // 👈 minimum display time
+      }, 500); // minimum display time
     }
 
-    // 🔴 failed → hide immediately
+    //failed → hide immediately
     if (sessionStatus === "failed") {
       setVisible(false);
     }
@@ -42,22 +42,16 @@ export default function SessionHandler() {
 
   const getContent = () => {
     switch (sessionStatus) {
-      case "expired":
-        return {
-          title: "Session expired",
-          subtitle: "Reconnecting...",
-          icon: "⚠️",
-        };
       case "refreshing":
         return {
           title: "Logging you in",
           subtitle: "Restoring your session...",
-          icon: "🔄",
+          icon: "⏳",
         };
       case "authenticated":
         return {
           title: "Welcome back",
-          subtitle: "You're good to go 🚀",
+          subtitle: "You're good to go",
           icon: "✅",
         };
       default:
