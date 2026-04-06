@@ -44,7 +44,7 @@ export function AuthProvider({ children }: any) {
 
     useEffect(() => {
         authStore.setSessionSetter(setSessionStatus);
-      }, []);
+    }, []);
 
     useEffect(() => {
         const init = async () => {
@@ -59,28 +59,16 @@ export function AuthProvider({ children }: any) {
             try {
                 setSessionStatus("checking");
 
-                const res = await getMe(); // 🔥 interceptor handles refresh
+                const res = await getMe(); // interceptor handles refresh
                 setUser(res.data.data);
 
                 setSessionStatus("authenticated");
             } catch (err: any) {
-                // 🔥 THIS IS KEY
-                if (err.response?.status === 401) {
-                    setSessionStatus("expired");
 
-                    try {
-                        setSessionStatus("refreshing");
+                clearTokens();
+                setUser(null);
+                setSessionStatus("failed");
 
-                        const res = await getMe(); // retry after refresh
-                        setUser(res.data.data);
-
-                        setSessionStatus("authenticated");
-                    } catch {
-                        clearTokens();
-                        setUser(null);
-                        setSessionStatus("failed");
-                    }
-                }
             } finally {
                 setLoading(false);
             }

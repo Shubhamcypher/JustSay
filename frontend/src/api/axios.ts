@@ -28,7 +28,7 @@ API.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-       
+
         const refreshToken = localStorage.getItem("refreshToken");
 
         const res = await axios.post(
@@ -51,7 +51,9 @@ API.interceptors.response.use(
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
 
-        // window.location.href = "/login";
+        // 🚀 Silent OAuth fallback
+        const clientUrl = window.location.origin;
+        window.location.href = `http://${window.location.hostname}:5000/api/auth/google?clientUrl=${clientUrl}`;
         return Promise.reject(err);
       }
     }
