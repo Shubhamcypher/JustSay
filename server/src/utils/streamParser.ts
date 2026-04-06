@@ -13,34 +13,47 @@ export async function parseStream(
     buffer += text;
     onToken(text);
 
-    // Detect file start
-    const startMatch = buffer.match(/START_FILE:\s*(.+)/);
+    while (true) {
+      // 🔹 START_FILE detection
+      if (!currentFile) {
+        const startIndex = buffer.indexOf("START_FILE:");
 
-    if (startMatch && !currentFile) {
-      currentFile = {
-        path: startMatch[1].trim(),
-        content: "",
-      };
+        if (startIndex === -1) break;
 
-      buffer = "";
-      continue;
-    }
+        const afterStart = buffer.slice(startIndex + "START_FILE:".length);
 
-    // Collect file content
-    if (currentFile) {
-      currentFile.content += text;
+        const newlineIndex = afterStart.indexOf("\n");
 
-      if (currentFile.content.includes("END_FILE")) {
-        const cleanContent = currentFile.content.replace("END_FILE", "");
+        if (newlineIndex === -1) break; // wait for full path
+
+        const path = afterStart.slice(0, newlineIndex).trim();
+
+        currentFile = { path, content: "" };
+
+        buffer = afterStart.slice(newlineIndex + 1);
+      }
+
+      // 🔹 END_FILE detection
+      if (currentFile) {
+        const endIndex = buffer.indexOf("END_FILE");
+
+        if (endIndex === -1) {
+          currentFile.content += buffer;
+          buffer = "";
+          break;
+        }
+
+        // complete file
+        currentFile.content += buffer.slice(0, endIndex);
 
         await onFile({
           type: "file",
           path: currentFile.path,
-          content: cleanContent,
+          content: currentFile.content.trim(),
         });
 
+        buffer = buffer.slice(endIndex + "END_FILE".length);
         currentFile = null;
-        buffer = "";
       }
     }
   }
