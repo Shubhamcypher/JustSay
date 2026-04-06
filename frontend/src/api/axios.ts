@@ -1,17 +1,13 @@
-
 import axios from "axios";
 import { authStore } from "@/authStore";
-
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
-
-
 
 const API = axios.create({
   baseURL: `http://${window.location.hostname}:5000/api`,
 });
 
-// Attach access token
+// =====================
+// 🔐 Attach access token
+// =====================
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
 
@@ -22,43 +18,76 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// =====================
+// 🔁 Refresh Queue System
+// =====================
+let isRefreshing = false;
+
+let refreshSubscribers: {
+  resolve: (token: string) => void;
+  reject: (err: any) => void;
+}[] = [];
 
 function onRefreshed(token: string) {
-  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers.forEach(({ resolve }) => resolve(token));
   refreshSubscribers = [];
 }
 
-
-
-function addSubscriber(cb: (token: string) => void) {
-  refreshSubscribers.push(cb);
+function onRefreshFailed(err: any) {
+  refreshSubscribers.forEach(({ reject }) => reject(err));
+  refreshSubscribers = [];
 }
 
+function addSubscriber(resolve: (token: string) => void, reject: (err: any) => void) {
+  refreshSubscribers.push({ resolve, reject });
+}
 
-// Refresh logic
+// =====================
+// 🔁 Response Interceptor
+// =====================
 API.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config;
 
-    // if unauthorized & not already retried
-    if (error.response?.status === 401 && !originalRequest._retry &&
-      !originalRequest.url.includes("/auth/refresh")) {
+    // 🛑 Safety guard
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
 
+    // Only handle 401 (except refresh endpoint)
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes("/auth/refresh")
+    ) {
+      // 🔄 If already refreshing → queue request
       if (isRefreshing) {
-        return new Promise((resolve) => {
-          addSubscriber((token: string) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            resolve(API(originalRequest));
-          });
+        return new Promise((resolve, reject) => {
+          addSubscriber(
+            (token: string) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              resolve(API(originalRequest));
+            },
+            (err) => {
+              reject(err);
+            }
+          );
         });
       }
 
+      // 🔥 Start refresh flow
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
         const refreshToken = localStorage.getItem("refreshToken");
+
+        // 🛑 No refresh token → fail immediately
+        if (!refreshToken) {
+          authStore.setSessionStatus("failed");
+          return Promise.reject(error);
+        }
 
         authStore.setSessionStatus("refreshing");
 
@@ -67,30 +96,40 @@ API.interceptors.response.use(
           { refreshToken }
         );
 
-        localStorage.setItem("accessToken", res.data.accessToken);
-        localStorage.setItem("refreshToken", res.data.refreshToken);
+        const { accessToken, refreshToken: newRefreshToken } = res.data;
 
-        authStore.setSessionStatus("authenticated");
+        // 💾 Save new tokens
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", newRefreshToken);
 
-        onRefreshed(res.data.accessToken);
+        // ✅ Resolve all queued requests
+        onRefreshed(accessToken);
 
-        originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
-
+        // 🔁 Retry original request
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return API(originalRequest);
 
       } catch (err) {
+        // ❌ Reject all queued requests
+        onRefreshFailed(err);
+
         authStore.setSessionStatus("failed");
 
+        // 🧹 Clear tokens
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
 
-        const clientUrl = window.location.origin;
+        // 🔁 Prevent infinite OAuth loop
         const alreadyTried = sessionStorage.getItem("oauth_retry");
 
         if (!alreadyTried) {
           sessionStorage.setItem("oauth_retry", "true");
 
-          window.location.href = `http://${window.location.hostname}:5000/api/auth/google?clientUrl=${clientUrl}`;
+          const clientUrl = window.location.origin;
+
+          // 🚀 Silent OAuth fallback
+          window.location.href =
+            `http://${window.location.hostname}:5000/api/auth/google?clientUrl=${clientUrl}`;
         }
 
         return Promise.reject(err);
@@ -98,6 +137,8 @@ API.interceptors.response.use(
         isRefreshing = false;
       }
     }
+
+    return Promise.reject(error);
   }
 );
 
