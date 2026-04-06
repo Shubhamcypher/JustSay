@@ -1,8 +1,7 @@
 import { Response } from "express";
 import { pool } from "../config/db";
-import { AuthRequest } from "../middleware/auth.middleware";
 
-export async function createFile(req: AuthRequest, res: Response) {
+export async function createFile(req: Request, res: Response) {
     const { projectId, path, content } = req.body;
   
     const result = await pool.query(

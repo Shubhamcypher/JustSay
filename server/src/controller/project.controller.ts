@@ -1,48 +1,15 @@
 import { pool } from "../config/db";
-import { AuthRequest } from "../middleware/auth.middleware";
 import { Request, Response } from "express";
 import { generateReactTemplate } from "../services/ai.service";
 import { writeProjectToDisk } from "../services/fileSystem.service";
 import docker, { buildProjectImage, runProjectContainer } from "../services/docker.service";
 import { getNextPort } from "../utils/port.util";
 
-// export async function createProject(req: AuthRequest, res: Response) {
-//   const { name, stack } = req.body;
-//   if (!req.user) {
-//     return res.status(401).json({ message: "Unauthorized" });
-//   }
 
-//   if (!name?.trim() || !stack?.trim()) {
-//     return res.status(400).json({ message: "Invalid input" });
-//   }
-
-//   if (!name || !stack) {
-//     return res.status(400).json({ message: "Invalid input" });
-//   }
-
-//   try {
-//     const result = await pool.query(
-//       `INSERT INTO projects (name, stack, status, owner_id)
-//          VALUES ($1,$2,$3,$4)
-//          RETURNING *`,
-//       [name, stack, "stopped", req.user!.userId]
-//     );
-
-//     const project = result.rows[0];
-
-//     // 👇 generate starter files
-//     if (stack === "react") {
-//       await generateReactTemplate(project.id);
-//     }
-
-//     res.status(201).json(project)
-
-//   } catch (error) {
-//     res.status(500).json({ message: "Failed to create project" });
-//   }
-// }
-export async function createProject(req: AuthRequest, res: Response) {
+export async function createProject(req: Request, res: Response) {
   const { name, stack } = req.body;
+
+  
 
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -90,7 +57,7 @@ export async function createProject(req: AuthRequest, res: Response) {
   }
 }
 
-export async function getProjects(req: AuthRequest, res: Response) {
+export async function getProjects(req: Request, res: Response) {
   if (!req.user) return res.status(401).json({ message: "Unauthorized" });
   const result = await pool.query(
     "SELECT * FROM projects WHERE owner_id=$1 ORDER BY created_at DESC",
@@ -100,7 +67,7 @@ export async function getProjects(req: AuthRequest, res: Response) {
   res.json(result.rows);
 }
 
-export async function getProjectById(req: AuthRequest, res: Response) {
+export async function getProjectById(req: Request, res: Response) {
   const { id } = req.params;
 
   const result = await pool.query(
@@ -115,7 +82,7 @@ export async function getProjectById(req: AuthRequest, res: Response) {
   res.json(result.rows[0]);
 }
 
-export async function deleteProject(req: AuthRequest, res: Response) {
+export async function deleteProject(req: Request, res: Response) {
   const { id } = req.params;
 
   const result = await pool.query(
@@ -130,7 +97,7 @@ export async function deleteProject(req: AuthRequest, res: Response) {
   res.json({ message: "Project deleted" });
 }
 
-export async function startProject(req: AuthRequest, res: Response) {
+export async function startProject(req: Request, res: Response) {
 
   const projectId = req.params.id;
   if (!req.user) {
@@ -209,7 +176,7 @@ export async function startProject(req: AuthRequest, res: Response) {
 }
 
 
-export async function stopProject(req: AuthRequest, res: Response) {
+export async function stopProject(req: Request, res: Response) {
 
   const projectId = req.params.id;
   if (!req.user) {
@@ -273,7 +240,7 @@ export async function stopProject(req: AuthRequest, res: Response) {
   }
 }
 
-export async function updateFile(req: AuthRequest, res: Response) {
+export async function updateFile(req: Request, res: Response) {
   const { projectId } = req.params;
   const { path, content } = req.body;
 
