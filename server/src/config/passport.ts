@@ -70,7 +70,9 @@ passport.use(
           [hashedRefresh, user.id]
         );
 
-        return done(null, { user, accessToken, refreshToken });
+        return done(null, {
+          userId: user.id,
+        });
       } catch (err) {
         return done(err as Error, false);
       }
