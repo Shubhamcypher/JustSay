@@ -1,10 +1,10 @@
 import express from "express";
 import { authenticate } from "../middleware/auth.middleware";
-import { createProject } from "../controller/project.controller";
+import { generateProject } from "../controller/generate.controller";
 
 
 const router = express.Router();
 
-router.post("/generate", authenticate, createProject);
+router.post("/generate", authenticate, generateProject);
 
 export default router;

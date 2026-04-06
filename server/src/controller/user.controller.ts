@@ -1,9 +1,8 @@
 import { pool } from "../config/db";
-import { AuthRequest } from "../middleware/auth.middleware";
-import { Response } from "express";
+import {Request, Response } from "express";
 
 
-export async function updateProfile(req: AuthRequest, res: Response) {
+export async function updateProfile(req: Request, res: Response) {
     const { name } = req.body;
   
     try {

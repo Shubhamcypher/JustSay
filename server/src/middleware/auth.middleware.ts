@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { log } from "node:console";
 
 export function authenticate(
   req: Request,
@@ -7,7 +8,7 @@ export function authenticate(
   next: NextFunction
 ) {
   const authHeader = req.headers.authorization;
-  
+  log("Auth Header:", authHeader); // Debug log
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Unauthorized" });

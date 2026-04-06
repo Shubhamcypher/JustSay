@@ -9,6 +9,7 @@ import fileRoutes from "./routes/file.routes";
 
 import { pool } from "./config/db";
 import passport from "./config/passport"
+import generateRoutes from "./routes/generate.routes";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -37,8 +38,8 @@ app.use(passport.initialize());
 //auth routes
 app.use("/api/auth", authRoutes);
 
-
-
+//generate routes for testing
+app.use("/api", generateRoutes);
 
 //user routes
 app.use("/api/users", userRoutes);

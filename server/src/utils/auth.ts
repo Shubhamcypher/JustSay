@@ -4,7 +4,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 const SALT_ROUNDS = 10;
 
 const accessExpiresIn: SignOptions['expiresIn'] =
-  (process.env.JWT_ACCESS_EXPIRES_IN as SignOptions['expiresIn']) ?? '5s';
+  (process.env.JWT_ACCESS_EXPIRES_IN as SignOptions['expiresIn']) ?? '1h';
 
 const refreshExpiresIn: SignOptions['expiresIn'] =
   (process.env.JWT_REFRESH_EXPIRES_IN as SignOptions['expiresIn']) ?? '7d';

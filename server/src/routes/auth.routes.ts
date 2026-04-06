@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { register, login, refresh, logout } from "../controller/auth.controller";
 import passport from "../config/passport"
+import { generateAccessToken, generateRefreshToken } from "../utils/auth";
 
 
 const router = Router();
@@ -27,18 +28,18 @@ router.get(
     "/google/callback",
     passport.authenticate("google", { session: false }),
     (req, res) => {
-        const userData = req.user as {
-            accessToken: string;
-            refreshToken: string;
-        };
+        const userId = req.user!.userId;
+
+        const accessToken = generateAccessToken({ userId });
+        const refreshToken = generateRefreshToken({ userId });
 
         const clientUrl = req.query.state as string;
         console.log(clientUrl);
-        
+
         res.redirect(
             `${clientUrl}/oauth-success?accessToken=${encodeURIComponent(
-                userData.accessToken
-            )}&refreshToken=${encodeURIComponent(userData.refreshToken)}`
+                accessToken
+            )}&refreshToken=${encodeURIComponent(refreshToken)}`
         );
     }
 );

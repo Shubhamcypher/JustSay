@@ -1,4 +1,4 @@
-import { Response } from "express";
+import {Request, Response } from "express";
 import { pool } from "../config/db";
 
 export async function createFile(req: Request, res: Response) {
@@ -14,7 +14,7 @@ export async function createFile(req: Request, res: Response) {
     res.status(201).json(result.rows[0]);
   }
 
-  export async function getFiles(req: AuthRequest, res: Response) {
+  export async function getFiles(req: Request, res: Response) {
     const { projectId } = req.params;
   
     const result = await pool.query(
@@ -25,7 +25,7 @@ export async function createFile(req: Request, res: Response) {
     res.json(result.rows);
   }
 
-  export async function updateFile(req: AuthRequest, res: Response) {
+  export async function updateFile(req: Request, res: Response) {
     const { id } = req.params;
     const { content } = req.body;
   
@@ -40,7 +40,7 @@ export async function createFile(req: Request, res: Response) {
     res.json(result.rows[0]);
   }
 
-  export async function deleteFile(req: AuthRequest, res: Response) {
+  export async function deleteFile(req: Request, res: Response) {
     const { id } = req.params;
   
     await pool.query(
