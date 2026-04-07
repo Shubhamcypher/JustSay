@@ -2,11 +2,12 @@ import { useState } from "react";
 import AddMenu from "./AddMenu";
 import { useTypingEffect } from "@/hooks/useTypingEffect";
 import PromptInput from "../InputField/PromptField";
+import { useNavigate } from "react-router-dom";
 
 
 export default function HomeHero() {
     const [prompt, setPrompt] = useState("");
-
+    const navigate = useNavigate();
 
     const dynamicParts = [
         "create a SaaS landing page...",
@@ -19,11 +20,13 @@ export default function HomeHero() {
 
     const handleSubmit = () => {
         if (!prompt.trim()) return;
-        console.log(prompt);
+        navigate("/builder", {
+            state: { prompt },
+        });
     };
 
     return (
-        <div className="relative min-h-[60vh] md:h-[80vh] flex md:items-center justify-center px-4 md:px-0 pt-6 md:pt-6 items-center -z-10">
+        <div className="relative min-h-[60vh] md:h-[80vh] flex md:items-center justify-center px-4 md:px-0 pt-6 md:pt-6 items-center">
 
             <div className="relative w-full md:w-[100vw] md:p-6 max-w-4xl text-center">
 

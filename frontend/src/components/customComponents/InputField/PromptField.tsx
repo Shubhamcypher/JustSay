@@ -32,18 +32,7 @@ export default function PromptInput({
             {/* Container */}
             <div className="relative bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-xl min-h-40 md:min-h-48 lg:min-h-40 flex flex-col justify-between">
 
-                {/*faking placeholder */}
-                {!value && (
-                    <div className="absolute left-5 top-4 text-lg md:text-xl pointer-events-none text-left">
-                        <span className="text-white/50">
-                            Just say and{" "}
-                        </span>
-                        <span className=" bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                            {placeholder}
-                        </span>
-                        <span className="animate-pulse">|</span>
-                    </div>
-                )}
+               
 
                 {/* Textarea */}
                 <textarea

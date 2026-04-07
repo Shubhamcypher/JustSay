@@ -7,6 +7,7 @@ import Register from "../pages/Register";
 import OAuthSuccess from "@/pages/OAuthSuccess";
 import { useAuth } from "@/context/AuthContext";
 import SessionHandler from "@/components/customComponents/SessionHandler";
+import Builder from "@/pages/Builder";
 
 function PrivateRoute({ children }: any) {
   const { user, loading } = useAuth();
@@ -35,6 +36,7 @@ export default function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/oauth-success" element={<OAuthSuccess />} />
+        <Route path="/builder" element={<Builder />} />
 
         {/* PROTECTED ROUTES */}
         <Route
