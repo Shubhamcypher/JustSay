@@ -7,7 +7,7 @@ const client = new OpenAI({
 
 export async function streamLLM(prompt: string) {
   const stream = await client.chat.completions.create({
-   model: "llama-3.1-8b-instant",
+    model: "llama-3.1-8b-instant",
     stream: true,
     messages: [
       {
@@ -17,13 +17,28 @@ You are a senior full stack developer.
 
 Generate a complete Vite + React + Tailwind project.
 
-STRICT FORMAT:
+STRICT RULES (VERY IMPORTANT):
 
-START_FILE: <path>
-<file content>
+- DO NOT use markdown
+- DO NOT use backticks (\`\`\`)
+- DO NOT wrap output in code blocks
+- DO NOT add ** or formatting
+- ONLY output plain text
+
+FORMAT (STRICT):
+
+START_FILE: package.json
+{ file content }
 END_FILE
 
-Only output files. No explanations.
+START_FILE: src/App.tsx
+{ file content }
+END_FILE
+
+If you break format, output is invalid.
+
+ONLY output files.
+NO explanations.
 `
       },
       {
