@@ -1,5 +1,5 @@
 import { useFiles } from "@/hooks/useFiles";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { useWebContainer } from "@/hooks/useWebContainer";
@@ -12,20 +12,22 @@ export default function Builder() {
     const prompt = state?.prompt;
     const { addFile, files, activeFile, updateFileContent, setActiveFile } = useFiles(); // ✅ from your hook
     // const [logs, setLogs] = useState(""); // ✅ local state
-    // const [stableFiles, setStableFiles] = useState(files);
+    const [stableFiles, setStableFiles] = useState(files);
 
 
 
 
-    // useEffect(() => {
-    //     const timeout = setTimeout(() => {
-    //         setStableFiles(files);
-    //     }, 1000); // wait for stream to settle
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setStableFiles(files);
+        }, 1000); // wait for stream to settle
 
-    //     return () => clearTimeout(timeout);
-    // }, [files]);
+        return () => clearTimeout(timeout);
+    }, [files]);
 
-    const previewUrl = useWebContainer(files);
+    const previewUrl = useWebContainer(stableFiles);
+
+    const hasFiles = Object.keys(stableFiles).length > 0;
 
 
     useEffect(() => {
@@ -52,7 +54,7 @@ export default function Builder() {
             while (true) {
                 const { value, done } = await reader!.read();
                 if (done) break;
-
+                if(!value) continue;
                 buffer += decoder.decode(value, { stream: true });
 
                 const parts = buffer.split("\n\n");
@@ -116,14 +118,15 @@ export default function Builder() {
                 theme="vs-dark"
                 path={activeFile || ""}
                 value={activeFile ? files[activeFile]?.content || "" : ""}
-                onChange={(value) =>
-                    updateFileContent(activeFile!, value || "")
-                }
+                onChange={(value) => {
+  if (!activeFile) return;
+  updateFileContent(activeFile, value || "");
+}}
             />
 
             {/* RIGHT: Preview */}
             <div className="w-[30%] p-2">
-                {previewUrl ? (
+                {hasFiles && previewUrl ? (
                     <iframe
                         src={previewUrl}
                         className="w-full h-full bg-white rounded-lg"
