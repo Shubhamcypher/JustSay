@@ -1,48 +1,84 @@
-import { WebContainer } from "@webcontainer/api";
-import { useEffect, useState } from "react";
+import { getWebContainer } from "@/lib/webContainer";
+import { useEffect, useRef, useState } from "react";
+
 
 export function useWebContainer(files: Record<string, any>) {
   const [url, setUrl] = useState<string | null>(null);
 
+  const installedRef = useRef(false);
+  const startedRef = useRef(false);
+  const wcRef = useRef<any>(null);
+
+  // 🚀 boot once (singleton)
   useEffect(() => {
-    let wc: WebContainer;
+    const init = async () => {
+      wcRef.current = await getWebContainer();
 
-    const start = async () => {
-      wc = await WebContainer.boot();
-
-      // mount files
-      await wc.mount(
-        Object.fromEntries(
-          Object.entries(files).map(([path, file]) => [
-            path,
-            { file: { contents: file.content } },
-          ])
-        )
-      );
-
-      // install deps
-      const install = await wc.spawn("npm", ["install"]);
-      await install.exit;
-
-      // run dev server
-      const dev = await wc.spawn("npm", ["run", "dev"]);
-
-      dev.output.pipeTo(
-        new WritableStream({
-          write(data) {
-            console.log(data);
-          },
-        })
-      );
-
-      wc.on("server-ready", (_, url) => {
+      wcRef.current.on("server-ready", (_: any, url: string) => {
         setUrl(url);
       });
     };
 
-    if (Object.keys(files).length > 0) {
-      start();
+    init();
+  }, []);
+
+  // 🔥 convert flat paths → folder tree
+  function buildTree(files: Record<string, any>) {
+    const root: any = {};
+
+    for (const [path, file] of Object.entries(files)) {
+      const parts = path.split("/");
+      let current = root;
+
+      parts.forEach((part, index) => {
+        if (index === parts.length - 1) {
+          current[part] = {
+            file: { contents: file.content },
+          };
+        } else {
+          current[part] = current[part] || { directory: {} };
+          current = current[part].directory;
+        }
+      });
     }
+
+    return root;
+  }
+
+  // 🔄 mount files
+  useEffect(() => {
+    if (!wcRef.current || Object.keys(files).length === 0) return;
+
+    const timeout = setTimeout(async () => {
+      const wc = wcRef.current;
+
+      // ✅ FIXED: correct FS structure
+      await wc.mount(buildTree(files));
+
+      // install once
+      if (!installedRef.current) {
+        const install = await wc.spawn("npm", ["install"]);
+        await install.exit;
+        installedRef.current = true;
+      }
+
+      // start once
+      if (!startedRef.current) {
+        const dev = await wc.spawn("npm", ["run", "dev"]);
+
+        dev.output.pipeTo(
+          new WritableStream({
+            write(data) {
+              console.log(data);
+            },
+          })
+        );
+
+        startedRef.current = true;
+      }
+    }, 800);
+
+    return () => clearTimeout(timeout);
   }, [files]);
 
   return url;
