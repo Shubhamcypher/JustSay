@@ -70,6 +70,31 @@ You MUST include ALL of these:
 - postcss.config.js
 - tsconfig.json
 
+ALWAYS include a valid package.json with:
+
+- react, react-dom in dependencies
+- vite, typescript, tailwindcss, postcss, autoprefixer in devDependencies
+
+Example:
+
+{
+  "name": "app",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "vite": "^4.0.0",
+    "typescript": "^4.0.0",
+    "tailwindcss": "^3.0.0",
+    "postcss": "^8.0.0",
+    "autoprefixer": "^10.0.0"
+  }
+}
+
 =====================
 QUALITY RULES
 =====================

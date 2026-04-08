@@ -13,7 +13,38 @@ export default function Builder() {
     const { addFile, files, activeFile, updateFileContent, setActiveFile } = useFiles(); // ✅ from your hook
     // const [logs, setLogs] = useState(""); // ✅ local state
     const [stableFiles, setStableFiles] = useState(files);
+    const [isReady, setIsReady] = useState(false);
 
+    function fixIndexHtml(files: Record<string, any>) {
+        const indexFile = files["index.html"];
+        if (!indexFile) return files;
+
+        let content = indexFile.content;
+
+        // detect actual entry file
+        const hasTsx = !!files["src/main.tsx"];
+        const hasJsx = !!files["src/main.jsx"];
+
+        let correctPath = null;
+
+        if (hasTsx) correctPath = "/src/main.tsx";
+        else if (hasJsx) correctPath = "/src/main.jsx";
+
+        if (!correctPath) return files;
+
+        // replace ANY wrong entry
+        content = content.replace(
+            /<script type="module" src=".*?"><\/script>/,
+            `<script type="module" src="${correctPath}"></script>`
+        );
+
+        files["index.html"] = {
+            ...indexFile,
+            content,
+        };
+
+        return files;
+    }
 
 
 
@@ -25,7 +56,11 @@ export default function Builder() {
         return () => clearTimeout(timeout);
     }, [files]);
 
-    const previewUrl = useWebContainer(stableFiles);
+    const fixedFiles = fixIndexHtml(stableFiles);
+    const previewUrl = useWebContainer(fixedFiles, isReady);
+    useEffect(() => {
+        console.log("📦 CURRENT FILES:", Object.keys(files));
+    }, [files]);
 
     const hasFiles = Object.keys(stableFiles).length > 0;
 
@@ -54,7 +89,7 @@ export default function Builder() {
             while (true) {
                 const { value, done } = await reader!.read();
                 if (done) break;
-                if(!value) continue;
+                if (!value) continue;
                 buffer += decoder.decode(value, { stream: true });
 
                 const parts = buffer.split("\n\n");
@@ -66,6 +101,7 @@ export default function Builder() {
                     const data = JSON.parse(line);
 
                     if (data.type === "file") {
+                        console.log("📁 FILE RECEIVED:", data.path);
                         addFile(data); // ✅ now works
                     }
 
@@ -73,9 +109,10 @@ export default function Builder() {
                     //     setLogs((prev) => prev + data.message);
                     // }
 
-                    // if (data.type === "done") {
-                    //     setStableFiles(files);
-                    // }
+                    if (data.type === "done") {
+                        // setStableFiles(files);
+                        setIsReady(true);
+                    }
                 }
 
                 buffer = parts[parts.length - 1];
@@ -119,9 +156,9 @@ export default function Builder() {
                 path={activeFile || ""}
                 value={activeFile ? files[activeFile]?.content || "" : ""}
                 onChange={(value) => {
-  if (!activeFile) return;
-  updateFileContent(activeFile, value || "");
-}}
+                    if (!activeFile) return;
+                    updateFileContent(activeFile, value || "");
+                }}
             />
 
             {/* RIGHT: Preview */}
