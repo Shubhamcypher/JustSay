@@ -15,7 +15,6 @@ export default function PromptInput({
     value,
     onChange,
     onSubmit,
-    placeholder = "",
     leftSlot,
     rightSlot,
 }: Props) {

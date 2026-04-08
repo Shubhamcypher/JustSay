@@ -1,6 +1,6 @@
 import { pool } from "../config/db";
 import { Request, Response } from "express";
-import { generateReactTemplate } from "../services/ai.service";
+// import { generateReactTemplate } from "../services/ai.service";
 import { writeProjectToDisk } from "../services/fileSystem.service";
 import docker, { buildProjectImage, runProjectContainer } from "../services/docker.service";
 import { getNextPort } from "../utils/port.util";
@@ -35,7 +35,7 @@ export async function createProject(req: Request, res: Response) {
 
     // generate files
     if (stack === "react") {
-      await generateReactTemplate(project.id, client);
+      // await generateReactTemplate(project.id, client);
     }
     if (stack !== "react") {
       return res.status(400).json({ message: "Unsupported stack" });

@@ -8,7 +8,6 @@ export function authenticate(
   next: NextFunction
 ) {
   const authHeader = req.headers.authorization;
-  log("Auth Header:", authHeader); // Debug log
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Unauthorized" });

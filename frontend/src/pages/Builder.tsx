@@ -1,30 +1,32 @@
 import { useFiles } from "@/hooks/useFiles";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-// import { useFiles } from "@/hooks/useFiles";
+import Editor from "@monaco-editor/react";
+import { useWebContainer } from "@/hooks/useWebContainer";
+
+
+
 
 export default function Builder() {
     const { state } = useLocation();
     const prompt = state?.prompt;
+    const { addFile, files, activeFile, updateFileContent, setActiveFile } = useFiles(); // ✅ from your hook
+    // const [logs, setLogs] = useState(""); // ✅ local state
+    // const [stableFiles, setStableFiles] = useState(files);
 
-    const { addFile, files, activeFile, updateFileContent } = useFiles(); // ✅ from your hook
-    const [logs, setLogs] = useState(""); // ✅ local state
 
 
-    function generateHTML(files: Record<string, any>) {
-        const app = files["src/App.tsx"]?.content || "";
 
-        return `
-    <html>
-      <body>
-        <div id="root"></div>
-        <script type="module">
-          ${app}
-        </script>
-      </body>
-    </html>
-  `;
-    }
+    // useEffect(() => {
+    //     const timeout = setTimeout(() => {
+    //         setStableFiles(files);
+    //     }, 1000); // wait for stream to settle
+
+    //     return () => clearTimeout(timeout);
+    // }, [files]);
+
+    const previewUrl = useWebContainer(files);
+
 
     useEffect(() => {
         if (!prompt) return;
@@ -48,8 +50,8 @@ export default function Builder() {
             let buffer = "";
 
             while (true) {
-                const { value } = await reader!.read();
-                // if (done) break;
+                const { value, done } = await reader!.read();
+                if (done) break;
 
                 buffer += decoder.decode(value, { stream: true });
 
@@ -65,9 +67,13 @@ export default function Builder() {
                         addFile(data); // ✅ now works
                     }
 
-                    if (data.type === "status") {
-                        setLogs((prev) => prev + data.message);
-                    }
+                    // if (data.type === "status") {
+                    //     setLogs((prev) => prev + data.message);
+                    // }
+
+                    // if (data.type === "done") {
+                    //     setStableFiles(files);
+                    // }
                 }
 
                 buffer = parts[parts.length - 1];
@@ -84,31 +90,47 @@ export default function Builder() {
         <div className="h-screen flex bg-black text-white">
 
             {/* LEFT: Logs */}
-            <div className="w-[20%] border-r border-white/10 p-4 overflow-y-auto">
-                <h2 className="text-lg font-semibold mb-2">Logs</h2>
-                <pre className="text-sm whitespace-pre-wrap">{logs}</pre>
+            <div className="w-[20%] border-r border-white/10 p-3 overflow-y-auto">
+                <h2 className="text-sm mb-2 text-white/60">FILES</h2>
+
+                {Object.keys(files).map((file) => (
+                    <div
+                        key={file}
+                        onClick={() => setActiveFile(file)}
+                        className={`cursor-pointer text-sm px-2 py-1 rounded ${activeFile === file ? "bg-white/10" : "hover:bg-white/5"
+                            }`}
+                    >
+                        {file}
+                    </div>
+                ))}
+
+                <div className="mt-4">
+                    <h2 className="text-sm mb-2 text-white/60">LOGS</h2>
+                    {/* <pre className="text-xs whitespace-pre-wrap">{logs}</pre> */}
+                </div>
             </div>
 
             {/* CENTER: Editor */}
-            <div className="w-[50%] border-r border-white/10 p-4">
-                <h2 className="text-lg mb-2">{activeFile}</h2>
-
-                <textarea
-                    value={files[activeFile!]?.content || ""}
-                    onChange={(e) =>
-                        updateFileContent(activeFile!, e.target.value)
-                    }
-                    className="w-full h-full bg-black outline-none text-sm"
-                />
-            </div>
+            <Editor
+                height="100%"
+                theme="vs-dark"
+                path={activeFile || ""}
+                value={activeFile ? files[activeFile]?.content || "" : ""}
+                onChange={(value) =>
+                    updateFileContent(activeFile!, value || "")
+                }
+            />
 
             {/* RIGHT: Preview */}
-            <div className="w-[30%] p-4">
-                <iframe
-                    title="preview"
-                    className="w-full h-full bg-white"
-                    srcDoc={generateHTML(files)}
-                />
+            <div className="w-[30%] p-2">
+                {previewUrl ? (
+                    <iframe
+                        src={previewUrl}
+                        className="w-full h-full bg-white rounded-lg"
+                    />
+                ) : (
+                    <div className="text-white/50 text-sm">Starting preview...</div>
+                )}
             </div>
         </div>
     );
