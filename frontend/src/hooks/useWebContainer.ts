@@ -34,6 +34,119 @@ export function useWebContainer(
     files["package.json"].content = JSON.stringify(pkg, null, 2);
   }
 
+  function ensureTailwindSetup(files: Record<string, any>) {
+    // ✅ Ensure index.css exists
+    if (!files["src/index.css"]) {
+      files["src/index.css"] = {
+        path: "src/index.css",
+        content: `
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+        `.trim(),
+      };
+    }
+
+    // ✅ Ensure main.tsx imports CSS
+    if (files["src/main.tsx"]) {
+      let content = files["src/main.tsx"].content;
+
+      if (!content.includes('import "./index.css"')) {
+        files["src/main.tsx"].content =
+          `import "./index.css";\n` + content;
+      }
+    }
+
+    // ✅ Ensure tailwind.config.js content paths
+    if (files["tailwind.config.js"]) {
+      let content = files["tailwind.config.js"].content;
+
+      if (!content.includes("./src/**/*")) {
+        files["tailwind.config.js"].content = `
+  export default {
+    content: [
+      "./index.html",
+      "./src/**/*.{js,ts,jsx,tsx}",
+    ],
+    theme: {
+      extend: {},
+    },
+    plugins: [],
+  };
+        `.trim();
+      }
+    }
+  }
+
+  function fixTailwindApply(files: Record<string, any>) {
+    if (!files["src/index.css"]) return;
+
+    let css = files["src/index.css"].content;
+
+    // remove circular apply patterns
+    css = css.replace(/\.([a-z0-9-]+)\s*{\s*@apply\s+\1;\s*}/g, "");
+
+    files["src/index.css"].content = css;
+  }
+
+  function validateHTML(files: Record<string, any>) {
+    const html = files["index.html"]?.content || "";
+
+    if (html.includes("{") || html.includes("onClick")) {
+      throw new Error("❌ Invalid HTML: JSX detected in index.html");
+    }
+  }
+
+  function ensureReactImport(files: Record<string, any>) {
+    ["src/main.tsx", "src/App.tsx"].forEach((filePath) => {
+      if (!files[filePath]) return;
+
+      let content = files[filePath].content;
+
+      if (!content.includes('import React')) {
+        files[filePath].content =
+          `import React from "react";\n` + content;
+      }
+    });
+  }
+
+  function detectAndFixDependencies(files: Record<string, any>) {
+    if (!files["package.json"]) return;
+
+    const pkg = JSON.parse(files["package.json"].content);
+
+    const allContent = Object.values(files)
+      .map((f: any) => f.content)
+      .join("\n");
+
+    const deps = pkg.dependencies || {};
+
+    // 🔥 detect react-router-dom
+    if (allContent.includes("react-router-dom")) {
+      deps["react-router-dom"] = "^6.0.0";
+    }
+
+    pkg.dependencies = deps;
+
+    files["package.json"].content = JSON.stringify(pkg, null, 2);
+  }
+
+  function fixReactRouterImports(files: Record<string, any>) {
+    Object.keys(files).forEach((path) => {
+      if (!path.endsWith(".tsx") && !path.endsWith(".ts")) return;
+
+      let content = files[path].content;
+
+      // fix default import → named import
+      content = content.replace(
+        /import\s+(\w+)\s+from\s+["']react-router-dom["']/g,
+        "import { $1 } from \"react-router-dom\""
+      );
+
+      files[path].content = content;
+    });
+  }
+
   // 🚀 Boot once
   useEffect(() => {
     let mounted = true;
@@ -100,11 +213,29 @@ export function useWebContainer(
       const wc = wcRef.current;
 
       try {
+        console.log("Fixing HTML");
+        validateHTML(files);
+
+        console.log("🛠 Fixing Tailwind...");
+        ensureTailwindSetup(files);
+
+        console.log("Fixing tailwind applies");
+        fixTailwindApply(files);
+
+        console.log("Fixing dependencies...");
+        detectAndFixDependencies(files);
+
         console.log("📁 Fixing package.json...");
         fixPackageJson(files);
-        
+
         console.log("📁 Mounting project...");
         await wc.mount(buildTree(files));
+
+        console.log("Fixing React import...");
+        ensureReactImport(files);
+
+        console.log("Fixing router imports...");
+        fixReactRouterImports(files);
 
         console.log("📦 Installing dependencies...");
         const install = await wc.spawn("npm", ["install", "--include=dev"]);
@@ -112,6 +243,14 @@ export function useWebContainer(
 
         installedRef.current = true;
         console.log("✅ Dependencies installed");
+
+        console.log("🧹 Clearing Vite cache...");
+
+        // remove vite cache
+        await wc.spawn("rm", ["-rf", "node_modules/.vite"]);
+
+        // optional: also clear dist
+        await wc.spawn("rm", ["-rf", "dist"]);
 
         console.log("🚀 Starting dev server...");
         const dev = await wc.spawn("npm", ["run", "dev"]);

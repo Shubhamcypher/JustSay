@@ -96,6 +96,112 @@ Example:
 }
 
 =====================
+TAILWIND REQUIREMENTS (MANDATORY)
+=====================
+
+You MUST include proper Tailwind CSS setup:
+
+Create file: src/index.css
+src/index.css MUST contain:
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+src/main.tsx MUST import the CSS file:
+
+import "./index.css";
+
+tailwind.config.js MUST include:
+
+content: [
+"./index.html",
+"./src/**/*.{js,ts,jsx,tsx}"
+]
+
+postcss.config.js MUST include:
+
+plugins: {
+tailwindcss: {},
+autoprefixer: {}
+}
+- NEVER use @apply with Tailwind utility classes that have the same name
+- NEVER redefine Tailwind built-in classes (e.g., max-w-md, flex, text-center)
+- @apply MUST only be used inside custom classes (e.g., .btn, .card)
+- DO NOT create classes like .max-w-md, .flex, etc.
+
+VALID example:
+.btn {
+  @apply px-4 py-2 bg-blue-500 text-white rounded;
+}
+
+INVALID example:
+.max-w-md {
+  @apply max-w-md;
+}
+
+=====================
+DEPENDENCY RULES (CRITICAL)
+=====================
+
+- DO NOT use external libraries unless explicitly required
+- DO NOT import packages not listed in package.json
+- Prefer native browser APIs (e.g., crypto.randomUUID instead of uuid)
+
+
+=====================
+HTML RULES (CRITICAL):
+=====================
+
+- index.html MUST contain ONLY valid HTML
+- NEVER include React code or JSX inside index.html
+- NEVER use {} expressions inside index.html
+- NEVER use onClick, onChange, or any JS logic in index.html
+- React code MUST ONLY be inside .tsx or .jsx files
+
+index.html MUST ONLY include:
+
+- a root div with id="root"
+- a script tag pointing to /src/main.tsx
+
+=====================
+IMPORT RULES:
+=====================
+
+- All component imports MUST use correct relative paths
+- If a component is inside src/components/, imports MUST be:
+
+  import X from "./components/X"
+
+- NEVER import from "./X" if file is not in same folder
+
+- All imports must match actual file structure EXACTLY
+
+=====================
+REACT IMPORT RULE (CRITICAL):
+=====================
+
+- ALWAYS include:
+  import React from "react";
+
+- EVEN if using React 18
+- DO NOT rely on automatic JSX runtime
+
+
+
+=====================
+REACT ROUTER RULES:
+=====================
+- If using react-router-dom:
+  - MUST import like:
+    import { Link } from "react-router-dom"
+  - NEVER use default import
+
+- MUST include react-router-dom in dependencies
+
+
+
+=====================
 QUALITY RULES
 =====================
 
