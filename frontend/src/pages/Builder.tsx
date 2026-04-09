@@ -126,28 +126,38 @@ export default function Builder() {
 
 
     return (
-        <div className="h-screen flex bg-black text-white">
+        <div className="h-screen flex bg-gray-900 text-white p-4 gap-4">
 
             {/* LEFT: Logs */}
-            <div className="w-[20%] border-r border-white/10 p-3 overflow-y-auto">
-                <h2 className="text-sm mb-2 text-white/60">FILES</h2>
+            <div className="w-[35%] border border-white/10 p-3 overflow-y-auto flex flex-col gap-4">
 
-                {Object.keys(files).map((file) => (
-                    <div
-                        key={file}
-                        onClick={() => setActiveFile(file)}
-                        className={`cursor-pointer text-sm px-2 py-1 rounded ${activeFile === file ? "bg-white/10" : "hover:bg-white/5"
-                            }`}
-                    >
-                        {file}
+                {/*Files div */}
+                <div className="h-[65%]">
+                    <h2 className="text-sm mb-2 text-white/60">FILES</h2>
+                    <div className=" border-red-500">
+                        {Object.keys(files).map((file) => (
+                            <div
+                                key={file}
+                                onClick={() => setActiveFile(file)}
+                                className={`cursor-pointer text-sm px-2  py-1 rounded ${activeFile === file ? "bg-white/10" : "hover:bg-white/5"
+                                    }`}
+                            >
+                                {file}
+                            </div>
+                        ))}
                     </div>
-                ))}
+                </div>
+                {/*Files div */}
 
-                <div className="mt-4">
+                {/*logs div */}
+                <div>
                     <h2 className="text-sm mb-2 text-white/60">LOGS</h2>
                     {/* <pre className="text-xs whitespace-pre-wrap">{logs}</pre> */}
                 </div>
+                {/*logs div */}
+
             </div>
+
 
             {/* CENTER: Editor */}
             <Editor
@@ -166,7 +176,7 @@ export default function Builder() {
                 {hasFiles && previewUrl ? (
                     <iframe
                         src={previewUrl}
-                        className="w-full h-full bg-white rounded-lg"
+                        className="w-full h-full bg-gray-500 rounded-lg"
                     />
                 ) : (
                     <div className="text-white/50 text-sm">Starting preview...</div>
