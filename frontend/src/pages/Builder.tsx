@@ -162,7 +162,7 @@ export default function Builder() {
             />
 
             {/* RIGHT: Preview */}
-            <div className="w-[30%] p-2">
+            <div className="w-[50%] p-2">
                 {hasFiles && previewUrl ? (
                     <iframe
                         src={previewUrl}
