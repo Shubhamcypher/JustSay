@@ -36,7 +36,7 @@ function extractFilesJSON(text: string) {
 export async function planProject(prompt: string) {
     for (let attempt = 0; attempt < 3; attempt++) {
         const res = await openai.chat.completions.create({
-            model: "meta-llama/llama-3-8b-instruct",
+            model: "nvidia/nemotron-3-super-120b-a12b:free",
             temperature: 0.2,
             messages: [
                 {
