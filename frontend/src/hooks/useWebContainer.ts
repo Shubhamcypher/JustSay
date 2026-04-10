@@ -130,6 +130,31 @@ export function useWebContainer(
     };
   }
 
+  function autoFixFiles(files: Record<string, any>) {
+    Object.keys(files).forEach((path) => {
+      let content = files[path].content;
+  
+      // ❌ Remove Angular garbage
+      content = content.replace(/@angular\/core/g, "");
+  
+      // ❌ Remove invalid CSS imports
+      content = content.replace(/import\s+["']\.\/styles\/.*\.css["'];?/g, "");
+  
+      // ❌ Remove missing service imports
+      if (!files["src/services/todo.service.ts"]) {
+        content = content.replace(/import .*todo\.service.*;/g, "");
+      }
+  
+      // ❌ Fix default export issues
+      if (content.includes("export const")) {
+        content = content.replace("export const", "const");
+        content += "\nexport default App;";
+      }
+  
+      files[path].content = content;
+    });
+  }
+
   // 🔄 MAIN EXECUTION (FIXED)
   useEffect(() => {
     if (!wcRef.current) return;
@@ -160,6 +185,7 @@ export function useWebContainer(
 
         fixIndexHtml(stableFiles);
         fixPackageJson(stableFiles);
+        autoFixFiles(stableFiles);
 
         console.log("📁 Mounting project...");
         await wc.mount(buildTree(stableFiles));
