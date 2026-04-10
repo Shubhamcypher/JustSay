@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { pool } from "../config/db";
 import { streamLLM } from "../services/ai.service";
 import { parseStream } from "../utils/streamParser";
+import { planProject } from "../services/planner.service";
+import { generateFile } from "../services/generator.service";
 
 export const generateProject = async (req: Request, res: Response) => {
     const { prompt } = req.body;
@@ -46,37 +48,29 @@ export const generateProject = async (req: Request, res: Response) => {
         );
 
         let buffer = "";
-        const stream = await streamLLM(prompt);
+        const plan = await planProject(prompt);
 
-        await parseStream(
-            stream,
+        if (!plan.files || !Array.isArray(plan.files)) {
+            throw new Error("Invalid plan from LLM");
+        }
 
-            //When file is ready
-            async (file) => {
-                await pool.query(
-                    `INSERT INTO project_files (project_id, path, content)
-       VALUES ($1,$2,$3)`,
-                    [projectId, file.path, file.content]
-                );
+        for (const filePath of plan.files) {
+            const content = await generateFile(filePath, prompt, plan.files);
 
-                res.write(`data: ${JSON.stringify(file)}\n\n`);
-            },
+            await pool.query(
+                `INSERT INTO project_files (project_id, path, content)
+     VALUES ($1,$2,$3)`,
+                [projectId, filePath, content]
+            );
 
-            // ✅ Streaming logs
-            (text) => {
-                buffer += text;
-
-                if (buffer.length > 50) {
-                    res.write(
-                        `data: ${JSON.stringify({
-                            type: "status",
-                            message: buffer,
-                        })}\n\n`
-                    );
-                    buffer = "";
-                }
-            }
-        );
+            res.write(
+                `data: ${JSON.stringify({
+                    type: "file",
+                    path: filePath,
+                    content,
+                })}\n\n`
+            );
+        }
 
 
         // Mark project completed
