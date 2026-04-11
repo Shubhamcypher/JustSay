@@ -22,7 +22,7 @@ export default function HomeContent() {
               className={cn(
                 "capitalize text-sm md:text-base whitespace-nowrap px-1 pb-1 transition-all",
                 isActive
-                  ? "text-white border-b-2 border-blue-400"
+                  ? "text-white border-b-2 border-blue-500"
                   : "text-white/50 hover:text-white"
               )}
             >
