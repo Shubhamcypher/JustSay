@@ -9,7 +9,7 @@ import { getNextPort } from "../utils/port.util";
 export async function createProject(req: Request, res: Response) {
   const { name, stack } = req.body;
 
-  
+
 
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -31,11 +31,18 @@ export async function createProject(req: Request, res: Response) {
       [name, stack, "stopped", req.user.userId]
     );
 
+
+
     const project = result.rows[0];
 
     // generate files
     if (stack === "react") {
       // await generateReactTemplate(project.id, client);
+      await client.query(
+        `INSERT INTO project_members (project_id, user_id, role)
+         VALUES ($1, $2, 'owner')`,
+        [project.id, req.user.userId]
+      );
     }
     if (stack !== "react") {
       return res.status(400).json({ message: "Unsupported stack" });
@@ -58,20 +65,63 @@ export async function createProject(req: Request, res: Response) {
 }
 
 export async function getProjects(req: Request, res: Response) {
-  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-  const result = await pool.query(
-    "SELECT * FROM projects WHERE owner_id=$1 ORDER BY created_at DESC",
-    [req.user!.userId]
-  );
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-  res.json(result.rows);
+  const userId = req.user.userId;
+  const type = req.query.type || "created";
+
+  try {
+    let query = "";
+
+    if (type === "created") {
+      query = `
+        SELECT * FROM projects
+        WHERE owner_id = $1
+        ORDER BY created_at DESC
+      `;
+    }
+
+    else if (type === "shared") {
+      query = `
+        SELECT p.*
+        FROM projects p
+        JOIN project_members pm ON p.id = pm.project_id
+        WHERE pm.user_id = $1 AND p.owner_id != $1
+        ORDER BY p.created_at DESC
+      `;
+    }
+
+    else if (type === "starred") {
+      query = `
+        SELECT p.*
+        FROM projects p
+        JOIN project_stars ps ON p.id = ps.project_id
+        WHERE ps.user_id = $1
+        ORDER BY p.created_at DESC
+      `;
+    }
+
+    else {
+      return res.status(400).json({ message: "Invalid type" });
+    }
+
+    const result = await pool.query(query, [userId]);
+
+    res.json(result.rows);
+
+  } catch (error) {
+    console.error("GET PROJECTS ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch projects" });
+  }
 }
 
 export async function getProjectById(req: Request, res: Response) {
   const { id } = req.params;
 
   const result = await pool.query(
-    "SELECT * FROM projects WHERE id=$1 AND owner_id=$2",
+    "SELECT p. *FROM projects p LEFT JOIN project_members pm ON p.id = pm.project_id WHERE p.id=$1 AND (p.owner_id=$2 OR pm.user_id=$2)",
     [id, req.user?.userId]
   );
 
