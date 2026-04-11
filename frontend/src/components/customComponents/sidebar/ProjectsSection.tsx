@@ -71,7 +71,7 @@ export default function ProjectsSection({
         className={cn(
           "flex items-center justify-between rounded-lg transition",
           isMobile
-            ? "px-4 py-3 text-white text-sm"
+            ? "px-4 py-3 text-white text-lg"
             : "px-3 py-2 text-sm text-white/70 hover:bg-white/10"
         )}
       >
