@@ -1,51 +1,79 @@
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
 function cleanFileOutput(text: string) {
-    // remove markdown
-    text = text.replace(/```[\s\S]*?```/g, "");
+    // ✅ remove only backticks, keep content
+    text = text.replace(/```(tsx|ts|js|json)?/g, "").replace(/```/g, "");
 
-    // remove bash-like lines
     if (text.includes("mkdir") || text.includes("echo ")) {
-        throw new Error("Invalid file: contains bash script");
-    }
-
-    // remove accidental JSON wrappers
-    if (text.trim().startsWith("{") && text.includes("dependencies")) {
-        // allow only if it's package.json
-        return text;
+        throw new Error("Invalid bash content");
     }
 
     return text.trim();
 }
 
+function isValidFile(content: string) {
+    if (content.length < 30) return false;
 
-const systemPrompt = `
-  You are a strict file generator.
-  
-  You generate ONLY ONE file.
-  
-  STRICT RULES:
-  
-  - Output ONLY the file content
-  - NO markdown (no backticks)
-  - NO explanations
-  - NO comments like // filename
-  - NO bash commands
-  - NO multiple files
-  - NO JSON (unless file is package.json)
-  - NO repetition
-  
-  You MUST ONLY generate the content of THIS file:
-  {FILE_PATH}
-  
-  If you output anything else, the system will reject it.
-  `;
+    // accept flexible valid code patterns
+    const validIndicators = [
+        "import",
+        "export",
+        "function",
+        "const",
+        "React",
+        "<div",
+        "{",
+    ];
 
+    return validIndicators.some(v => content.includes(v));
+}
+
+
+
+function getDynamicPrompt(filePath: string) {
+    let base = `
+You generate ONLY the file content.
+
+Rules:
+- No markdown
+- No explanation
+- No filename comments
+- No multiple files
+`;
+
+    if (filePath === "package.json") {
+        return base + `
+Return valid JSON.
+Include dependencies for React + Vite.
+`;
+    }
+
+    if (filePath === "src/main.tsx") {
+        return base + `
+React entry file.
+Use ReactDOM.createRoot and render <App />.
+`;
+    }
+
+    if (filePath.endsWith(".tsx")) {
+        return base + `
+Use React + TypeScript.
+Export default component.
+`;
+    }
+
+    if (filePath.endsWith(".html")) {
+        return base + `
+Return valid HTML.
+`;
+    }
+
+    return base;
+}
 
 export async function generateFile(
     filePath: string,
@@ -53,54 +81,42 @@ export async function generateFile(
     allFiles: string[]
 ) {
     for (let attempt = 0; attempt < 3; attempt++) {
-        const res = await openai.chat.completions.create({
-            model: "openai/gpt-oss-120b:free",
-            temperature: 0.2,
-            messages: [
-                {
-                    role: "system",
-                    content: systemPrompt.replace("{FILE_PATH}", filePath),
-                },
-                {
-                    role: "user",
-                    content: `
-  User request:
-  ${prompt}
-  
-  File to generate:
-  ${filePath}
-  
-  All project files:
-  ${allFiles.join("\n")}
-            `,
-                },
-            ],
-        });
-
-        let raw = res.choices[0].message.content || "";
-
         try {
+            const res = await openai.chat.completions.create({
+                model: "gpt-4o",
+                temperature: 0.2,
+                max_tokens: 3000,
+                messages: [
+                    {
+                        role: "system",
+                        content: getDynamicPrompt(filePath),
+                    },
+                    {
+                        role: "user",
+                        content: `
+User request:
+${prompt}
+
+File:
+${filePath}
+
+Project files:
+${allFiles.join("\n")}
+`,
+                    },
+                ],
+            });
+
+            const raw = res.choices[0].message.content || "";
             const cleaned = cleanFileOutput(raw);
 
-            // 🔥 BASIC VALIDATION
-            if (cleaned.length < 20) {
-                throw new Error("File too small");
-            }
-
-            if (cleaned.includes("mkdir") || cleaned.includes("echo ")) {
-                throw new Error("Invalid content");
-            }
-
-            if (
-                cleaned.includes("useState<") &&
-                !cleaned.includes(");")
-            ) {
-                throw new Error("Truncated file detected");
+            if (!isValidFile(cleaned)) {
+                throw new Error("Invalid file");
             }
 
             return cleaned;
         } catch (err) {
-            console.warn(`⚠️ File generation failed for ${filePath}, retrying...`);
+            console.warn(`⚠️ Retry ${filePath} (${attempt + 1})`);
         }
     }
 
