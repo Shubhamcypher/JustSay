@@ -56,27 +56,100 @@ export function useWebContainer(
     return root;
   }
 
-  // 🛠 Fix index.html (CRITICAL)
+  // 🔥 FIX 1: index.html paths
   function fixIndexHtml(files: Record<string, any>) {
-    if (!files["index.html"]) return;
+    if (!files["index.html"]) return files;
 
-    let content = files["index.html"].content;
+    const newFiles = { ...files };
+    let content = newFiles["index.html"].content;
 
-    // ❌ REMOVE any css link
-    content = content.replace(/<link.*?>/g, "");
-
-    // ✅ FORCE correct root div
-    content = content.replace(/<div[^>]*>/, `<div id="root">`);
-
-    // ✅ FORCE correct script
+    // Fix script
     content = content.replace(
-      /<script.*<\/script>/,
+      /<script type="module" src=".*?"><\/script>/,
       `<script type="module" src="/src/main.tsx"></script>`
     );
 
-    files["index.html"].content = content;
+    // Remove wrong CSS links (we'll handle via JS import)
+    content = content.replace(/<link rel="stylesheet".*?>/g, "");
+
+    newFiles["index.html"] = {
+      ...newFiles["index.html"],
+      content,
+    };
+
+    return newFiles;
   }
 
+  // 🔥 FIX 2: export/import mismatch
+  function fixExports(files: Record<string, any>) {
+    const newFiles = { ...files };
+  
+    for (const path in newFiles) {
+      let content = newFiles[path].content;
+      if (!content) continue;
+  
+      // 🔥 FIX: export const hook → default export safely
+      content = content.replace(
+        /export const (\w+)\s*=\s*\(/g,
+        "const $1 = ("
+      );
+  
+      content = content.replace(
+        /const (\w+)\s*=\s*\(/g,
+        (match:any, fnName:any) => {
+          if (path.includes("hooks")) {
+            return `const ${fnName} = (`;
+          }
+          return match;
+        }
+      );
+  
+      // add default export at end if missing
+      if (path.includes("hooks") && !content.includes("export default")) {
+        const match = content.match(/const (\w+)/);
+        if (match) {
+          content += `\n\nexport default ${match[1]};`;
+        }
+      }
+  
+      // 🔥 Fix import mismatch
+      content = content.replace(
+        /import\s+{?\s*(\w+)\s*}?\s+from\s+['"](.*hooks\/.*)['"]/g,
+        "import $1 from '$2'"
+      );
+  
+      newFiles[path].content = content;
+    }
+  
+    return newFiles;
+  }
+
+  // 🔥 FIX 3: CSS handling
+  function fixCss(files: Record<string, any>) {
+    const newFiles = { ...files };
+
+    // Ensure CSS exists
+    if (!newFiles["src/styles/global.css"]) {
+      newFiles["src/styles/global.css"] = {
+        content: "body { font-family: sans-serif; margin: 0; padding: 0; }",
+      };
+    }
+
+    // Ensure CSS is imported in main.tsx
+    if (newFiles["src/main.tsx"]) {
+      let content = newFiles["src/main.tsx"].content;
+
+      if (!content.includes("global.css")) {
+        content = `import "./styles/global.css";\n` + content;
+      }
+
+      newFiles["src/main.tsx"].content = content;
+    }
+
+    return newFiles;
+  }
+
+  // 🧠 Detect dependencies
   function detectDependencies(files: Record<string, any>) {
     const deps = new Set<string>();
 
@@ -84,85 +157,66 @@ export function useWebContainer(
       .map((f: any) => f.content)
       .join("\n");
 
-    // 🔥 Detect common libraries
-    if (content.includes("react-redux")) deps.add("react-redux");
-    if (content.includes("@reduxjs/toolkit")) deps.add("@reduxjs/toolkit");
-    if (content.includes("axios")) deps.add("axios");
-    if (content.includes("react-router-dom")) deps.add("react-router-dom");
+    if (/from ["']react-redux["']/.test(content)) deps.add("react-redux");
+    if (/from ["']@reduxjs\/toolkit["']/.test(content)) deps.add("@reduxjs/toolkit");
+    if (/from ["']axios["']/.test(content)) deps.add("axios");
+    if (/from ["']react-router-dom["']/.test(content)) deps.add("react-router-dom");
 
     return Array.from(deps);
   }
 
-  // 🛠 Fix package.json (minimal safe)
+  // 🔥 FIX 4: package.json
   function fixPackageJson(files: Record<string, any>) {
+    const newFiles = { ...files };
     const detectedDeps = detectDependencies(files);
 
-    // base dependencies (always needed)
     const dependencies: Record<string, string> = {
       react: "^18.2.0",
       "react-dom": "^18.2.0",
     };
 
-    // 🔥 add detected ones
     detectedDeps.forEach((dep) => {
       dependencies[dep] = "latest";
     });
 
-    files["package.json"] = {
+    newFiles["package.json"] = {
       path: "package.json",
-      content: JSON.stringify({
-        name: "app",
-        private: true,
-        version: "0.0.0",
-        type: "module",
-        scripts: {
-          dev: "vite",
-          build: "vite build",
-          preview: "vite preview"
+      content: JSON.stringify(
+        {
+          name: "app",
+          private: true,
+          version: "0.0.0",
+          type: "module",
+          scripts: {
+            dev: "vite",
+            build: "vite build",
+            preview: "vite preview",
+          },
+          dependencies,
+          devDependencies: {
+            vite: "^4.0.0",
+            typescript: "^5.0.0",
+            "@vitejs/plugin-react": "^4.0.0",
+          },
         },
-        dependencies,
-        devDependencies: {
-          vite: "^4.0.0",
-          typescript: "^5.0.0",
-          "@vitejs/plugin-react": "^4.0.0"
-        }
-      }, null, 2)
+        null,
+        2
+      ),
     };
+
+    return newFiles;
   }
 
-  function autoFixFiles(files: Record<string, any>) {
-    Object.keys(files).forEach((path) => {
-      let content = files[path].content;
-  
-      // ❌ Remove Angular garbage
-      content = content.replace(/@angular\/core/g, "");
-  
-      // ❌ Remove invalid CSS imports
-      content = content.replace(/import\s+["']\.\/styles\/.*\.css["'];?/g, "");
-  
-      // ❌ Remove missing service imports
-      if (!files["src/services/todo.service.ts"]) {
-        content = content.replace(/import .*todo\.service.*;/g, "");
-      }
-  
-      // ❌ Fix default export issues
-      if (content.includes("export const")) {
-        content = content.replace("export const", "const");
-        content += "\nexport default App;";
-      }
-  
-      files[path].content = content;
-    });
-  }
+  // 🔄 Reset on new files
+  useEffect(() => {
+    startedRef.current = false;
+  }, [files]);
 
-  // 🔄 MAIN EXECUTION (FIXED)
+  // 🚀 MAIN EXECUTION
   useEffect(() => {
     if (!wcRef.current) return;
     if (!isReady) return;
-    if (startedRef.current) return;
-
-    // ✅ PREVENT MULTIPLE RUNS
-    startedRef.current = true;
+    if (startedRef.current && url) return;
 
     const hasCoreFiles =
       files["package.json"] &&
@@ -172,25 +226,29 @@ export function useWebContainer(
 
     if (!hasCoreFiles) {
       console.log("⏳ Waiting for core files...");
-      startedRef.current = false;
       return;
     }
+
+    startedRef.current = true;
 
     const run = async () => {
       const wc = wcRef.current;
 
       try {
-        const stableFiles = JSON.parse(JSON.stringify(files));
-        console.log("🛠 Fixing project...");
+        console.log("🛠 Preparing project...");
 
-        fixIndexHtml(stableFiles);
-        fixPackageJson(stableFiles);
-        autoFixFiles(stableFiles);
+        let stableFiles = JSON.parse(JSON.stringify(files));
 
-        console.log("📁 Mounting project...");
+        // 🔥 FULL FIX PIPELINE
+        stableFiles = fixIndexHtml(stableFiles);
+        stableFiles = fixExports(stableFiles);
+        stableFiles = fixCss(stableFiles);
+        stableFiles = fixPackageJson(stableFiles);
+
+        console.log("📁 Mounting...");
         await wc.mount(buildTree(stableFiles));
 
-        console.log("📦 Installing dependencies...");
+        console.log("📦 Installing...");
         const install = await wc.spawn("npm", ["install"]);
         await install.exit;
 
@@ -206,11 +264,12 @@ export function useWebContainer(
         );
       } catch (err) {
         console.error("❌ WebContainer error:", err);
+        startedRef.current = false;
       }
     };
 
     run();
-  }, [isReady]); // ✅ ONLY isReady (IMPORTANT)
+  }, [isReady, url, files]);
 
   return url;
 }
