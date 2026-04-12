@@ -9,6 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import ProjectItem from "./ProjectItem";
 import { useHoverPreview } from "@/hooks/useHoverPreview";
+import { useProjects } from "@/context/ProjectContext";
 
 type SectionKey = "created" | "shared" | "starred";
 
@@ -28,6 +29,8 @@ export default function ProjectsSection({
   variant = "desktop",
 }: Props) {
   const isMobile = variant === "mobile";
+
+  const { projects } = useProjects();
 
   const [projectsOpen, setProjectsOpen] = useState(true);
   const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
@@ -152,18 +155,10 @@ export default function ProjectsSection({
                       : "max-h-0"
                   )}
                 >
-                  {[
-                    "Project A",
-                    "Landing Page",
-                    "looo",
-                    "pooo",
-                    "chooo",
-                    "wooo",
-                    "thoooo",
-                  ].map((p) => (
+                  {projects[section.key].map((p: any) => (
                     <ProjectItem
-                      key={p}
-                      name={p}
+                      key={p.id}
+                      name={p.name}
                       onHover={!isMobile ? handleEnter : undefined}
                       onLeave={!isMobile ? handleLeave : undefined}
                     />
