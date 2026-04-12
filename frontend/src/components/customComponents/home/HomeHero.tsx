@@ -26,7 +26,7 @@ export default function HomeHero() {
     };
 
     return (
-        <div className="relative min-h-[60vh] md:h-[80vh] flex md:items-center justify-center px-4 md:px-0 pt-6 md:pt-6 items-center">
+        <div className="relative min-h-[60vh] md:h-[75vh] flex md:items-center justify-center px-4 md:px-0 pt-6 md:pt-6 items-center">
 
             <div className="relative w-full md:w-[100vw] md:p-6 max-w-4xl text-center">
 
