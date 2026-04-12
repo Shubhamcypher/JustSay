@@ -209,15 +209,16 @@ export function useWebContainer(
 
   // 🔄 Reset on new files
   useEffect(() => {
-    startedRef.current = false;
-  }, [files]);
+  if (!files) return;
+}, [files]);
 
   // 🚀 MAIN EXECUTION
   useEffect(() => {
     if (!wcRef.current) return;
     if (!isReady) return;
-    if (startedRef.current && url) return;
+    if (startedRef.current) return;
 
+    
     const hasCoreFiles =
       files["package.json"] &&
       files["index.html"] &&

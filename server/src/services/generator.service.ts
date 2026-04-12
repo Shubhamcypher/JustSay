@@ -80,7 +80,7 @@ export async function generateFile(
     prompt: string,
     allFiles: string[]
 ) {
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 1; attempt++) {
         try {
             const res = await openai.chat.completions.create({
                 model: "gpt-4o",

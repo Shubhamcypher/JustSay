@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
 import { pool } from "../config/db";
-import { streamLLM } from "../services/ai.service";
-import { parseStream } from "../utils/streamParser";
+// import { streamLLM } from "../services/ai.service";
+// import { parseStream } from "../utils/streamParser";
 import { planProject } from "../services/planner.service";
-import { generateFile } from "../services/generator.service";
+// import { generateFile } from "../services/generator.service";
+import { generateFilesBatch } from "../services/genrateFilesBatch.service";
+
+type ProjectPlan = {
+    files: string[];
+  };
 
 const isBinaryFile = (filePath: string) => {
     return /\.(ico|png|jpg|jpeg|gif|svg|webp)$/i.test(filePath);
@@ -54,48 +59,38 @@ export const generateProject = async (req: Request, res: Response) => {
         );
 
         let buffer = "";
-        const plan = await planProject(prompt);
-        console.log(plan);
-
+        // 🔥 PLAN
+        const plan: ProjectPlan = await planProject(prompt);
 
         if (!plan.files || !Array.isArray(plan.files)) {
             throw new Error("Invalid plan from LLM");
         }
 
+        // 🔥 FILTER TEXT FILES ONLY
+        const textFiles = plan.files.filter(f => !isBinaryFile(f));
+
+        // 🔥 SINGLE API CALL
+        const result = await generateFilesBatch(textFiles, prompt);
+
+        // 🔥 LOOP ONLY FOR SAVING + STREAMING
         for (const filePath of plan.files) {
 
-            // ✅ HANDLE BINARY FILES HERE
+            let content = "";
+
             if (isBinaryFile(filePath)) {
                 console.log(`⏭️ Skipping binary file: ${filePath}`);
-
-                const content = ""; // placeholder (important for frontend)
-
-                await pool.query(
-                    `INSERT INTO project_files (project_id, path, content)
-                     VALUES ($1,$2,$3)`,
-                    [projectId, filePath, content]
-                );
-
-                res.write(
-                    `data: ${JSON.stringify({
-                        type: "file",
-                        path: filePath,
-                        content,
-                    })}\n\n`
-                );
-
-                continue;
+            } else {
+                content = result.files?.[filePath] || "";
             }
 
-            // ✅ NORMAL FLOW
-            const content = await generateFile(filePath, prompt, plan.files);
-
+            // save
             await pool.query(
                 `INSERT INTO project_files (project_id, path, content)
-                 VALUES ($1,$2,$3)`,
+         VALUES ($1,$2,$3)`,
                 [projectId, filePath, content]
             );
 
+            // stream
             res.write(
                 `data: ${JSON.stringify({
                     type: "file",
