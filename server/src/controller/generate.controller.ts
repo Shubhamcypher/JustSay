@@ -5,6 +5,10 @@ import { parseStream } from "../utils/streamParser";
 import { planProject } from "../services/planner.service";
 import { generateFile } from "../services/generator.service";
 
+const isBinaryFile = (filePath: string) => {
+    return /\.(ico|png|jpg|jpeg|gif|svg|webp)$/i.test(filePath);
+};
+
 export const generateProject = async (req: Request, res: Response) => {
     const { prompt } = req.body;
 
@@ -24,6 +28,8 @@ export const generateProject = async (req: Request, res: Response) => {
     let projectId = "";
 
     try {
+        console.log(prompt);
+
         //Create project
         const projectRes = await pool.query(
             `INSERT INTO projects (name, stack, status, owner_id)
@@ -49,17 +55,44 @@ export const generateProject = async (req: Request, res: Response) => {
 
         let buffer = "";
         const plan = await planProject(prompt);
+        console.log(plan);
+
 
         if (!plan.files || !Array.isArray(plan.files)) {
             throw new Error("Invalid plan from LLM");
         }
 
         for (const filePath of plan.files) {
+
+            // ✅ HANDLE BINARY FILES HERE
+            if (isBinaryFile(filePath)) {
+                console.log(`⏭️ Skipping binary file: ${filePath}`);
+
+                const content = ""; // placeholder (important for frontend)
+
+                await pool.query(
+                    `INSERT INTO project_files (project_id, path, content)
+                     VALUES ($1,$2,$3)`,
+                    [projectId, filePath, content]
+                );
+
+                res.write(
+                    `data: ${JSON.stringify({
+                        type: "file",
+                        path: filePath,
+                        content,
+                    })}\n\n`
+                );
+
+                continue;
+            }
+
+            // ✅ NORMAL FLOW
             const content = await generateFile(filePath, prompt, plan.files);
 
             await pool.query(
                 `INSERT INTO project_files (project_id, path, content)
-     VALUES ($1,$2,$3)`,
+                 VALUES ($1,$2,$3)`,
                 [projectId, filePath, content]
             );
 
