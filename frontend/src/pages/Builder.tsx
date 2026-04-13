@@ -106,7 +106,8 @@ export default function Builder() {
 
                     if (data.type === "file") {
                         console.log("📁 FILE RECEIVED:", data.path);
-                        addFile(data); // ✅ now works
+                        // addFile(data); // ✅ now works
+                        setQueue((prev) => [...prev, data]);
                     }
 
                     // if (data.type === "status") {
