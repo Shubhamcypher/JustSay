@@ -1,5 +1,5 @@
 import { useFiles } from "@/hooks/useFiles";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { useWebContainer } from "@/hooks/useWebContainer";
@@ -14,10 +14,7 @@ export default function Builder() {
     // const [logs, setLogs] = useState(""); // ✅ local state
     const [stableFiles, setStableFiles] = useState(files);
     const [isReady, setIsReady] = useState(false);
-
-    //Queue for streaming 
-    const [queue, setQueue] = useState<any[]>([]);
-    const isProcessingRef = useRef(false);
+    
 
     function fixIndexHtml(files: Record<string, any>) {
         const indexFile = files["index.html"];
