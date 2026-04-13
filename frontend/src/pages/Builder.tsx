@@ -1,5 +1,5 @@
 import { useFiles } from "@/hooks/useFiles";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { useWebContainer } from "@/hooks/useWebContainer";
@@ -14,7 +14,9 @@ export default function Builder() {
     // const [logs, setLogs] = useState(""); // ✅ local state
     const [stableFiles, setStableFiles] = useState(files);
     const [isReady, setIsReady] = useState(false);
-    
+
+    const streamQueueRef = useRef<any[]>([]);
+    const isStreamingRef = useRef(false);
 
     function fixIndexHtml(files: Record<string, any>) {
         const indexFile = files["index.html"];
@@ -46,6 +48,36 @@ export default function Builder() {
 
         return files;
     }
+
+    const streamFile = async (path: string, fullContent: string) => {
+        addFile({ path, content: "" }); // start empty
+
+        let current = "";
+
+        for (let i = 0; i < fullContent.length; i++) {
+            current += fullContent[i];
+
+            updateFileContent(path, current);
+
+            // 🔥 SPEED CONTROL
+            const speed = fullContent.length > 200 ? 3 : 8;
+            await new Promise(r => setTimeout(r, speed));
+        }
+    };
+
+    const processQueue = async () => {
+        if (isStreamingRef.current) return;
+
+        isStreamingRef.current = true;
+
+        while (streamQueueRef.current.length > 0) {
+            const file = streamQueueRef.current.shift();
+
+            await streamFile(file.path, file.content); // 🔥 wait for completion
+        }
+
+        isStreamingRef.current = false;
+    };
 
 
 
@@ -103,7 +135,9 @@ export default function Builder() {
 
                     if (data.type === "file") {
                         console.log("📁 FILE RECEIVED:", data.path);
-                        addFile(data); // ✅ now works
+                        // addFile(data); // ✅ now works
+                        streamQueueRef.current.push(data);
+                        processQueue();
                     }
 
                     // if (data.type === "status") {
