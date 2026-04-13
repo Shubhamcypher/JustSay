@@ -50,7 +50,29 @@ export default function Builder() {
         return files;
     }
 
+    //Streaming queue useffect
+    useEffect(() => {
+        if (isProcessingRef.current) return;
+        if (queue.length === 0) return;
 
+        isProcessingRef.current = true;
+
+        const process = async () => {
+            while (queue.length > 0) {
+                const next = queue[0];
+
+                addFile(next);
+
+                await new Promise((r) => setTimeout(r, 120)); // 🔥 speed control
+
+                setQueue((prev) => prev.slice(1));
+            }
+
+            isProcessingRef.current = false;
+        };
+
+        process();
+    }, [queue]);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
