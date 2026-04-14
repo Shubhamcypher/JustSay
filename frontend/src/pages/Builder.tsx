@@ -179,6 +179,65 @@ export default function Builder() {
     }, [prompt]);
 
 
+    //function to
+    function buildFileTree(files: Record<string, any>) {
+        const tree: any = {};
+
+        Object.keys(files).forEach((path) => {
+            const parts = path.split("/");
+
+            let current = tree;
+
+            parts.forEach((part, index) => {
+                if (index === parts.length - 1) {
+                    // file
+                    current[part] = { type: "file", path };
+                } else {
+                    // folder
+                    if (!current[part]) {
+                        current[part] = { type: "folder", children: {} };
+                    }
+                    current = current[part].children;
+                }
+            });
+        });
+
+        return tree;
+    }
+
+    const fileTree = buildFileTree(files);
+
+    function FileTree({ tree, level = 0 }: any) {
+        return (
+            <div>
+                {Object.entries(tree).map(([name, node]: any) => {
+                    if (node.type === "file") {
+                        return (
+                            <div
+                                key={node.path}
+                                style={{ paddingLeft: level * 10 }}
+                                onClick={() => setActiveFile(node.path)}
+                                className="cursor-pointer text-sm hover:bg-white/5"
+                            >
+                                📄 {name}
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div key={name}>
+                            <div style={{ paddingLeft: level * 10 }}>
+                                📁 {name}
+                            </div>
+                            <FileTree tree={node.children} level={level + 1} />
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    }
+
+
     return (
         <div className="h-screen flex bg-gray-900 text-white p-4 gap-4">
 
@@ -186,19 +245,10 @@ export default function Builder() {
             <div className="w-[35%] border border-white/10 p-3 overflow-y-auto flex flex-col gap-4">
 
                 {/*Files div */}
-                <div className="h-[65%]">
+                <div className="h-[65%] overflow-y-auto">
                     <h2 className="text-sm mb-2 text-white/60">FILES</h2>
                     <div className=" border-red-500">
-                        {Object.keys(files).map((file) => (
-                            <div
-                                key={file}
-                                onClick={() => setActiveFile(file)}
-                                className={`cursor-pointer text-sm px-2  py-1 rounded ${activeFile === file ? "bg-white/10" : "hover:bg-white/5"
-                                    }`}
-                            >
-                                {file}
-                            </div>
-                        ))}
+                        <FileTree tree={fileTree} />
                     </div>
                 </div>
                 {/*Files div */}
