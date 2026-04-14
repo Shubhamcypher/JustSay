@@ -238,7 +238,7 @@ export default function Builder() {
         return tree;
     }
 
-    const fileTree = buildFileTree(files);
+    const fileTree = buildFileTree({...files});
 
 
     function FileTree({ tree, parentPath = "", level = 0 }: any) {
