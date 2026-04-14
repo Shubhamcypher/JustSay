@@ -22,6 +22,9 @@ export default function Builder() {
     //editor ref
     const editorRef = useRef<any>(null);
 
+    //editor ref
+    const monacoRef = useRef<any>(null);
+
     function fixIndexHtml(files: Record<string, any>) {
         const indexFile = files["index.html"];
         if (!indexFile) return files;
@@ -109,9 +112,7 @@ export default function Builder() {
 
     const fixedFiles = fixIndexHtml(stableFiles);
     const previewUrl = useWebContainer(fixedFiles, isReady);
-    useEffect(() => {
-        console.log("📦 CURRENT FILES:", Object.keys(files));
-    }, [files]);
+
 
     const hasFiles = Object.keys(stableFiles).length > 0;
 
@@ -218,6 +219,55 @@ export default function Builder() {
                 theme="vs-dark"
                 path={activeFile || ""}
                 value={activeFile ? files[activeFile]?.content || "" : ""}
+                language={
+                    activeFile?.endsWith(".tsx")
+                        ? "typescript"
+                        : activeFile?.endsWith(".ts")
+                            ? "typescript"
+                            : activeFile?.endsWith(".js")
+                                ? "javascript"
+                                : activeFile?.endsWith(".jsx")
+                                    ? "javascript"
+                                    : activeFile?.endsWith(".html")
+                                        ? "html"
+                                        : "plaintext"
+                }
+                beforeMount={(monaco) => {
+                    monacoRef.current = monaco;
+                    // monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+                    //     target: monaco.languages.typescript.ScriptTarget.ESNext,
+                    //     module: monaco.languages.typescript.ModuleKind.ESNext,
+                    //     moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+                    //     jsx: monaco.languages.typescript.JsxEmit.ReactJSX, // ✅ VERY IMPORTANT
+                    //     baseUrl: "file:///",
+                    //     allowNonTsExtensions: true,
+                    //     esModuleInterop: true,
+                    //     allowSyntheticDefaultImports: true,
+                    //     resolveJsonModule: true,
+                    //     noEmit: true,
+                    //     typeRoots: ["node_modules/@types"],
+
+                    // });
+
+                    // monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                    //     `
+                    //     declare module "react/jsx-runtime" {
+                    //         export const jsx: any;
+                    //         export const jsxs: any;
+                    //         export const Fragment: any;
+                    //     }
+                    //     `,
+                    //     "file:///node_modules/@types/react/jsx-runtime.d.ts"
+                    // );
+
+
+                    // 🚨 disable errors initially
+                    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+                        noSemanticValidation: true,
+                        noSyntaxValidation: false,
+                    });
+
+                }}
                 onMount={(editor) => {
                     editorRef.current = editor; // ✅ store editor
                 }}
