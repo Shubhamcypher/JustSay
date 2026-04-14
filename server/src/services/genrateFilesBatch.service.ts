@@ -1,16 +1,16 @@
 import OpenAI from "openai";
 
 //for OpenAI
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// const openai = new OpenAI({
+//     apiKey: process.env.OPENAI_API_KEY,
+// });
 
 
 //for groq
-// const openai = new OpenAI({
-//     apiKey: process.env.GROQ_API_KEY,
-//     baseURL: "https://api.groq.com/openai/v1",
-// });
+const openai = new OpenAI({
+    apiKey: process.env.GROQ_API_KEY,
+    baseURL: "https://api.groq.com/openai/v1",
+});
 
 function cleanJSON(text: string) {
     return text
@@ -23,8 +23,8 @@ function cleanJSON(text: string) {
 
 export async function generateFilesBatch(files: any, prompt: string) {
     const res = await openai.chat.completions.create({
-        model: "gpt-4o",  //open ai model for planner
-        // model: "llama-3.3-70b-versatile", // llama model works freely but too scratchy
+        // model: "gpt-4o",  //open ai model for planner
+        model: "llama-3.3-70b-versatile", // llama model works freely but too scratchy
         temperature: 0.2,
         messages: [
             {

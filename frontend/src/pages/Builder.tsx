@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { useWebContainer } from "@/hooks/useWebContainer";
+import { Icon } from "@iconify/react";
 
 
 
@@ -14,6 +15,11 @@ export default function Builder() {
     // const [logs, setLogs] = useState(""); // ✅ local state
     const [stableFiles, setStableFiles] = useState(files);
     const [isReady, setIsReady] = useState(false);
+
+
+    // folder toggle state
+    const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
+
 
     //Streaming fiiles ref
     const streamQueueRef = useRef<any[]>([]);
@@ -179,7 +185,34 @@ export default function Builder() {
     }, [prompt]);
 
 
-    //function to
+    useEffect(() => {
+        const folders: any = {};
+
+        Object.keys(files).forEach((path) => {
+            const parts = path.split("/");
+            let current = "";
+
+            parts.slice(0, -1).forEach((part) => {
+                current = current ? `${current}/${part}` : part;
+                folders[current] = true;
+            });
+        });
+
+        setOpenFolders(folders);
+    }, [files]);
+
+
+    function getFileIcon(name: string) {
+        if (name.endsWith(".tsx")) return "logos:react";
+        if (name.endsWith(".ts")) return "logos:typescript-icon";
+        if (name.endsWith(".js")) return "logos:javascript";
+        if (name.endsWith(".json")) return "vscode-icons:file-type-json";
+        if (name.endsWith(".html")) return "vscode-icons:file-type-html";
+        if (name.endsWith(".css")) return "vscode-icons:file-type-css";
+        return "vscode-icons:default-file";
+    }
+
+    //function to build folder trees
     function buildFileTree(files: Record<string, any>) {
         const tree: any = {};
 
@@ -207,29 +240,59 @@ export default function Builder() {
 
     const fileTree = buildFileTree(files);
 
-    function FileTree({ tree, level = 0 }: any) {
+
+    function FileTree({ tree, parentPath = "", level = 0 }: any) {
         return (
             <div>
                 {Object.entries(tree).map(([name, node]: any) => {
+                    const fullPath = parentPath ? `${parentPath}/${name}` : name;
+                    const isOpen = openFolders[fullPath];
+                    // const Icon = getFileIcon(name);
+
                     if (node.type === "file") {
+                        const iconName = getFileIcon(name);
+
                         return (
                             <div
-                                key={node.path}
-                                style={{ paddingLeft: level * 10 }}
+                                key={fullPath}
                                 onClick={() => setActiveFile(node.path)}
-                                className="cursor-pointer text-sm hover:bg-white/5"
+                                className={`flex items-center gap-2 px-2 py-1 text-sm cursor-pointer rounded
+                                    ${activeFile === node.path ? "bg-white/10" : "hover:bg-white/5"}
+                                `}
+                                style={{ paddingLeft: level * 12 }}
                             >
-                                📄 {name}
+                                <Icon icon={iconName} width={16} />
+                                <span>{name}</span>
                             </div>
                         );
                     }
 
+
                     return (
-                        <div key={name}>
-                            <div style={{ paddingLeft: level * 10 }}>
-                                📁 {name}
+                        <div key={fullPath}>
+                            {/* Folder Header */}
+                            <div
+                                onClick={() =>
+                                    setOpenFolders((prev) => ({
+                                        ...prev,
+                                        [fullPath]: !prev[fullPath],
+                                    }))
+                                }
+                                className="flex items-center gap-2 px-2 py-1 text-sm cursor-pointer hover:bg-white/5 rounded"
+                                style={{ paddingLeft: level * 12 }}
+                            >
+                                <Icon icon={isOpen ? "mdi:chevron-down" : "mdi:chevron-right"} width={16} />
+                                <span>{name}</span>
                             </div>
-                            <FileTree tree={node.children} level={level + 1} />
+
+                            {/* Children */}
+                            {isOpen && (
+                                <FileTree
+                                    tree={node.children}
+                                    parentPath={fullPath}
+                                    level={level + 1}
+                                />
+                            )}
                         </div>
                     );
                 })}
@@ -237,12 +300,11 @@ export default function Builder() {
         );
     }
 
-
     return (
         <div className="h-screen flex bg-gray-900 text-white p-4 gap-4">
 
             {/* LEFT: Logs */}
-            <div className="w-[35%] border border-white/10 p-3 overflow-y-auto flex flex-col gap-4">
+            <div className="w-[35%] border border-white/10 p-3 overflow-y-auto custom-scrollbar flex flex-col gap-4">
 
                 {/*Files div */}
                 <div className="h-[65%] overflow-y-auto">
@@ -341,3 +403,14 @@ export default function Builder() {
         </div>
     );
 }
+
+
+
+
+
+
+
+
+
+
+
