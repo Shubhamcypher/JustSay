@@ -15,8 +15,12 @@ export default function Builder() {
     const [stableFiles, setStableFiles] = useState(files);
     const [isReady, setIsReady] = useState(false);
 
+    //Streaming fiiles ref
     const streamQueueRef = useRef<any[]>([]);
     const isStreamingRef = useRef(false);
+
+    //editor ref
+    const editorRef = useRef<any>(null);
 
     function fixIndexHtml(files: Record<string, any>) {
         const indexFile = files["index.html"];
@@ -53,15 +57,29 @@ export default function Builder() {
         addFile({ path, content: "" }); // start empty
 
         let current = "";
+        let cursor = true;
+
 
         for (let i = 0; i < fullContent.length; i++) {
             current += fullContent[i];
 
-            updateFileContent(path, current);
+            updateFileContent(
+                path,
+                current + (cursor ? "▌" : "")
+            );
+
+            cursor = !cursor;
+
+            // 🔥 auto scroll
+            const lineCount = current.split("\n").length;
+            editorRef.current?.revealLine(lineCount);
+
 
             // 🔥 SPEED CONTROL
             const speed = fullContent.length > 200 ? 3 : 8;
             await new Promise(r => setTimeout(r, speed));
+
+            updateFileContent(path, fullContent); // remove cursor
         }
     };
 
@@ -200,6 +218,9 @@ export default function Builder() {
                 theme="vs-dark"
                 path={activeFile || ""}
                 value={activeFile ? files[activeFile]?.content || "" : ""}
+                onMount={(editor) => {
+                    editorRef.current = editor; // ✅ store editor
+                }}
                 onChange={(value) => {
                     if (!activeFile) return;
                     updateFileContent(activeFile, value || "");
