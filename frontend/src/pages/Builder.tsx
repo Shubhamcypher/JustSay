@@ -18,27 +18,40 @@ export default function Builder() {
 
 
     //Log state and function
-    const [logs, setLogs] = useState<
-        { type: "info" | "success" | "error"; message: string }[]
-    >([]);
+    type Step = {
+        id: number;
+        text: string;
+        status: "loading" | "done";
+    };
 
-    function pushLog(message: string, type: "info" | "success" | "error" = "info") {
-        setLogs((prev) => {
-            const newLogs = [...prev, { message, type }];
+    const [steps, setSteps] = useState<Step[]>([]);
 
-            // keep only last 4 logs
-            if (newLogs.length > 4) {
-                newLogs.shift(); // remove oldest
-            }
+    let stepId = 0;
 
-            return newLogs;
-        });
-        // ✅ auto-remove after delay (only for success logs)
-        if (type === "success") {
-            setTimeout(() => {
-                setLogs((prev) => prev.slice(1));
-            }, 1200);
-        }
+    const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+    function addStep(text: string) {
+        const id = stepId++;
+
+        setSteps((prev) => [
+            ...prev.slice(-3), // keep last 3
+            { id, text, status: "loading" },
+        ]);
+
+        return id;
+    }
+
+    function completeStep(id: number) {
+        setSteps((prev) =>
+            prev.map((s) =>
+                s.id === id ? { ...s, status: "done" } : s
+            )
+        );
+
+        // remove after animation
+        setTimeout(() => {
+            setSteps((prev) => prev.filter((s) => s.id !== id));
+        }, 1200);
     }
 
 
@@ -127,14 +140,13 @@ export default function Builder() {
             const file = streamQueueRef.current.shift();
 
 
-            pushLog(`🧠 Generating ${getFileName(file.path)}...`);
+            const step = addStep(`Generating ${getFileName(file.path)}`);
 
-            await streamFile(file.path, file.content); // 🔥 wait for completion
+            setActiveFile(file.path);
 
-            pushLog(`✅ ${getFileName(file.path)} done`, "success");
+            await streamFile(file.path, file.content);
 
-            // small delay = cinematic feel
-            await new Promise(r => setTimeout(r, 250));
+            completeStep(step);
         }
 
         isStreamingRef.current = false;
@@ -151,7 +163,10 @@ export default function Builder() {
     }, [files]);
 
     const fixedFiles = fixIndexHtml(stableFiles);
-    const previewUrl = useWebContainer(fixedFiles, isReady,);
+    const previewUrl = useWebContainer(fixedFiles, isReady, (msg) => {
+        const step = addStep(msg);
+        setTimeout(() => completeStep(step), 800);
+    });
 
 
     const hasFiles = Object.keys(stableFiles).length > 0;
@@ -163,10 +178,13 @@ export default function Builder() {
         const controller = new AbortController();
 
         const startGeneration = async () => {
-            pushLog("🧠 Understanding your idea...");
-            await new Promise(r => setTimeout(r, 400));
+            const s1 = addStep("Understanding your idea...");
+            await sleep(400);
+            completeStep(s1);
 
-            pushLog("📐 Planning project structure...");
+            const s2 = addStep("Planning project structure...");
+            await sleep(500);
+            completeStep(s2);
             await new Promise(r => setTimeout(r, 500));
             const res = await fetch("http://localhost:5000/api/generate", {
                 method: "POST",
@@ -209,8 +227,10 @@ export default function Builder() {
                     // }
 
                     if (data.type === "done") {
-                        // setStableFiles(files);
-                        pushLog("📦 Finalizing project...", "info");
+                        const step = addStep("Finalizing project...");
+                        await sleep(400);
+                        completeStep(step);
+
                         setIsReady(true);
                     }
                 }
@@ -353,19 +373,29 @@ export default function Builder() {
                 </div>
 
                 {/* LOGS */}
-                <div className="h-[140px] mt-3 border-t border-white/10 pt-2 overflow-y-auto">
-                    <div className="text-xs space-y-1 font-mono">
-                        {logs.map((log, i) => (
+                <div className="h-[160px] mt-3 border-t border-white/10 pt-3 overflow-hidden">
+                    <div className="flex flex-col gap-2">
+                        {steps.map((step) => (
                             <div
-                                key={i}
+                                key={step.id}
                                 className={`
-                        ${log.type === "info" ? "text-blue-400" : ""}
-                        ${log.type === "success" ? "text-green-400" : ""}
-                        ${log.type === "error" ? "text-red-400" : ""}
-                        animate-fadeIn
-                    `}
+                    flex items-center gap-3 px-3 py-2 rounded-lg
+                    bg-white/5 backdrop-blur
+                    transition-all duration-500
+                    ${step.status === "done" ? "opacity-50 scale-95" : "scale-100"}
+                `}
                             >
-                                {log.message}
+                                {/* ICON */}
+                                {step.status === "loading" ? (
+                                    <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <div className="text-green-400">✔</div>
+                                )}
+
+                                {/* TEXT */}
+                                <span className="text-sm text-white/80">
+                                    {step.text}
+                                </span>
                             </div>
                         ))}
                     </div>

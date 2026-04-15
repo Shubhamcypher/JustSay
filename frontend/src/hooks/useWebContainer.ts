@@ -22,8 +22,8 @@ export function useWebContainer(
       wcRef.current = wc;
 
       wc.on("server-ready", (_: any, url: string) => {
-        console.log("🌐 Server ready:", url);
         setUrl(url);
+        onLog?.("🌐 Preview ready!");
       });
     };
 
@@ -84,27 +84,27 @@ export function useWebContainer(
   // 🔥 FIX 2: export/import mismatch
   function fixExports(files: Record<string, any>) {
     const newFiles = { ...files };
-  
+
     for (const path in newFiles) {
       let content = newFiles[path].content;
       if (!content) continue;
-  
+
       // 🔥 FIX: export const hook → default export safely
       content = content.replace(
         /export const (\w+)\s*=\s*\(/g,
         "const $1 = ("
       );
-  
+
       content = content.replace(
         /const (\w+)\s*=\s*\(/g,
-        (match:any, fnName:any) => {
+        (match: any, fnName: any) => {
           if (path.includes("hooks")) {
             return `const ${fnName} = (`;
           }
           return match;
         }
       );
-  
+
       // add default export at end if missing
       if (path.includes("hooks") && !content.includes("export default")) {
         const match = content.match(/const (\w+)/);
@@ -112,16 +112,16 @@ export function useWebContainer(
           content += `\n\nexport default ${match[1]};`;
         }
       }
-  
+
       // 🔥 Fix import mismatch
       content = content.replace(
         /import\s+{?\s*(\w+)\s*}?\s+from\s+['"](.*hooks\/.*)['"]/g,
         "import $1 from '$2'"
       );
-  
+
       newFiles[path].content = content;
     }
-  
+
     return newFiles;
   }
 
@@ -210,8 +210,8 @@ export function useWebContainer(
 
   // 🔄 Reset on new files
   useEffect(() => {
-  if (!files) return;
-}, [files]);
+    if (!files) return;
+  }, [files]);
 
   // 🚀 MAIN EXECUTION
   useEffect(() => {
@@ -219,7 +219,7 @@ export function useWebContainer(
     if (!isReady) return;
     if (startedRef.current) return;
 
-    
+
     const hasCoreFiles =
       files["package.json"] &&
       files["index.html"] &&
