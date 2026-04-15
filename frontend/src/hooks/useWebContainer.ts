@@ -3,7 +3,8 @@ import { getWebContainer } from "@/lib/webContainer";
 
 export function useWebContainer(
   files: Record<string, any>,
-  isReady: boolean
+  isReady: boolean,
+  onLog?: (msg: string, type?: string) => void
 ) {
   const [url, setUrl] = useState<string | null>(null);
 
@@ -236,7 +237,7 @@ export function useWebContainer(
       const wc = wcRef.current;
 
       try {
-        console.log("🛠 Preparing project...");
+        onLog?.("🛠 Preparing project...");
 
         let stableFiles = JSON.parse(JSON.stringify(files));
 
@@ -246,20 +247,20 @@ export function useWebContainer(
         stableFiles = fixCss(stableFiles);
         stableFiles = fixPackageJson(stableFiles);
 
-        console.log("📁 Mounting...");
+        onLog?.("📁 Mounting files...");
         await wc.mount(buildTree(stableFiles));
 
-        console.log("📦 Installing...");
+        onLog?.("📦 Installing dependencies...");
         const install = await wc.spawn("npm", ["install"]);
         await install.exit;
 
-        console.log("🚀 Starting dev server...");
+        onLog?.("🚀 Starting dev server...");
         const dev = await wc.spawn("npm", ["run", "dev"]);
 
         dev.output.pipeTo(
           new WritableStream({
             write(data) {
-              console.log(data);
+              onLog?.(data.toString(), "info");
             },
           })
         );

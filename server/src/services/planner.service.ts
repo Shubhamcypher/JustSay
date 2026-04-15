@@ -1,16 +1,16 @@
 import OpenAI from "openai";
 
 //for OpenAI
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// const openai = new OpenAI({
+//     apiKey: process.env.OPENAI_API_KEY,
+// });
 
 
 //for groq
-// const openai = new OpenAI({
-//     apiKey: process.env.GROQ_API_KEY,
-//     baseURL: "https://api.groq.com/openai/v1",
-// });
+const openai = new OpenAI({
+    apiKey: process.env.GROQ_API_KEY,
+    baseURL: "https://api.groq.com/openai/v1",
+});
 
 export async function planProject(prompt: string) {
     console.log("Jumped to plan");
@@ -18,8 +18,8 @@ export async function planProject(prompt: string) {
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
             const res = await openai.chat.completions.create({
-                model: "gpt-4o-mini", //open ai model for planner
-                // model: "llama-3.3-70b-versatile", // llama model works freely but too scratchy
+                // model: "gpt-4o-mini", //open ai model for planner
+                model: "llama-3.3-70b-versatile", // llama model works freely but too scratchy
                 temperature: 0,
                 response_format: { type: "json_object" },
                 messages: [

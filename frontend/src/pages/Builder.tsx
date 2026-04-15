@@ -17,6 +17,31 @@ export default function Builder() {
     const [isReady, setIsReady] = useState(false);
 
 
+    //Log state and function
+    const [logs, setLogs] = useState<
+        { type: "info" | "success" | "error"; message: string }[]
+    >([]);
+
+    function pushLog(message: string, type: "info" | "success" | "error" = "info") {
+        setLogs((prev) => {
+            const newLogs = [...prev, { message, type }];
+
+            // keep only last 4 logs
+            if (newLogs.length > 4) {
+                newLogs.shift(); // remove oldest
+            }
+
+            return newLogs;
+        });
+        // ✅ auto-remove after delay (only for success logs)
+        if (type === "success") {
+            setTimeout(() => {
+                setLogs((prev) => prev.slice(1));
+            }, 1200);
+        }
+    }
+
+
     // folder toggle state
     const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
 
@@ -92,6 +117,7 @@ export default function Builder() {
         }
     };
 
+    const getFileName = (path: string) => path.split("/").pop();
     const processQueue = async () => {
         if (isStreamingRef.current) return;
 
@@ -100,7 +126,15 @@ export default function Builder() {
         while (streamQueueRef.current.length > 0) {
             const file = streamQueueRef.current.shift();
 
+
+            pushLog(`🧠 Generating ${getFileName(file.path)}...`);
+
             await streamFile(file.path, file.content); // 🔥 wait for completion
+
+            pushLog(`✅ ${getFileName(file.path)} done`, "success");
+
+            // small delay = cinematic feel
+            await new Promise(r => setTimeout(r, 250));
         }
 
         isStreamingRef.current = false;
@@ -117,7 +151,7 @@ export default function Builder() {
     }, [files]);
 
     const fixedFiles = fixIndexHtml(stableFiles);
-    const previewUrl = useWebContainer(fixedFiles, isReady);
+    const previewUrl = useWebContainer(fixedFiles, isReady,);
 
 
     const hasFiles = Object.keys(stableFiles).length > 0;
@@ -129,6 +163,11 @@ export default function Builder() {
         const controller = new AbortController();
 
         const startGeneration = async () => {
+            pushLog("🧠 Understanding your idea...");
+            await new Promise(r => setTimeout(r, 400));
+
+            pushLog("📐 Planning project structure...");
+            await new Promise(r => setTimeout(r, 500));
             const res = await fetch("http://localhost:5000/api/generate", {
                 method: "POST",
                 headers: {
@@ -171,6 +210,7 @@ export default function Builder() {
 
                     if (data.type === "done") {
                         // setStableFiles(files);
+                        pushLog("📦 Finalizing project...", "info");
                         setIsReady(true);
                     }
                 }
@@ -238,7 +278,7 @@ export default function Builder() {
         return tree;
     }
 
-    const fileTree = buildFileTree({...files});
+    const fileTree = buildFileTree({ ...files });
 
 
     function FileTree({ tree, parentPath = "", level = 0 }: any) {
@@ -304,23 +344,32 @@ export default function Builder() {
         <div className="h-screen flex bg-gray-900 text-white p-4 gap-4">
 
             {/* LEFT: Logs */}
-            <div className="w-[35%] border border-white/10 p-3 overflow-y-auto custom-scrollbar flex flex-col gap-4">
+            <div className="w-[35%] border border-white/10 p-3 flex flex-col">
 
-                {/*Files div */}
-                <div className="h-[65%] overflow-y-auto">
+                {/* FILES */}
+                <div className="flex-1 overflow-y-auto">
                     <h2 className="text-sm mb-2 text-white/60">FILES</h2>
-                    <div className=" border-red-500">
-                        <FileTree tree={fileTree} />
+                    <FileTree tree={fileTree} />
+                </div>
+
+                {/* LOGS */}
+                <div className="h-[140px] mt-3 border-t border-white/10 pt-2 overflow-y-auto">
+                    <div className="text-xs space-y-1 font-mono">
+                        {logs.map((log, i) => (
+                            <div
+                                key={i}
+                                className={`
+                        ${log.type === "info" ? "text-blue-400" : ""}
+                        ${log.type === "success" ? "text-green-400" : ""}
+                        ${log.type === "error" ? "text-red-400" : ""}
+                        animate-fadeIn
+                    `}
+                            >
+                                {log.message}
+                            </div>
+                        ))}
                     </div>
                 </div>
-                {/*Files div */}
-
-                {/*logs div */}
-                <div>
-                    <h2 className="text-sm mb-2 text-white/60">LOGS</h2>
-                    {/* <pre className="text-xs whitespace-pre-wrap">{logs}</pre> */}
-                </div>
-                {/*logs div */}
 
             </div>
 
