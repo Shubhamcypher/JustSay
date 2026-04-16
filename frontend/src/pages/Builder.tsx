@@ -26,12 +26,10 @@ export default function Builder() {
 
     const [steps, setSteps] = useState<Step[]>([]);
 
-    let stepId = 0;
-
     const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
     function addStep(text: string) {
-        const id = stepId++;
+        const id = stepIdRef.current++;
 
         setSteps((prev) => [
             ...prev.slice(-3), // keep last 3
@@ -69,6 +67,9 @@ export default function Builder() {
     //editor ref
     const monacoRef = useRef<any>(null);
 
+    //Step id ref
+    const stepIdRef = useRef(0);
+
     function fixIndexHtml(files: Record<string, any>) {
         const indexFile = files["index.html"];
         if (!indexFile) return files;
@@ -101,33 +102,34 @@ export default function Builder() {
     }
 
     const streamFile = async (path: string, fullContent: string) => {
-        addFile({ path, content: "" }); // start empty
+        addFile({ path, content: "" });
 
-        let current = "";
+        let buffer = "";
         let cursor = true;
 
-
         for (let i = 0; i < fullContent.length; i++) {
-            current += fullContent[i];
+            buffer += fullContent[i];
 
-            updateFileContent(
-                path,
-                current + (cursor ? "▌" : "")
-            );
+            // update every few chars (reduce renders)
+            if (i % 5 === 0 || i === fullContent.length - 1) {
+                updateFileContent(
+                    path,
+                    buffer + (cursor ? "▌" : "")
+                );
 
-            cursor = !cursor;
+                cursor = !cursor;
 
-            // 🔥 auto scroll
-            const lineCount = current.split("\n").length;
-            editorRef.current?.revealLine(lineCount);
+                // 🔥 auto scroll
+                const lineCount = buffer.split("\n").length;
+                editorRef.current?.revealLine(lineCount);
 
-
-            // 🔥 SPEED CONTROL
-            const speed = fullContent.length > 200 ? 3 : 8;
-            await new Promise(r => setTimeout(r, speed));
-
-            updateFileContent(path, fullContent); // remove cursor
+                // slight delay for smooth feel
+                await new Promise((r) => setTimeout(r, 5));
+            }
         }
+
+        // ✅ FINAL CLEAN STATE (remove cursor)
+        updateFileContent(path, fullContent);
     };
 
     const getFileName = (path: string) => path.split("/").pop();
@@ -154,18 +156,33 @@ export default function Builder() {
 
 
 
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setStableFiles(files);
-        }, 1000); // wait for stream to settle
+    // useEffect(() => {
+    //     const timeout = setTimeout(() => {
+    //         setStableFiles(files);
+    //     }, 1000); // wait for stream to settle
 
-        return () => clearTimeout(timeout);
-    }, [files]);
+    //     return () => clearTimeout(timeout);
+    // }, [files]);
+    useEffect(() => {
+        if (!isReady) return;
+
+        setStableFiles(files);
+    }, [isReady]);
 
     const fixedFiles = fixIndexHtml(stableFiles);
-    const previewUrl = useWebContainer(fixedFiles, isReady, (msg) => {
-        const step = addStep(msg);
-        setTimeout(() => completeStep(step), 800);
+
+
+    const activeStepRef = useRef<number | null>(null);
+
+    const previewUrl = useWebContainer(fixedFiles, isReady, (msg, type) => {
+        if (type === "start") {
+            activeStepRef.current = addStep(msg);
+        }
+
+        if (type === "end" && activeStepRef.current !== null) {
+            completeStep(activeStepRef.current);
+            activeStepRef.current = null;
+        }
     });
 
 
@@ -219,7 +236,9 @@ export default function Builder() {
                         console.log("📁 FILE RECEIVED:", data.path);
                         // addFile(data); // ✅ now works
                         streamQueueRef.current.push(data);
-                        processQueue();
+                        if (!isStreamingRef.current) {
+                            processQueue();
+                        }
                     }
 
                     // if (data.type === "status") {

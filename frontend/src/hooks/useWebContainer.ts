@@ -247,15 +247,18 @@ export function useWebContainer(
         stableFiles = fixCss(stableFiles);
         stableFiles = fixPackageJson(stableFiles);
 
-        onLog?.("📁 Mounting files...");
+        onLog?.("📁 Mounting files...", "start");
         await wc.mount(buildTree(stableFiles));
+        onLog?.("", "end");
 
-        onLog?.("📦 Installing dependencies...");
+        onLog?.("📦 Installing dependencies...", "start");
         const install = await wc.spawn("npm", ["install"]);
         await install.exit;
+        onLog?.("", "end");
 
-        onLog?.("🚀 Starting dev server...");
+        onLog?.("🚀 Starting dev server...", "start");
         const dev = await wc.spawn("npm", ["run", "dev"]);
+        onLog?.("", "end");
 
         dev.output.pipeTo(
           new WritableStream({
