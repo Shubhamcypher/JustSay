@@ -12,6 +12,16 @@ const openai = new OpenAI({
     baseURL: "https://api.groq.com/openai/v1",
 });
 
+//for openRouter
+// const openai = new OpenAI({
+//     apiKey: process.env.OPENROUTER_API_KEY,
+//     baseURL: "https://openrouter.ai/api/v1",
+//     defaultHeaders: {
+//         "HTTP-Referer": "http://localhost:3000",
+//         "X-Title": "JustSay",
+//       },
+// });
+
 export async function planProject(prompt: string) {
     console.log("Jumped to plan");
     

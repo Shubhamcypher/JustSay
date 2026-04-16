@@ -87,7 +87,11 @@ export function useWebContainer(
 
     for (const path in newFiles) {
       let content = newFiles[path].content;
-      if (!content) continue;
+
+      if (typeof content !== "string") {
+        console.warn("Skipping non-string file:", path, content);
+        continue;
+      }
 
       // 🔥 FIX: export const hook → default export safely
       content = content.replace(
@@ -208,11 +212,6 @@ export function useWebContainer(
     return newFiles;
   }
 
-  // 🔄 Reset on new files
-  useEffect(() => {
-    if (!files) return;
-  }, [files]);
-
   // 🚀 MAIN EXECUTION
   useEffect(() => {
     if (!wcRef.current) return;
@@ -220,32 +219,34 @@ export function useWebContainer(
     if (startedRef.current) return;
 
 
-    const hasCoreFiles =
-      files["package.json"] &&
-      files["index.html"] &&
-      files["src/main.tsx"] &&
-      files["src/App.tsx"];
-
-    if (!hasCoreFiles) {
-      console.log("⏳ Waiting for core files...");
+    if (Object.keys(files).length < 5) {
+      console.log("⏳ Waiting for enough files...");
       return;
     }
 
-    startedRef.current = true;
 
     const run = async () => {
+      startedRef.current = true;
       const wc = wcRef.current;
+      console.log("🚀 Running WebContainer with files:", Object.keys(files));
 
       try {
+        console.log("In try block");
+
         onLog?.("🛠 Preparing project...");
 
         let stableFiles = JSON.parse(JSON.stringify(files));
 
         // 🔥 FULL FIX PIPELINE
         stableFiles = fixIndexHtml(stableFiles);
+        console.log("HTML done");
         stableFiles = fixExports(stableFiles);
+        console.log("exports done");
         stableFiles = fixCss(stableFiles);
+        console.log("css done");
         stableFiles = fixPackageJson(stableFiles);
+        console.log("json done");
+
 
         onLog?.("📁 Mounting files...", "start");
         await wc.mount(buildTree(stableFiles));

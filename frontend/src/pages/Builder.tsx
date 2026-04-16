@@ -235,10 +235,12 @@ export default function Builder() {
                     if (data.type === "file") {
                         console.log("📁 FILE RECEIVED:", data.path);
                         // addFile(data); // ✅ now works
+                        const startProcessing = () => {
+                            if (isStreamingRef.current) return;
+                            processQueue().catch(console.error);
+                        };
                         streamQueueRef.current.push(data);
-                        if (!isStreamingRef.current) {
-                            processQueue();
-                        }
+                        startProcessing();
                     }
 
                     // if (data.type === "status") {
