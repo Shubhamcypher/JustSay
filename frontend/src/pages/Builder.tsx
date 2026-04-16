@@ -111,7 +111,7 @@ export default function Builder() {
             buffer += fullContent[i];
 
             // update every few chars (reduce renders)
-            if (i % 5 === 0 || i === fullContent.length - 1) {
+            if (i % 50 === 0 || i === fullContent.length - 1) {
                 updateFileContent(
                     path,
                     buffer 
@@ -124,7 +124,7 @@ export default function Builder() {
                 editorRef.current?.revealLine(lineCount);
 
                 // slight delay for smooth feel
-                await new Promise((r) => setTimeout(r, 5));
+                await new Promise((r) => setTimeout(r, 20));
             }
         }
 
