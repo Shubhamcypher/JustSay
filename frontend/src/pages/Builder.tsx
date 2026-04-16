@@ -13,7 +13,7 @@ export default function Builder() {
     const prompt = state?.prompt;
     const { addFile, files, activeFile, updateFileContent, setActiveFile } = useFiles(); // ✅ from your hook
     // const [logs, setLogs] = useState(""); // ✅ local state
-    const [stableFiles, setStableFiles] = useState(files);
+    // const [stableFiles, setStableFiles] = useState(files);
     const [isReady, setIsReady] = useState(false);
 
 
@@ -114,7 +114,7 @@ export default function Builder() {
             if (i % 5 === 0 || i === fullContent.length - 1) {
                 updateFileContent(
                     path,
-                    buffer + (cursor ? "▌" : "")
+                    buffer 
                 );
 
                 cursor = !cursor;
@@ -163,13 +163,13 @@ export default function Builder() {
 
     //     return () => clearTimeout(timeout);
     // }, [files]);
-    useEffect(() => {
-        if (!isReady) return;
+    // useEffect(() => {
+    //     if (!isReady) return;
 
-        setStableFiles(files);
-    }, [isReady]);
+    //     setStableFiles(files);
+    // }, [isReady]);
 
-    const fixedFiles = fixIndexHtml(stableFiles);
+    const fixedFiles = fixIndexHtml(files);
 
 
     const activeStepRef = useRef<number | null>(null);
@@ -186,7 +186,7 @@ export default function Builder() {
     });
 
 
-    const hasFiles = Object.keys(stableFiles).length > 0;
+    const hasFiles = Object.keys(files).length > 0;
 
 
     useEffect(() => {
@@ -501,14 +501,3 @@ export default function Builder() {
         </div>
     );
 }
-
-
-
-
-
-
-
-
-
-
-
