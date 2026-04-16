@@ -427,8 +427,8 @@ export default function Builder() {
             <Editor
                 height="100%"
                 theme="vs-dark"
-                path={activeFile || ""}
-                value={activeFile ? files[activeFile]?.content || "" : ""}
+                path="file.tsx"
+                value={typeof files[activeFile!]?.content === "string" ? files[activeFile!]?.content : ""}
                 language={
                     activeFile?.endsWith(".tsx")
                         ? "typescript"
