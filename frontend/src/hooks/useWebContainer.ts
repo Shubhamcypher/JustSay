@@ -219,52 +219,54 @@ export function useWebContainer(
     if (startedRef.current) return;
 
 
-    if (Object.keys(files).length < 5) {
-      console.log("⏳ Waiting for enough files...");
-      return;
-    }
+    // if (Object.keys(files).length < 5) {
+    //   console.log("⏳ Waiting for enough files...");
+    //   return;
+    // }
 
 
     const run = async () => {
-      startedRef.current = true;
-      const wc = wcRef.current;
-      console.log("🚀 Running WebContainer with files:", Object.keys(files));
+        startedRef.current = true;
+        const wc = wcRef.current;
+        console.log("🚀 Running WebContainer with files:", Object.keys(files));
 
-      try {
-        console.log("In try block");
+        try {
+          console.log("In try block");
 
-        onLog?.("🛠 Preparing project...");
+          onLog?.("🛠 Preparing project...");
 
-        let stableFiles = JSON.parse(JSON.stringify(files));
+          let stableFiles = JSON.parse(JSON.stringify(files));
 
-        // 🔥 FULL FIX PIPELINE
-        stableFiles = fixIndexHtml(stableFiles);
-        console.log("HTML done");
-        stableFiles = fixExports(stableFiles);
-        console.log("exports done");
-        stableFiles = fixCss(stableFiles);
-        console.log("css done");
-        stableFiles = fixPackageJson(stableFiles);
-        console.log("json done");
+          // 🔥 FULL FIX PIPELINE
+          stableFiles = fixIndexHtml(stableFiles);
+          console.log("HTML done");
+          stableFiles = fixExports(stableFiles);
+          console.log("exports done");
+          stableFiles = fixCss(stableFiles);
+          console.log("css done");
+          stableFiles = fixPackageJson(stableFiles);
+          console.log("json done");
 
 
         onLog?.("📁 Mounting files...", "start");
         await wc.mount(buildTree(stableFiles));
-        onLog?.("", "end");
+        onLog?.("📁 Mounting files...", "end");
 
         onLog?.("📦 Installing dependencies...", "start");
         const install = await wc.spawn("npm", ["install"]);
         await install.exit;
-        onLog?.("", "end");
+        onLog?.("📦 Installing dependencies...", "end");
 
-        onLog?.("🚀 Starting dev server...", "start");
+        onLog?.("🚀 Running dev server...", "start");
         const dev = await wc.spawn("npm", ["run", "dev"]);
-        onLog?.("", "end");
+        onLog?.("🚀 Running dev server...", "end");
+
 
         dev.output.pipeTo(
           new WritableStream({
             write(data) {
-              onLog?.(data.toString(), "info");
+              // onLog?.(data.toString(), "info");
+              console.log(data.toString());
             },
           })
         );
@@ -275,7 +277,7 @@ export function useWebContainer(
     };
 
     run();
-  }, [isReady, url, files]);
+  }, [isReady]);
 
   return url;
 }

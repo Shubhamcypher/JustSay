@@ -16,6 +16,8 @@ export default function Builder() {
     // const [stableFiles, setStableFiles] = useState(files);
     const [isReady, setIsReady] = useState(false);
 
+    const [finalFiles, setFinalFiles] = useState<any>(null);
+
 
     //Log state and function
     type Step = {
@@ -40,6 +42,7 @@ export default function Builder() {
     }
 
     function completeStep(id: number) {
+        if (!id) return;
         setSteps((prev) =>
             prev.map((s) =>
                 s.id === id ? { ...s, status: "done" } : s
@@ -70,36 +73,36 @@ export default function Builder() {
     //Step id ref
     const stepIdRef = useRef(0);
 
-    function fixIndexHtml(files: Record<string, any>) {
-        const indexFile = files["index.html"];
-        if (!indexFile) return files;
+    // function fixIndexHtml(files: Record<string, any>) {
+    //     const indexFile = files["index.html"];
+    //     if (!indexFile) return files;
 
-        let content = indexFile.content;
+    //     let content = indexFile.content;
 
-        // detect actual entry file
-        const hasTsx = !!files["src/main.tsx"];
-        const hasJsx = !!files["src/main.jsx"];
+    //     // detect actual entry file
+    //     const hasTsx = !!files["src/main.tsx"];
+    //     const hasJsx = !!files["src/main.jsx"];
 
-        let correctPath = null;
+    //     let correctPath = null;
 
-        if (hasTsx) correctPath = "/src/main.tsx";
-        else if (hasJsx) correctPath = "/src/main.jsx";
+    //     if (hasTsx) correctPath = "/src/main.tsx";
+    //     else if (hasJsx) correctPath = "/src/main.jsx";
 
-        if (!correctPath) return files;
+    //     if (!correctPath) return files;
 
-        // replace ANY wrong entry
-        content = content.replace(
-            /<script type="module" src=".*?"><\/script>/,
-            `<script type="module" src="${correctPath}"></script>`
-        );
+    //     // replace ANY wrong entry
+    //     content = content.replace(
+    //         /<script type="module" src=".*?"><\/script>/,
+    //         `<script type="module" src="${correctPath}"></script>`
+    //     );
 
-        files["index.html"] = {
-            ...indexFile,
-            content,
-        };
+    //     files["index.html"] = {
+    //         ...indexFile,
+    //         content,
+    //     };
 
-        return files;
-    }
+    //     return files;
+    // }
 
     const streamFile = async (path: string, fullContent: string) => {
         addFile({ path, content: "" });
@@ -111,10 +114,10 @@ export default function Builder() {
             buffer += fullContent[i];
 
             // update every few chars (reduce renders)
-            if (i % 50 === 0 || i === fullContent.length - 1) {
+            if (i % 5 === 0 || i === fullContent.length - 1) {
                 updateFileContent(
                     path,
-                    buffer 
+                    buffer
                 );
 
                 cursor = !cursor;
@@ -124,7 +127,7 @@ export default function Builder() {
                 editorRef.current?.revealLine(lineCount);
 
                 // slight delay for smooth feel
-                await new Promise((r) => setTimeout(r, 20));
+                await new Promise((r) => setTimeout(r, 5));
             }
         }
 
@@ -133,6 +136,10 @@ export default function Builder() {
     };
 
     const getFileName = (path: string) => path.split("/").pop();
+    const isQueueDone = () => {
+        return streamQueueRef.current.length === 0 && !isStreamingRef.current;
+    };
+
     const processQueue = async () => {
         if (isStreamingRef.current) return;
 
@@ -169,19 +176,21 @@ export default function Builder() {
     //     setStableFiles(files);
     // }, [isReady]);
 
-    const fixedFiles = fixIndexHtml(files);
+    // const fixedFiles = fixIndexHtml(files);
 
 
     const activeStepRef = useRef<number | null>(null);
 
-    const previewUrl = useWebContainer(fixedFiles, isReady, (msg, type) => {
+    const previewUrl = useWebContainer(finalFiles, isReady, (msg, type) => {
         if (type === "start") {
             activeStepRef.current = addStep(msg);
         }
 
-        if (type === "end" && activeStepRef.current !== null) {
-            completeStep(activeStepRef.current);
-            activeStepRef.current = null;
+        if (type === "end") {
+            if (activeStepRef.current !== null) {
+                completeStep(activeStepRef.current);
+                activeStepRef.current = null;
+            }
         }
     });
 
@@ -196,7 +205,7 @@ export default function Builder() {
 
         const startGeneration = async () => {
             const s1 = addStep("Understanding your idea...");
-            await sleep(400);
+            await sleep(800);
             completeStep(s1);
 
             const s2 = addStep("Planning project structure...");
@@ -248,11 +257,25 @@ export default function Builder() {
                     // }
 
                     if (data.type === "done") {
-                        const step = addStep("Finalizing project...");
-                        await sleep(400);
-                        completeStep(step);
+                        const waitForQueue = async () => {
+                            // 🔥 wait until ALL streaming finishes
+                            while (!isQueueDone()) {
+                                await new Promise(r => setTimeout(r, 50));
+                            }
 
-                        setIsReady(true);
+                            const step = addStep("Finalizing project...");
+                            await sleep(400);
+                            completeStep(step);
+
+                            // ✅ NOW freeze FINAL files
+                            const snapshot = JSON.parse(JSON.stringify(files));
+                            setFinalFiles(snapshot);
+
+                            // ✅ NOW allow WebContainer
+                            setIsReady(true);
+                        };
+
+                        waitForQueue();
                     }
                 }
 
