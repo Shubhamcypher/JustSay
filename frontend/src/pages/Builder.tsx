@@ -353,6 +353,17 @@ export default function Builder() {
 
     const fileTree = buildFileTree({ ...files });
 
+    const sortEntries = (entries: [string, any][]) => {
+        return entries.sort(([nameA, nodeA], [nameB, nodeB]) => {
+            // 1. folders first
+            if (nodeA.type === "folder" && nodeB.type !== "folder") return -1;
+            if (nodeA.type !== "folder" && nodeB.type === "folder") return 1;
+    
+            // 2. alphabetical
+            return nameA.localeCompare(nameB);
+        });
+    };
+
 
     function FileTree({ tree, parentPath = "", level = 0 }: any) {
         return (
