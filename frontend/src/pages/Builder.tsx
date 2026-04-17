@@ -60,6 +60,9 @@ export default function Builder() {
     const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
 
 
+    const hasStreamStartedRef = useRef(false);
+
+
     //Streaming fiiles ref
     const streamQueueRef = useRef<any[]>([]);
     const isStreamingRef = useRef(false);
@@ -204,14 +207,8 @@ export default function Builder() {
         const controller = new AbortController();
 
         const startGeneration = async () => {
-            const s1 = addStep("Understanding your idea...");
-            await sleep(800);
-            completeStep(s1);
-
-            const s2 = addStep("Planning project structure...");
-            await sleep(500);
-            completeStep(s2);
-            await new Promise(r => setTimeout(r, 500));
+            const s1 = addStep("🤖 Understanding your idea...");
+            const s2 = addStep("🧠 Planning project structure...");
             const res = await fetch("http://localhost:5000/api/generate", {
                 method: "POST",
                 headers: {
@@ -232,6 +229,18 @@ export default function Builder() {
                 if (done) break;
                 if (!value) continue;
                 buffer += decoder.decode(value, { stream: true });
+
+                if (!hasStreamStartedRef.current) {
+                    hasStreamStartedRef.current = true;
+
+                    // ✅ complete AI steps NOW (real trigger)
+                    completeStep(s1);
+                    completeStep(s2);
+
+                    const s3 = addStep("⚡ Generating project files...");
+                    await sleep(200); // small UX delay (optional)
+                    completeStep(s3);
+                }
 
                 const parts = buffer.split("\n\n");
 
@@ -351,7 +360,6 @@ export default function Builder() {
                 {Object.entries(tree).map(([name, node]: any) => {
                     const fullPath = parentPath ? `${parentPath}/${name}` : name;
                     const isOpen = openFolders[fullPath];
-                    // const Icon = getFileIcon(name);
 
                     if (node.type === "file") {
                         const iconName = getFileIcon(name);
@@ -363,10 +371,10 @@ export default function Builder() {
                                 className={`flex items-center gap-2 px-2 py-1 text-sm cursor-pointer rounded
                                     ${activeFile === node.path ? "bg-white/10" : "hover:bg-white/5"}
                                 `}
-                                style={{ paddingLeft: level * 12 }}
+                                style={{ paddingLeft: 8 + level * 12 }}
                             >
                                 <Icon icon={iconName} width={16} />
-                                <span>{name}</span>
+                                <span className="text-xs">{name}</span>
                             </div>
                         );
                     }
@@ -411,8 +419,8 @@ export default function Builder() {
             <div className="w-[35%] border border-white/10 p-3 flex flex-col">
 
                 {/* FILES */}
-                <div className="flex-1 overflow-y-auto">
-                    <h2 className="text-sm mb-2 text-white/60">FILES</h2>
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <h2 className="text-sm mb-2 text-white/60 ">FILES</h2>
                     <FileTree tree={fileTree} />
                 </div>
 
