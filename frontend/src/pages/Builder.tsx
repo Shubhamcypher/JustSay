@@ -358,7 +358,7 @@ export default function Builder() {
             // 1. folders first
             if (nodeA.type === "folder" && nodeB.type !== "folder") return -1;
             if (nodeA.type !== "folder" && nodeB.type === "folder") return 1;
-    
+
             // 2. alphabetical
             return nameA.localeCompare(nameB);
         });
@@ -368,7 +368,7 @@ export default function Builder() {
     function FileTree({ tree, parentPath = "", level = 0 }: any) {
         return (
             <div>
-                {Object.entries(tree).map(([name, node]: any) => {
+                {sortEntries(Object.entries(tree)).map(([name, node]: any) => {
                     const fullPath = parentPath ? `${parentPath}/${name}` : name;
                     const isOpen = openFolders[fullPath];
 
