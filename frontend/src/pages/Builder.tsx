@@ -384,7 +384,7 @@ export default function Builder() {
                                 `}
                                 style={{ paddingLeft: 8 + level * 12 }}
                             >
-                                <Icon icon={iconName} width={16} />
+                                <Icon icon={iconName} width={14} />
                                 <span className="text-xs">{name}</span>
                             </div>
                         );
