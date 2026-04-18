@@ -1,16 +1,17 @@
 import OpenAI from "openai";
+import { getCache, setCache } from "../utils/cacheAiResponse";
 
 //for OpenAI
-// const openai = new OpenAI({
-//     apiKey: process.env.OPENAI_API_KEY,
-// });
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
 
 //for groq
-const openai = new OpenAI({
-    apiKey: process.env.GROQ_API_KEY,
-    baseURL: "https://api.groq.com/openai/v1",
-});
+// const openai = new OpenAI({
+//     apiKey: process.env.GROQ_API_KEY,
+//     baseURL: "https://api.groq.com/openai/v1",
+// });
 
 //for openRouter
 // const openai = new OpenAI({
@@ -19,17 +20,24 @@ const openai = new OpenAI({
 //     defaultHeaders: {
 //         "HTTP-Referer": "http://localhost:3000",
 //         "X-Title": "JustSay",
-//       },
+//     },
 // });
 
 export async function planProject(prompt: string) {
-    console.log("Jumped to plan");
-    
+    console.log("DEV_MODE:", process.env.DEV_MODE);
     for (let attempt = 0; attempt < 3; attempt++) {
+        const cacheKey = prompt;
+        if (process.env.DEV_MODE === "true") {
+            const cached = getCache("planner", cacheKey);
+            if (cached) {
+                console.log("⚡ Using cached planner");
+                return cached;
+            }
+        }
         try {
             const res = await openai.chat.completions.create({
-                // model: "gpt-4o-mini", //open ai model for planner
-                model: "llama-3.3-70b-versatile", // llama model works freely but too scratchy
+                model: "gpt-4o-mini", //open ai model for planner
+                // model: "google/gemma-3-12b-it:free", // llama model works freely but too scratchy
                 temperature: 0,
                 response_format: { type: "json_object" },
                 messages: [
@@ -67,7 +75,7 @@ No explanation. Only JSON.
                 ],
             });
             console.log("Planning done");
-            
+
 
             const raw = res.choices[0].message.content || "";
             console.log("RAW PLANNER OUTPUT:", raw);
@@ -76,11 +84,12 @@ No explanation. Only JSON.
             if (!Array.isArray(json.files)) {
                 throw new Error("Invalid format");
             }
-
+            // ✅ SAVE CACHE
+            setCache("planner", cacheKey, json);
             return json;
         } catch (err) {
-            console.log("Planning error: ",err);
-            
+            console.log("Planning error: ", err);
+
             console.warn(`⚠️ Planner retry ${attempt + 1}`);
         }
     }

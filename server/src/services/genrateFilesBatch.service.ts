@@ -1,16 +1,17 @@
 import OpenAI from "openai";
+import { getCache, setCache } from "../utils/cacheAiResponse";
 
 //for OpenAI
-// const openai = new OpenAI({
-//     apiKey: process.env.OPENAI_API_KEY,
-// });
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
 
 //for groq
-const openai = new OpenAI({
-    apiKey: process.env.GROQ_API_KEY,
-    baseURL: "https://api.groq.com/openai/v1",
-});
+// const openai = new OpenAI({
+//     apiKey: process.env.GROQ_API_KEY,
+//     baseURL: "https://api.groq.com/openai/v1",
+// });
 
 //for openRouter
 // const openai = new OpenAI({
@@ -19,7 +20,7 @@ const openai = new OpenAI({
 //     defaultHeaders: {
 //         "HTTP-Referer": "http://localhost:3000",
 //         "X-Title": "JustSay",
-//       },
+//     },
 // });
 
 function cleanJSON(text: string) {
@@ -32,9 +33,20 @@ function cleanJSON(text: string) {
 
 
 export async function generateFilesBatch(files: any, prompt: string) {
+    const cacheKey = prompt + files.join(",");
+
+    if (process.env.DEV_MODE === "true") {
+        const cached = getCache("generator", cacheKey);
+        if (cached) {
+            console.log("⚡ Using cached generator");
+            return cached;
+        }
+    }
+
+
     const res = await openai.chat.completions.create({
-        // model: "gpt-4o",  //open ai model for planner
-        model: "llama-3.3-70b-versatile", // llama model works freely but too scratchy
+        model: "gpt-4o",  //open ai model for planner
+        // model: "google/gemma-3-12b-it:free", // llama model works freely but too scratchy
         temperature: 0.2,
         messages: [
             {
@@ -117,6 +129,8 @@ Return:
         if (!json.files || typeof json.files !== "object") {
             throw new Error("Invalid batch response");
         }
+
+        setCache("generator", cacheKey, json);
 
         return json;
     }
