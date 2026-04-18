@@ -7,26 +7,28 @@ type File = {
 
 export function useFiles() {
   const [files, setFiles] = useState<Record<string, File>>({});
+  const [filePaths, setFilePaths] = useState<string[]>([]); // 👈 NEW
   const [activeFile, setActiveFile] = useState<string | null>(null);
 
   const addFile = (file: File) => {
-    setFiles((prev) => {
-      const updated = {
-        ...prev,
-        [file.path]: file,
-      };
+    setFiles((prev) => ({
+      ...prev,
+      [file.path]: file,
+    }));
 
-      // auto select first file
-      if (!activeFile) {
-        setActiveFile(file.path);
-      }
-
-      return updated;
+    // 👇 ONLY update tree here
+    setFilePaths((prev) => {
+      if (prev.includes(file.path)) return prev;
+      return [...prev, file.path];
     });
+
+    if (!activeFile) {
+      setActiveFile(file.path);
+    }
   };
 
-  // ✅ NEW: update file content safely
   const updateFileContent = (path: string, content: string) => {
+    // 👇 ONLY update content (tree untouched)
     setFiles((prev) => ({
       ...prev,
       [path]: {
@@ -38,9 +40,10 @@ export function useFiles() {
 
   return {
     files,
+    filePaths, // 👈 use this for tree
     activeFile,
     setActiveFile,
     addFile,
-    updateFileContent, // 👈 use this instead of setFiles
+    updateFileContent,
   };
 }
