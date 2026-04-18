@@ -78,7 +78,7 @@ export default function Builder() {
     //editor ref
     const editorRef = useRef<any>(null);
 
-    //editor ref
+    //monaco ref
     const monacoRef = useRef<any>(null);
 
     //Step id ref
