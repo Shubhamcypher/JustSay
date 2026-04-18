@@ -12,6 +12,7 @@ type Props = {
 };
 
 export default function PromptInput({
+    placeholder,
     value,
     onChange,
     onSubmit,
@@ -31,22 +32,34 @@ export default function PromptInput({
             {/* Container */}
             <div className="relative bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-xl min-h-40 md:min-h-48 lg:min-h-40 flex flex-col justify-between">
 
-               
+
 
                 {/* Textarea */}
-                <textarea
-                    ref={textareaRef}
-                    rows={1}
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="w-full resize-none bg-transparent outline-none text-xl text-white placeholder:text-white/40 px-2 py-2 max-h-60 overflow-y-auto"
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            onSubmit();
-                        }
-                    }}
-                />
+                <div className="relative w-full">
+                    {/* Fake Placeholder */}
+                    {!value && (
+                        <div className="absolute left-3 top-3 pointer-events-none text-xl">
+                            <span className="text-white/40">Just say and </span>
+                            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {placeholder+`|`}
+                            </span>
+                        </div>
+                    )}
+
+                    <textarea
+                        ref={textareaRef}
+                        rows={1}
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        className="w-full resize-none bg-transparent outline-none text-xl text-white px-2 py-2 max-h-60 overflow-y-auto"
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                onSubmit();
+                            }
+                        }}
+                    />
+                </div>
 
                 {/* Bottom Controls */}
                 <div className="flex items-center justify-between mt-2">
