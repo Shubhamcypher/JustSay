@@ -59,7 +59,7 @@ export function useFileStreaming({
         while (streamQueueRef.current.length > 0) {
             const file = streamQueueRef.current.shift();
 
-            const step = addStep(`Generating ${getFileName(file.path)}`);
+            const step = addStep(`Generating ${getFileName(file.path)}`,"file");
 
             if (!userSelectedRef.current) {
                 setActiveFile(file.path);

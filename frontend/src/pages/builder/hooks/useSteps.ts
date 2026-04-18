@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 export type Step = {
   id: number;
@@ -10,14 +10,14 @@ export function useSteps() {
   const [steps, setSteps] = useState<Step[]>([]);
   const stepIdRef = useRef(0);
 
-  const addStep = (text: string) => {
+  const addStep = (text: string, group = "general") => {
     const id = stepIdRef.current++;
-
-    setSteps((prev) => {
-      const active = prev.filter((s) => s.status === "loading");
-      return [...active, { id, text, status: "loading" }];
-    });
-
+  
+    setSteps((prev) => [
+      ...prev,
+      { id, text, status: "loading", group },
+    ]);
+  
     return id;
   };
 
@@ -34,13 +34,13 @@ export function useSteps() {
   };
 
   // auto cleanup
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSteps((prev) => prev.filter((s) => s.status !== "done"));
-    }, 300);
+//   useEffect(() => {
+//     const timer = setInterval(() => {
+//       setSteps((prev) => prev.filter((s) => s.status !== "done"));
+//     }, 300);
 
-    return () => clearInterval(timer);
-  }, []);
+//     return () => clearInterval(timer);
+//   }, []);
 
   return {
     steps,
