@@ -108,7 +108,7 @@ Return:
             }
         ]
     });
-
+    console.log("Received file in generate files batch:", res);
     const raw = res.choices[0].message.content || "";
     const cleaned = cleanJSON(raw);
 
