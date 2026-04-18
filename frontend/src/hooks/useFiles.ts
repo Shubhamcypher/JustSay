@@ -11,24 +11,27 @@ export function useFiles() {
   const [activeFile, setActiveFile] = useState<string | null>(null);
 
   const addFile = (file: File) => {
+    //update with the incoming files
     setFiles((prev) => ({
       ...prev,
       [file.path]: file,
     }));
 
-    // 👇 ONLY update tree here
+    // ONLY update tree here
     setFilePaths((prev) => {
-      if (prev.includes(file.path)) return prev;
-      return [...prev, file.path];
+      if (prev.includes(file.path)) return prev; //removes duplicate
+      return [...prev, file.path]; //adding upcoming non-duplicate file in the file tree
     });
 
+    //Ensures first added file is auto-opened
+    // Does NOT switch active file if one is already selected
     if (!activeFile) {
       setActiveFile(file.path);
     }
   };
 
   const updateFileContent = (path: string, content: string) => {
-    // 👇 ONLY update content (tree untouched)
+    //ONLY update content (tree untouched)
     setFiles((prev) => ({
       ...prev,
       [path]: {
@@ -40,7 +43,7 @@ export function useFiles() {
 
   return {
     files,
-    filePaths, // 👈 use this for tree
+    filePaths,
     activeFile,
     setActiveFile,
     addFile,
