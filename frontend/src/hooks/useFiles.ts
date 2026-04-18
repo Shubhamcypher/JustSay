@@ -5,7 +5,7 @@ type File = {
   content: string;
 };
 
-export function useFiles() {
+export function useFiles(userSelectedRef: any) {
   const [files, setFiles] = useState<Record<string, File>>({});
   const [filePaths, setFilePaths] = useState<string[]>([]); // 👈 NEW
   const [activeFile, setActiveFile] = useState<string | null>(null);
@@ -25,7 +25,7 @@ export function useFiles() {
 
     //Ensures first added file is auto-opened
     // Does NOT switch active file if one is already selected
-    if (!activeFile) {
+    if (!activeFile && !userSelectedRef.current) {
       setActiveFile(file.path);
     }
   };

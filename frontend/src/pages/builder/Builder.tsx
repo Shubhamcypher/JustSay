@@ -12,11 +12,14 @@ import FileSidebar from "./components/FileSidebar";
 export default function Builder() {
     const { state } = useLocation();
     const prompt = state?.prompt;
+    
+    const userSelectedRef = useRef(false);
 
-    const fileSystem = useFiles();
+    const fileSystem = useFiles(userSelectedRef);
     const { steps, addStep, completeStep, completeStepByText } = useSteps();
 
     const fileTree = useFileTree(fileSystem.filePaths);
+
 
     const streaming = useFileStreaming({
         prompt,
@@ -24,11 +27,17 @@ export default function Builder() {
         addStep,
         completeStep,
         completeStepByText,
+        userSelectedRef
     });
 
     const editorRef = useRef<any>(null);
     const monacoRef = useRef<any>(null);
     const activeStepRef = useRef<number | null>(null);
+
+    const handleSetActiveFile = (file: string) => {
+        userSelectedRef.current = true; // user took control
+        fileSystem.setActiveFile(file);
+    };
 
     const previewUrl = useWebContainer(
         streaming.finalFiles,
@@ -52,7 +61,7 @@ export default function Builder() {
             <FileSidebar
                 fileTree={fileTree}
                 activeFile={fileSystem.activeFile}
-                setActiveFile={fileSystem.setActiveFile}
+                setActiveFile={handleSetActiveFile}
                 steps={steps}
             />
 
