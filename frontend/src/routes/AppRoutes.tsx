@@ -7,7 +7,8 @@ import Register from "../pages/Register";
 import OAuthSuccess from "@/pages/OAuthSuccess";
 import { useAuth } from "@/context/AuthContext";
 import SessionHandler from "@/components/customComponents/SessionHandler";
-import Builder from "@/pages/Builder";
+import Builder from "@/pages/builder/Builder";
+// import Builder from "@/pages/Builder";
 
 function PrivateRoute({ children }: any) {
   const { user, loading } = useAuth();
