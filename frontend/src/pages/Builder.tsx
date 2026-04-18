@@ -1,5 +1,5 @@
 import { useFiles } from "@/hooks/useFiles";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { useWebContainer } from "@/hooks/useWebContainer";
@@ -11,7 +11,7 @@ import { Icon } from "@iconify/react";
 export default function Builder() {
     const { state } = useLocation();
     const prompt = state?.prompt;
-    const { addFile, files, activeFile, updateFileContent, setActiveFile } = useFiles(); // ✅ from your hook
+    const { addFile, files, filePaths, activeFile, updateFileContent, setActiveFile } = useFiles(); // ✅ from your hook
     // const [logs, setLogs] = useState(""); // ✅ local state
     // const [stableFiles, setStableFiles] = useState(files);
     const [isReady, setIsReady] = useState(false);
@@ -33,27 +33,35 @@ export default function Builder() {
     function addStep(text: string) {
         const id = stepIdRef.current++;
 
-        setSteps((prev) => [
-            ...prev.slice(-3), // keep last 3
-            { id, text, status: "loading" },
-        ]);
+        setSteps((prev) => {
+            const active = prev.filter(s => s.status === "loading");
+            return [...active, { id, text, status: "loading" }];
+        });
 
         return id;
     }
 
     function completeStep(id: number) {
         if (!id) return;
+
         setSteps((prev) =>
             prev.map((s) =>
                 s.id === id ? { ...s, status: "done" } : s
             )
         );
-
-        // remove after animation
-        setTimeout(() => {
-            setSteps((prev) => prev.filter((s) => s.id !== id));
-        }, 1200);
     }
+
+    function completeStepByText(text: string) {
+        setSteps(prev => prev.filter(s => s.text !== text));
+    }
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setSteps(prev => prev.filter(s => s.status !== "done"));
+        }, 300);
+
+        return () => clearInterval(timer);
+    }, []);
 
 
     // folder toggle state
@@ -111,7 +119,6 @@ export default function Builder() {
         addFile({ path, content: "" });
 
         let buffer = "";
-        let cursor = true;
 
         for (let i = 0; i < fullContent.length; i++) {
             buffer += fullContent[i];
@@ -122,8 +129,6 @@ export default function Builder() {
                     path,
                     buffer
                 );
-
-                cursor = !cursor;
 
                 // 🔥 auto scroll
                 const lineCount = buffer.split("\n").length;
@@ -207,8 +212,6 @@ export default function Builder() {
         const controller = new AbortController();
 
         const startGeneration = async () => {
-            const s1 = addStep("🤖 Understanding your idea...");
-            const s2 = addStep("🧠 Planning project structure...");
             const res = await fetch("http://localhost:5000/api/generate", {
                 method: "POST",
                 headers: {
@@ -218,6 +221,7 @@ export default function Builder() {
                 body: JSON.stringify({ prompt }),
                 signal: controller.signal,
             });
+
 
             const reader = res.body?.getReader();
             const decoder = new TextDecoder("utf-8");
@@ -230,17 +234,12 @@ export default function Builder() {
                 if (!value) continue;
                 buffer += decoder.decode(value, { stream: true });
 
-                if (!hasStreamStartedRef.current) {
-                    hasStreamStartedRef.current = true;
+                // if (!hasStreamStartedRef.current && buffer.includes('"type":"file"')) {
+                //     hasStreamStartedRef.current = true;
 
-                    // ✅ complete AI steps NOW (real trigger)
-                    completeStep(s1);
-                    completeStep(s2);
-
-                    const s3 = addStep("⚡ Generating project files...");
-                    await sleep(200); // small UX delay (optional)
-                    completeStep(s3);
-                }
+                //     completeStep(s1);
+                //     completeStep(s2);
+                // }
 
                 const parts = buffer.split("\n\n");
 
@@ -251,6 +250,12 @@ export default function Builder() {
                     const data = JSON.parse(line);
 
                     if (data.type === "file") {
+                        if (!hasStreamStartedRef.current) {
+                            hasStreamStartedRef.current = true;
+
+                            completeStepByText("🤖 Understanding your idea...");
+                            completeStepByText("🧠 Planning project structure...");
+                        }
                         console.log("📁 FILE RECEIVED:", data.path);
                         // addFile(data); // ✅ now works
                         const startProcessing = () => {
@@ -351,7 +356,13 @@ export default function Builder() {
         return tree;
     }
 
-    const fileTree = buildFileTree({ ...files });
+    const fileTree = useMemo(() => {
+        const obj: any = {};
+        filePaths.forEach((path) => {
+            obj[path] = { path };
+        });
+        return buildFileTree(obj);
+    }, [filePaths]);
 
     const sortEntries = (entries: [string, any][]) => {
         return entries.sort(([nameA, nodeA], [nameB, nodeB]) => {
@@ -365,7 +376,7 @@ export default function Builder() {
     };
 
 
-    function FileTree({ tree, parentPath = "", level = 0 }: any) {
+    const FileTree = React.memo(function FileTree({ tree, parentPath = "", level = 0 }: any) {
         return (
             <div>
                 {sortEntries(Object.entries(tree)).map(([name, node]: any) => {
@@ -421,7 +432,7 @@ export default function Builder() {
                 })}
             </div>
         );
-    }
+    })
 
     return (
         <div className="h-screen flex bg-gray-900 text-white p-4 gap-4">
