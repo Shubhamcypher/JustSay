@@ -25,15 +25,15 @@ const openai = new OpenAI({
 
 export async function planProject(prompt: string) {
     console.log("DEV_MODE:", process.env.DEV_MODE);
-    for (let attempt = 0; attempt < 3; attempt++) {
-        const cacheKey = prompt;
-        if (process.env.DEV_MODE === "true") {
-            const cached = getCache("planner", cacheKey);
-            if (cached) {
-                console.log("⚡ Using cached planner");
-                return cached;
-            }
+    const cacheKey = prompt;
+    if (process.env.DEV_MODE === "true") {
+        const cached = getCache("planner", cacheKey);
+        if (cached) {
+            console.log("⚡ Using cached planner");
+            return cached;
         }
+    }
+    for (let attempt = 0; attempt < 3; attempt++) {
         try {
             const res = await openai.chat.completions.create({
                 model: "gpt-4o-mini", //open ai model for planner
