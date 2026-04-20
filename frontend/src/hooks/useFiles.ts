@@ -7,7 +7,7 @@ type File = {
 
 export function useFiles(userSelectedRef: any) {
   const [files, setFiles] = useState<Record<string, File>>({});
-  const [filePaths, setFilePaths] = useState<string[]>([]); // 👈 NEW
+  const [filePaths, setFilePaths] = useState<string[]>([]);
   const [activeFile, setActiveFile] = useState<string | null>(null);
 
   const addFile = (file: File) => {
