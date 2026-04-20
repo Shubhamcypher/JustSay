@@ -31,7 +31,7 @@ export function useFiles(userSelectedRef: any) {
   };
 
   const updateFileContent = (path: string, content: string) => {
-    //ONLY update content (tree untouched)
+    // Updates content only — filePaths untouched, no tree re-render
     setFiles((prev) => ({
       ...prev,
       [path]: {
