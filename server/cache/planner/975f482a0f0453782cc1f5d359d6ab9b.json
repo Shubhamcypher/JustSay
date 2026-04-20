@@ -7,7 +7,8 @@
     "src/components/TodoList.tsx",
     "src/components/TodoItem.tsx",
     "src/hooks/useTodos.ts",
-    "src/styles.css",
+    "src/styles/global.css",
+    "src/types/Todo.ts",
     "vite.config.ts",
     "public/favicon.ico"
   ]
