@@ -1,0 +1,26 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/ProductList.tsx",
+    "src/components/ProductItem.tsx",
+    "src/components/Cart.tsx",
+    "src/components/Checkout.tsx",
+    "src/styles/global.css",
+    "src/types/Product.ts",
+    "src/types/Cart.ts",
+    "src/hooks/useCart.ts",
+    "src/context/CartContext.tsx",
+    "src/routes/AppRoutes.tsx",
+    "src/utils/api.ts",
+    "src/assets/logo.png",
+    "src/assets/shoe1.jpg",
+    "src/assets/shoe2.jpg",
+    "src/assets/shoe3.jpg",
+    "vite.config.ts"
+  ]
+}
