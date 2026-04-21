@@ -1,5 +1,4 @@
-import { Icon } from "@iconify/react";
-import { useEffect, useMemo, useRef } from "react";
+import { motion } from "framer-motion";
 
 type Step = {
     id: number;
@@ -8,92 +7,99 @@ type Step = {
     group?: string;
 };
 
+
 export default function StepsPanel({ steps }: { steps: Step[] }) {
-    const containerRef = useRef<HTMLDivElement>(null);
+  const visibleSteps = steps.slice(-3);
 
-    const visibleSteps = useMemo(() => {
-        return steps.slice(-3); // 🔥 last 3 steps only
-    }, [steps]);
+  const progress = Math.floor(
+    (steps.filter((s) => s.status === "done").length /
+      (steps.length || 1)) *
+      100
+  );
 
-    // 🔥 progress %
-    const progress = useMemo(() => {
-        const total = steps.length || 1;
-        const done = steps.filter((s) => s.status === "done").length;
-        return Math.floor((done / total) * 100);
-    }, [steps]);
+  return (
+    <div className="w-full max-w-[320px] flex flex-col gap-3.5">
 
-    // 🔥 auto scroll
-    useEffect(() => {
-        const el = containerRef.current;
-        if (el) el.scrollTop = el.scrollHeight;
-    }, [steps]);
-
-    return (
-        <div className="h-[200px] mt-3 border-t border-white/10 pt-3 flex flex-col">
-
-            {/* 🔥 PROGRESS BAR */}
-            <div className="mb-2">
-                <div className="text-xs text-white/40 mb-1">
-                    Progress • {progress}%
-                </div>
-                <div className="h-1 bg-white/10 rounded overflow-hidden">
-                    <div
-                        className="h-full bg-blue-500 transition-all duration-500"
-                        style={{ width: `${progress}%` }}
-                    />
-                </div>
-            </div>
-
-            <div
-                ref={containerRef}
-                className="flex flex-col gap-2 overflow-y-auto pr-1"
-            >
-                {visibleSteps.map((step) => {
-                    const isActive = step.status === "loading";
-
-                    return (
-                        <div
-                            key={step.id}
-                            className={`
-        flex items-center gap-3 px-3 py-2 rounded-lg
-        transition-all duration-300
-        ${isActive
-                                    ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 shadow-[0_0_10px_rgba(59,130,246,0.2)]"
-                                    : "bg-white/5 opacity-40"
-                                }
-      `}
-                        >
-                            {/* ICON */}
-                            {isActive ? (
-                                <Icon
-                                    icon="svg-spinners:180-ring"
-                                    className="text-blue-400"
-                                    width={16}
-                                />
-                            ) : (
-                                <Icon
-                                    icon="mdi:check-circle"
-                                    className="text-green-400 scale-110"
-                                    width={14}
-                                />
-                            )}
-
-                            {/* TEXT */}
-                            <span
-                                className={`
-          text-sm
-          ${isActive
-                                        ? "text-white"
-                                        : "line-through text-white/40"
-                                    }
-        `}
-                            >
-                                {step.text}
-                            </span>
-                        </div>
-                    );
-                })}
-            </div>
+      {/* HEADER */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <motion.div
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.4, repeat: Infinity }}
+            className="w-1.5 h-1.5 rounded-full bg-blue-500"
+          />
+          <span className="text-xs text-white/50">
+            Building your app
+          </span>
         </div>
-    );
+
+        <div className="text-[10px] text-white/30">
+          {progress}%
+        </div>
+      </div>
+
+      {/* PROGRESS BAR */}
+      <div className="w-full h-[2px] bg-white/[0.06] rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.5 }}
+          className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 rounded-full"
+        />
+      </div>
+
+      {/* STEPS (🔥 SAME STYLE AS PreviewLoading) */}
+      <div className="flex flex-col gap-2">
+        {visibleSteps.map((step, i) => {
+          const isDone = step.status === "done";
+
+          return (
+            <motion.div
+              key={step.id}
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.15 }}
+              className="flex items-center gap-2"
+            >
+              {isDone ? (
+                <svg width="12" height="12" viewBox="0 0 12 12">
+                  <circle
+                    cx="6"
+                    cy="6"
+                    r="5"
+                    fill="rgba(59,130,246,0.2)"
+                  />
+                  <path
+                    d="M3.5 6l2 2 3-3"
+                    stroke="#3b82f6"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 0.8,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  className="w-3 h-3 border border-indigo-400/50 border-t-transparent rounded-full"
+                />
+              )}
+
+              <span
+                className={`text-[11px] ${
+                  isDone ? "text-white/30" : "text-white/50"
+                }`}
+              >
+                {step.text}
+              </span>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
