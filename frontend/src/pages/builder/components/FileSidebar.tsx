@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Icon } from "@iconify/react";
-import StepsPanel from "./StepsPanel";
 
 
 // maps file extensions to their corresponding iconify icon strings
@@ -104,7 +103,6 @@ export default function FileSidebar({
     fileTree,
     activeFile,
     setActiveFile,
-    steps,
 }: any) {
     // Tracks open/closed state for every folder, keyed by full path
     // e.g. { "src": true, "src/components": false }
@@ -160,9 +158,6 @@ export default function FileSidebar({
                     setOpenFolders={setOpenFolders}
                 />
             </div>
-
-            {/* STEPS */}
-            <StepsPanel steps={steps} />
         </div>
     );
 }

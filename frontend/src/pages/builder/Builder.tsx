@@ -62,7 +62,7 @@ export default function Builder() {
                 fileTree={fileTree}
                 activeFile={fileSystem.activeFile}
                 setActiveFile={handleSetActiveFile}
-                steps={steps}
+               
             />
 
             <CodeEditor
@@ -74,6 +74,7 @@ export default function Builder() {
             <PreviewPane
                 previewUrl={previewUrl}
                 hasFiles={Object.keys(fileSystem.files).length > 0}
+                steps={steps}
             />
         </div>
     );
