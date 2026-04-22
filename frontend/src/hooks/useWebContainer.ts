@@ -114,7 +114,7 @@ export function useWebContainer(
     };
 
     run();
-  }, [isReady]);
+  }, [isReady, files]);
 
   return url;
 }

@@ -1,4 +1,6 @@
+import { applyFixPipeline } from "@/utils/fixFiles";
 import Editor from "@monaco-editor/react";
+import { useMemo } from "react";
 
 export default function CodeEditor({
   activeFile,
@@ -40,12 +42,17 @@ export default function CodeEditor({
     );
   }
 
+  const fixedContent = useMemo(() => {
+    if (!activeFile) return "";
+    return applyFixPipeline(files)[activeFile]?.content || "";
+  }, [files, activeFile]);
+
   return (
     <Editor
       height="100%"
       theme="vs-dark"
       path={`file:///${activeFile}`} // unique path per file — tells monaco to treat each file as a separate model, preserving undo history and cursor position
-      value={files[activeFile].content || ""}
+      value={fixedContent}
       language="typescript"
       beforeMount={(monaco) => {
         monacoRef.current = monaco; // store monaco API before editor renders, used for config/theming

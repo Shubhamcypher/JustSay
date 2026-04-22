@@ -42,9 +42,8 @@ export default function Builder() {
     };
 
     const stableFiles = useMemo(() => {
-        if (!streaming.finalFiles) return {};
-        return applyFixPipeline(streaming.finalFiles);
-    }, [streaming.finalFiles]);
+        return applyFixPipeline(fileSystem.files);
+    }, [fileSystem.files]);
 
     const previewUrl = useWebContainer(
         stableFiles,
@@ -75,9 +74,9 @@ export default function Builder() {
             />
 
             <CodeEditor
-                files={stableFiles}
-                activeFile={fileSystem.activeFile}
-                updateFileContent={fileSystem.updateFileContent}
+                {...fileSystem}
+                // activeFile={fileSystem.activeFile}
+                // updateFileContent={fileSystem.updateFileContent}
                 editorRef={editorRef}
                 monacoRef={monacoRef}
             />
