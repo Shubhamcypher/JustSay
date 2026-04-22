@@ -14,7 +14,7 @@ import { useMemo } from "react";
 export default function Builder() {
     const { state } = useLocation();
     const prompt = state?.prompt;
-    
+
     const userSelectedRef = useRef(false);
 
     const fileSystem = useFiles(userSelectedRef);
@@ -41,8 +41,13 @@ export default function Builder() {
         fileSystem.setActiveFile(file);
     };
 
+    const stableFiles = useMemo(() => {
+        if (!streaming.finalFiles) return {};
+        return applyFixPipeline(streaming.finalFiles);
+    }, [streaming.finalFiles]);
+
     const previewUrl = useWebContainer(
-        streaming.finalFiles,
+        stableFiles,
         streaming.isReady,
         (msg, type) => {
             if (type === "start") {
@@ -58,10 +63,7 @@ export default function Builder() {
         }
     );
 
-    const stableFiles = useMemo(() => {
-        if (!streaming.finalFiles) return {};
-        return applyFixPipeline(streaming.finalFiles);
-      }, [streaming.finalFiles]);
+
 
     return (
         <div className="h-screen flex bg-gray-900 text-white p-4 gap-4">
@@ -69,11 +71,13 @@ export default function Builder() {
                 fileTree={fileTree}
                 activeFile={fileSystem.activeFile}
                 setActiveFile={handleSetActiveFile}
-               
+
             />
 
             <CodeEditor
-                {...fileSystem}
+                files={stableFiles}
+                activeFile={fileSystem.activeFile}
+                updateFileContent={fileSystem.updateFileContent}
                 editorRef={editorRef}
                 monacoRef={monacoRef}
             />
