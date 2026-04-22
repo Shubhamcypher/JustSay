@@ -82,21 +82,7 @@ export function useWebContainer(
 
           onLog?.("🛠 Preparing project...");
 
-          let stableFiles = JSON.parse(JSON.stringify(files));
-
-          // 🔥 FULL FIX PIPELINE
-          stableFiles = fixIndexHtml(stableFiles);
-          console.log("HTML done");
-          stableFiles = fixExports(stableFiles);
-          console.log("exports done");
-          stableFiles = fixCss(stableFiles);
-          console.log("css done");
-          stableFiles = fixRelativeCssImports(stableFiles);
-          console.log("Relative css done");
-          stableFiles = fixBrokenStyleImports(stableFiles);
-          console.log("Broken Style Imports done");
-          stableFiles = fixPackageJson(stableFiles);
-          console.log("json done");
+          const stableFiles = files;
 
 
         onLog?.("📁 Mounting files...", "start");
