@@ -101,34 +101,15 @@ function Shimmer({ className, delay = 0 }: { className?: string; delay?: number 
 export default function PreviewPane({ previewUrl, hasFiles, steps }: any) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   return (
-    <div
-      className={`p-2 transition-all duration-300 ${isFullscreen
-        ? "fixed inset-0 z-50 bg-[#141414]"
-        : "w-[50%]"
-        }`}
-    >
+    <div className="w-[50%] p-2">
       {hasFiles && previewUrl ? (
         <div className="w-full h-full flex flex-col gap-2 relative">
-
-          {/* FULLSCREEN BUTTON */}
-          {!isFullscreen && (
-            <button
-              onClick={() => setIsFullscreen(true)}
-              className="absolute top-2 right-2 z-50 px-3 py-1 bg-black/60 text-xs rounded"
-            >
-              Fullscreen
-            </button>
-          )}
-
-          {/* EXIT BUTTON */}
-          {isFullscreen && (
-            <button
-              onClick={() => setIsFullscreen(false)}
-              className="absolute top-2 right-2 z-50 px-3 py-1 bg-black/60 text-xs rounded"
-            >
-              Exit
-            </button>
-          )}
+          <button
+            onClick={() => setIsFullscreen(true)}
+            className="absolute top-2 right-2 z-10 px-3 py-1 bg-black/60 text-xs rounded"
+          >
+            Fullscreen
+          </button>
 
           <iframe
             src={previewUrl}
@@ -140,7 +121,24 @@ export default function PreviewPane({ previewUrl, hasFiles, steps }: any) {
           <PreviewLoading steps={steps} />
         </div>
       )}
+      {isFullscreen && (
+        <div className="fixed inset-0 z-50 bg-[#141414] p-4">
+
+          <button
+            onClick={() => setIsFullscreen(false)}
+            className="absolute top-4 right-4 z-50 px-3 py-1 bg-black/60 text-xs rounded"
+          >
+            Exit
+          </button>
+
+          <iframe
+            src={previewUrl}
+            className="w-full h-full bg-gray-500 rounded-lg"
+          />
+        </div>
+      )}
     </div>
+
   );
 }
 
