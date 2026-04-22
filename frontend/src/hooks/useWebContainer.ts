@@ -154,6 +154,101 @@ export function useWebContainer(
     return newFiles;
   }
 
+  //CSS import got fixed like ./todoList.css instead of .styles/todoList.css
+  //but in editor still shows wrong imports
+  function fixRelativeCssImports(files: Record<string, any>) {
+    const newFiles = { ...files };
+  
+    const cssFiles = Object.keys(files).filter((f) => f.endsWith(".css"));
+  
+    for (const filePath in newFiles) {
+      if (!filePath.endsWith(".tsx") && !filePath.endsWith(".ts")) continue;
+  
+      let content = newFiles[filePath].content;
+      if (typeof content !== "string") continue;
+  
+      content = content.replace(
+        /import\s+['"](.+\.css)['"]/g,
+        (match, importPath) => {
+          const cssName = importPath.split("/").pop();
+  
+          // 🔥 find actual file in project
+          const actualCssPath = cssFiles.find((f) =>
+            f.endsWith(cssName as string)
+          );
+  
+          if (!actualCssPath) {
+            // 🔥 FORCE fallback to styles folder
+            const cssName = importPath.split("/").pop();
+          
+            const fallbackPath = `src/styles/${cssName}`;
+          
+            const from = filePath.split("/");
+            const to = fallbackPath.split("/");
+          
+            from.pop();
+          
+            while (from.length && to.length && from[0] === to[0]) {
+              from.shift();
+              to.shift();
+            }
+          
+            const up = "../".repeat(from.length);
+            const down = to.join("/");
+          
+            return `import '${up}${down}'`;
+          }
+  
+          // 🔥 compute correct relative path
+          const from = filePath.split("/");
+          const to = actualCssPath.split("/");
+  
+          from.pop();
+  
+          while (from.length && to.length && from[0] === to[0]) {
+            from.shift();
+            to.shift();
+          }
+  
+          const up = "../".repeat(from.length);
+          const down = to.join("/");
+  
+          const correctPath = `${up}${down}`;
+  
+          // ✅ ONLY replace if different
+          if (correctPath !== importPath) {
+            return `import '${correctPath}'`;
+          }
+  
+          return match;
+        }
+      );
+  
+      newFiles[filePath].content = content;
+    }
+  
+    return newFiles;
+  }
+
+  function fixBrokenStyleImports(files: Record<string, any>) {
+    const newFiles = { ...files };
+  
+    for (const filePath in newFiles) {
+      let content = newFiles[filePath].content;
+      if (typeof content !== "string") continue;
+  
+      // fix broken absolute style imports
+      content = content.replace(
+        /import\s+['"]styles\//g,
+        `import './styles/`
+      );
+  
+      newFiles[filePath].content = content;
+    }
+  
+    return newFiles;
+  }
+
   // 🧠 Detect dependencies
   function detectDependencies(files: Record<string, any>) {
     const deps = new Set<string>();
@@ -244,6 +339,10 @@ export function useWebContainer(
           console.log("exports done");
           stableFiles = fixCss(stableFiles);
           console.log("css done");
+          stableFiles = fixRelativeCssImports(stableFiles);
+          console.log("Relative css done");
+          stableFiles = fixBrokenStyleImports(stableFiles);
+          console.log("Broken Style Imports done");
           stableFiles = fixPackageJson(stableFiles);
           console.log("json done");
 

@@ -64,6 +64,8 @@ Rules:
   - index.html
   - src/main.tsx
   - src/App.tsx
+-Do not include binary files like .png, .jpg, .ico.
+  - Use external URLs instead.
 
 No explanation. Only JSON.
 `

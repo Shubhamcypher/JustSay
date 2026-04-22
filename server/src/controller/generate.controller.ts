@@ -61,6 +61,7 @@ export const generateProject = async (req: Request, res: Response) => {
         let buffer = "";
         // 🔥 PLAN
         const plan: ProjectPlan = await planProject(prompt);
+        plan.files = plan.files.filter(f => !isBinaryFile(f));
 
         if (!plan.files || !Array.isArray(plan.files)) {
             throw new Error("Invalid plan from LLM");

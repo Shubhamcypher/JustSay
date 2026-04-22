@@ -85,6 +85,26 @@ STEP 2: Build UI with good design
 - Buttons must be styled
 - Inputs must be visible
 
+For images:
+
+- ALWAYS use direct image URLs that return HTTP 200 (no redirects)
+- ONLY use URLs from:
+  https://images.unsplash.com/
+
+- DO NOT use:
+  - source.unsplash.com
+  - picsum.photos
+  - any URL that returns 302 redirect
+
+- Images must work directly inside <img src="...">
+
+GOOD example:
+https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400
+
+BAD examples:
+https://source.unsplash.com/200x200/?shoes
+https://picsum.photos/200/200
+
 STEP 3: Generate code
 - Use React + TypeScript
 - Use functional components

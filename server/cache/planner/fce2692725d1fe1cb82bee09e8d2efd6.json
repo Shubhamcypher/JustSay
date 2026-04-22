@@ -1,0 +1,28 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/ProductList.tsx",
+    "src/components/ProductCard.tsx",
+    "src/components/Cart.tsx",
+    "src/components/Checkout.tsx",
+    "src/styles/global.css",
+    "src/styles/Header.css",
+    "src/styles/Footer.css",
+    "src/styles/ProductList.css",
+    "src/styles/ProductCard.css",
+    "src/styles/Cart.css",
+    "src/styles/Checkout.css",
+    "src/types/Product.ts",
+    "src/types/Cart.ts",
+    "src/hooks/useCart.ts",
+    "src/context/CartContext.tsx",
+    "src/utils/api.ts",
+    "src/utils/constants.ts",
+    "vite.config.ts"
+  ]
+}
