@@ -8,6 +8,8 @@ import { useWebContainer } from "@/hooks/useWebContainer";
 import { useRef } from "react";
 import { useFileStreaming } from "./hooks/useFileStreaming";
 import FileSidebar from "./components/FileSidebar";
+import { applyFixPipeline } from "@/utils/fixFiles";
+import { useMemo } from "react";
 
 export default function Builder() {
     const { state } = useLocation();
@@ -55,6 +57,11 @@ export default function Builder() {
             }
         }
     );
+
+    const stableFiles = useMemo(() => {
+        if (!streaming.finalFiles) return {};
+        return applyFixPipeline(streaming.finalFiles);
+      }, [streaming.finalFiles]);
 
     return (
         <div className="h-screen flex bg-gray-900 text-white p-4 gap-4">
