@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import StepsPanel from "./StepsPanel";
+import { useState } from "react";
 
 
 
@@ -102,12 +103,33 @@ export default function PreviewPane({ previewUrl, hasFiles, steps }: any) {
   return (
     <div
       className={`p-2 transition-all duration-300 ${isFullscreen
-          ? "fixed inset-0 z-50 bg-[#141414]"
-          : "w-[50%]"
+        ? "fixed inset-0 z-50 bg-[#141414]"
+        : "w-[50%]"
         }`}
     >
       {hasFiles && previewUrl ? (
-        <div className="w-full h-full flex flex-col gap-2">
+        <div className="w-full h-full flex flex-col gap-2 relative">
+
+          {/* FULLSCREEN BUTTON */}
+          {!isFullscreen && (
+            <button
+              onClick={() => setIsFullscreen(true)}
+              className="absolute top-2 right-2 z-50 px-3 py-1 bg-black/60 text-xs rounded"
+            >
+              Fullscreen
+            </button>
+          )}
+
+          {/* EXIT BUTTON */}
+          {isFullscreen && (
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="absolute top-2 right-2 z-50 px-3 py-1 bg-black/60 text-xs rounded"
+            >
+              Exit
+            </button>
+          )}
+
           <iframe
             src={previewUrl}
             className="w-full h-full bg-gray-500 rounded-lg"
