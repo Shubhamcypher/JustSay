@@ -98,8 +98,14 @@ function Shimmer({ className, delay = 0 }: { className?: string; delay?: number 
 }
 
 export default function PreviewPane({ previewUrl, hasFiles, steps }: any) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
   return (
-    <div className="w-[50%] p-2">
+    <div
+      className={`p-2 transition-all duration-300 ${isFullscreen
+          ? "fixed inset-0 z-50 bg-[#141414]"
+          : "w-[50%]"
+        }`}
+    >
       {hasFiles && previewUrl ? (
         <div className="w-full h-full flex flex-col gap-2">
           <iframe
@@ -109,7 +115,7 @@ export default function PreviewPane({ previewUrl, hasFiles, steps }: any) {
         </div>
       ) : (
         <div className="w-full h-full flex flex-col justify-center items-center gap-6">
-          <PreviewLoading steps={steps}/>
+          <PreviewLoading steps={steps} />
         </div>
       )}
     </div>
