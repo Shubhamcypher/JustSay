@@ -59,62 +59,68 @@ export function useWebContainer(
 
  
 
-  // 🚀 MAIN EXECUTION
+  //MAIN EXECUTION(Run once and then run on sync)
   useEffect(() => {
     if (!wcRef.current) return;
     if (!isReady) return;
-    if (startedRef.current) return;
-
-
-    // if (Object.keys(files).length < 5) {
-    //   console.log("⏳ Waiting for enough files...");
-    //   return;
-    // }
-
-
-    const run = async () => {
-        startedRef.current = true;
-        const wc = wcRef.current;
-        console.log("🚀 Running WebContainer with files:", Object.keys(files));
-
-        try {
-          console.log("In try block");
-
-          onLog?.("🛠 Preparing project...");
-
-          const stableFiles = files;
-
-
+  
+    const wc = wcRef.current;
+  
+    const init = async () => {
+      try {
+        console.log("Initializing WebContainer");
+  
         onLog?.("📁 Mounting files...", "start");
-        await wc.mount(buildTree(stableFiles));
+        await wc.mount(buildTree(files));
         onLog?.("📁 Mounting files...", "end");
-
+  
         onLog?.("📦 Installing dependencies...", "start");
         const install = await wc.spawn("npm", ["install"]);
         await install.exit;
         onLog?.("📦 Installing dependencies...", "end");
-
+  
         onLog?.("🚀 Running dev server...", "start");
         const dev = await wc.spawn("npm", ["run", "dev"]);
         onLog?.("🚀 Running dev server...", "end");
-
-
+  
         dev.output.pipeTo(
           new WritableStream({
             write(data) {
-              // onLog?.(data.toString(), "info");
               console.log(data.toString());
             },
           })
         );
+  
+        startedRef.current = true;
       } catch (err) {
-        console.error("❌ WebContainer error:", err);
+        console.error("❌ INIT ERROR:", err);
         startedRef.current = false;
       }
     };
-
-    run();
-  }, [isReady, files]);
+  
+    const syncFiles = async () => {
+      try {
+        if (!startedRef.current) return;
+  
+        //update files live
+        for (const [path, file] of Object.entries(files)) {
+          await wc.fs.writeFile(path, file.content || "");
+        }
+  
+      } catch (err) {
+        console.error("❌ SYNC ERROR:", err);
+      }
+    };
+  
+    // 🚀 run init once
+    if (!startedRef.current) {
+      init();
+    } else {
+      // 🔥 run sync on every change
+      syncFiles();
+    }
+  
+  }, [files, isReady]);
 
   return url;
 }
