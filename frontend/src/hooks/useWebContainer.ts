@@ -57,32 +57,34 @@ export function useWebContainer(
     return root;
   }
 
- 
+
 
   //MAIN EXECUTION(Run once and then run on sync)
   useEffect(() => {
     if (!wcRef.current) return;
     if (!isReady) return;
-  
+
     const wc = wcRef.current;
-  
+
     const init = async () => {
       try {
         console.log("Initializing WebContainer");
-  
+        console.log("FILES CHECK:", files["vite.config.ts"]);
+        console.log("PKG CHECK:", files["package.json"]);
+
         onLog?.("📁 Mounting files...", "start");
         await wc.mount(buildTree(files));
         onLog?.("📁 Mounting files...", "end");
-  
+
         onLog?.("📦 Installing dependencies...", "start");
-        const install = await wc.spawn("npm", ["install"]);
+        const install = await wc.spawn("npm", ["install", "--prefer-offline", "--no-audit", "--no-fund"]);
         await install.exit;
         onLog?.("📦 Installing dependencies...", "end");
-  
+
         onLog?.("🚀 Running dev server...", "start");
         const dev = await wc.spawn("npm", ["run", "dev"]);
         onLog?.("🚀 Running dev server...", "end");
-  
+
         dev.output.pipeTo(
           new WritableStream({
             write(data) {
@@ -90,28 +92,33 @@ export function useWebContainer(
             },
           })
         );
-  
+
         startedRef.current = true;
       } catch (err) {
         console.error("❌ INIT ERROR:", err);
         startedRef.current = false;
       }
     };
-  
+
     const syncFiles = async () => {
       try {
         if (!startedRef.current) return;
-  
+
         //update files live
         for (const [path, file] of Object.entries(files)) {
-          await wc.fs.writeFile(path, file.content || "");
+          const content =
+            typeof file === "string"
+              ? file
+              : file?.content || "";
+
+          await wc.fs.writeFile(path, content);
         }
-  
+
       } catch (err) {
         console.error("❌ SYNC ERROR:", err);
       }
     };
-  
+
     // 🚀 run init once
     if (!startedRef.current) {
       init();
@@ -119,7 +126,7 @@ export function useWebContainer(
       // 🔥 run sync on every change
       syncFiles();
     }
-  
+
   }, [files, isReady]);
 
   return url;
