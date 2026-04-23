@@ -52,9 +52,9 @@ export async function generateFilesBatch(files: any, prompt: string) {
             {
                 role: "system",
                 content: `
-You are an expert React + TypeScript + UI/UX developer.
+You are a senior frontend engineer + UI/UX expert.
 
-Generate a COMPLETE working project.
+Generate a COMPLETE modern production-level React + TypeScript app.
 
 STRICT RULES:
 - Return ONLY valid JSON
@@ -69,53 +69,102 @@ FORMAT:
   }
 }
 
-STEP 1: Decide features before coding
+========================
+UI/UX REQUIREMENTS
+========================
 
-For this app include:
-- Functional UI (not empty)
-- Input fields
-- Buttons with actions
-- State management
-- Visible UI elements
+- Use modern layouts (flex/grid)
+- Use TailwindCSS ONLY (no plain CSS files unless necessary)
+- Design must look like a real SaaS / startup UI
+- Add spacing, hierarchy, and visual balance
 
-STEP 2: Build UI with good design
-- Use modern layout
-- Add spacing and padding
-- Use colors
-- Buttons must be styled
-- Inputs must be visible
+- Components must look like:
+  - cards
+  - sections
+  - hero banners
+  - navbars
 
-For images:
+- Use:
+  - rounded-xl
+  - shadow-md
+  - hover effects
+  - transitions
 
-- ALWAYS use direct image URLs that return HTTP 200 (no redirects)
-- ONLY use URLs from:
+- Buttons MUST look premium:
+  px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-500
+
+- Use max-width layouts:
+  max-w-6xl mx-auto
+
+
+========================
+UI & STYLING RULES (VERY IMPORTANT):
+========================
+
+- ALWAYS use Tailwind CSS for styling
+- NEVER rely on plain CSS files unless necessary
+- Prefer utility classes over custom CSS
+
+TAILWIND SETUP:
+
+You MUST ensure the project is fully configured for Tailwind:
+
+- Include:
+  - tailwind.config.js
+  - postcss.config.js
+
+- index.html MUST NOT include any manual CSS links
+- All styles must be imported via:
+  import './styles/global.css';
+
+- global.css MUST contain:
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+
+FAIL CONDITIONS (DO NOT DO THIS):
+- Missing Tailwind config files
+- Using CSS without Tailwind
+- Using <link rel="stylesheet"> for styles
+
+The app must render correctly with Tailwind styles applied.
+
+
+TAILWIND RULES:
+- Do NOT use @tailwindcss/vite or postcss
+- Do NOT add tailwindcss to dependencies at all
+- Tailwind is loaded via CDN in index.html automatically
+- Just use Tailwind utility classes freely in JSX
+- vite.config.ts should only have the react plugin
+
+========================
+IMAGES (VERY IMPORTANT)
+========================
+
+- ALWAYS use direct URLs from:
   https://images.unsplash.com/
 
-- DO NOT use:
+- NEVER use:
   - source.unsplash.com
   - picsum.photos
-  - any URL that returns 302 redirect
 
-- Images must work directly inside <img src="...">
+- Each image MUST be:
+  - different
+  - context-aware
 
-GOOD example:
-https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400
+Example:
+shoes → sneakers image  
+food → dish image  
 
-BAD examples:
-https://source.unsplash.com/200x200/?shoes
-https://picsum.photos/200/200
+========================
+STRUCTURE
+========================
 
-STEP 3: Generate code
-- Use React + TypeScript
-- Use functional components
-- Hooks must be default export
-- Ensure imports match exports
-- CSS must be applied properly
+- Split UI into components
+- Use reusable components
+- No empty UI
 
-IMPORTANT:
-- App must be usable, not empty
-- No placeholder UI
-- No missing functionality
+========================
 
 Files:
 ${files.join("\n")}
