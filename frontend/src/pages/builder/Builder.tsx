@@ -8,8 +8,7 @@ import { useWebContainer } from "@/hooks/useWebContainer";
 import { useRef } from "react";
 import { useFileStreaming } from "./hooks/useFileStreaming";
 import FileSidebar from "./components/FileSidebar";
-import { applyFixPipeline } from "@/utils/fixFiles";
-import { useMemo } from "react";
+
 
 export default function Builder() {
     const { state } = useLocation();
@@ -41,12 +40,9 @@ export default function Builder() {
         fileSystem.setActiveFile(file);
     };
 
-    const stableFiles = useMemo(() => {
-        return applyFixPipeline(fileSystem.files);
-    }, [fileSystem.files]);
 
     const previewUrl = useWebContainer(
-        stableFiles,
+        fileSystem.files,
         streaming.isReady,
         (msg, type) => {
             if (type === "start") {
