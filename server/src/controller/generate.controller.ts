@@ -5,10 +5,14 @@ import { pool } from "../config/db";
 import { planProject } from "../services/planner.service";
 // import { generateFile } from "../services/generator.service";
 import { generateFilesBatch } from "../services/genrateFilesBatch.service";
+import { injectImages } from "../utils/injectImages";
+import { enhanceFiles } from "../utils/enhanceFiles";
+import { fixTailwind } from "../utils/fixTailwind";
+import { normalizeFiles } from "../utils/normalizeFiles";
 
 type ProjectPlan = {
     files: string[];
-  };
+};
 
 const isBinaryFile = (filePath: string) => {
     return /\.(ico|png|jpg|jpeg|gif|svg|webp)$/i.test(filePath);
@@ -73,6 +77,12 @@ export const generateProject = async (req: Request, res: Response) => {
         // 🔥 SINGLE API CALL
         const result = await generateFilesBatch(textFiles, prompt);
 
+        let files = normalizeFiles(result.files);
+
+        files = enhanceFiles(files);
+        files = injectImages(files, prompt);
+        files = fixTailwind(files)
+
         // 🔥 LOOP ONLY FOR SAVING + STREAMING
         for (const filePath of plan.files) {
 
@@ -81,7 +91,7 @@ export const generateProject = async (req: Request, res: Response) => {
             if (isBinaryFile(filePath)) {
                 console.log(`⏭️ Skipping binary file: ${filePath}`);
             } else {
-                content = result.files?.[filePath] || "";
+                content = files?.[filePath]?.content || "";
             }
 
             // save
