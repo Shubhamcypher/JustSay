@@ -9,15 +9,15 @@
     "src/components/MovieList.tsx",
     "src/components/MovieCard.tsx",
     "src/hooks/useFetch.ts",
-    "src/types/Movie.ts",
     "src/styles/global.css",
     "src/styles/Navbar.css",
     "src/styles/Featured.css",
     "src/styles/MovieList.css",
     "src/styles/MovieCard.css",
+    "src/types/Movie.ts",
     "vite.config.ts",
     "public/favicon.ico",
-    "public/netflix-logo.svg",
-    "public/background.jpg"
+    "public/manifest.json",
+    "public/service-worker.js"
   ]
 }
