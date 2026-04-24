@@ -79,12 +79,13 @@ export const generateProject = async (req: Request, res: Response) => {
 
         let files = normalizeFiles(result.files);
 
-        files = enhanceFiles(files);
-        files = injectImages(files, prompt);
-        files = fixTailwind(files)
+        files = fixTailwind(files);      // FIRST
+        files = enhanceFiles(files);     // THEN
+        files = injectImages(files, prompt); // LAST
 
         // 🔥 LOOP ONLY FOR SAVING + STREAMING
-        for (const filePath of plan.files) {
+        const allPaths = Object.keys(files);
+        for (const filePath of allPaths) {
 
             let content = "";
 
