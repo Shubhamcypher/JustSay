@@ -67,6 +67,17 @@ Rules:
 -Do not include binary files like .png, .jpg, .ico.
   - Use external URLs instead.
 
+IMPORTANT STYLING RULE:
+
+- DO NOT create ANY .css files
+- DO NOT include files inside src/styles except:
+  - src/styles/tailwind-lite.css (this is handled by the system)
+
+- All styling MUST be done using utility classes inside JSX
+
+FAIL CONDITION:
+If any .css file (other than tailwind-lite.css) is included, the output is invalid
+
 No explanation. Only JSON.
 `
                     },
