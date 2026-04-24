@@ -71,6 +71,7 @@ export function useWebContainer(
         console.log("Initializing WebContainer");
         console.log("FILES CHECK:", files["vite.config.ts"]);
         console.log("PKG CHECK:", files["package.json"]);
+        console.log("CSS FILE CHECK:", files["src/styles/tailwind-lite.css"]);
 
         onLog?.("📁 Mounting files...", "start");
         await wc.mount(buildTree(files));
