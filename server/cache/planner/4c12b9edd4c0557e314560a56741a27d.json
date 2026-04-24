@@ -1,0 +1,13 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/ProjectList.tsx",
+    "src/components/ContactForm.tsx",
+    "src/styles/tailwind-lite.css"
+  ]
+}

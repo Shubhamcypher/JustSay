@@ -1,0 +1,17 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/VideoList.tsx",
+    "src/components/VideoItem.tsx",
+    "src/components/VideoPlayer.tsx",
+    "src/styles/tailwind-lite.css",
+    "src/hooks/useVideos.ts",
+    "src/types/Video.ts",
+    "src/utils/api.ts"
+  ]
+}

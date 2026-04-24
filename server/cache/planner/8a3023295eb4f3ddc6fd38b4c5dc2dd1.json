@@ -1,0 +1,21 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/EmailList.tsx",
+    "src/components/EmailItem.tsx",
+    "src/components/EmailDetail.tsx",
+    "src/components/ComposeEmail.tsx",
+    "src/hooks/useEmails.ts",
+    "src/styles/global.css",
+    "src/styles/EmailList.css",
+    "src/styles/EmailDetail.css",
+    "src/styles/ComposeEmail.css",
+    "src/types/Email.ts",
+    "src/utils/api.ts",
+    "src/utils/constants.ts",
+    "vite.config.ts"
+  ]
+}

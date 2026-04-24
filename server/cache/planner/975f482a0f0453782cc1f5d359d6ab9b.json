@@ -1,0 +1,14 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/TodoList.tsx",
+    "src/components/TodoItem.tsx",
+    "src/hooks/useTodos.ts",
+    "src/styles/global.css",
+    "vite.config.ts",
+    "src/types/todo.d.ts"
+  ]
+}

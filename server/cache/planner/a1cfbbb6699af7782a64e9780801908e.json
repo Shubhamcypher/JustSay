@@ -1,0 +1,24 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/Navbar.tsx",
+    "src/components/Sidebar.tsx",
+    "src/components/Playlist.tsx",
+    "src/components/Track.tsx",
+    "src/hooks/useSpotify.ts",
+    "src/context/SpotifyContext.tsx",
+    "src/styles/global.css",
+    "src/styles/Navbar.css",
+    "src/styles/Sidebar.css",
+    "src/styles/Playlist.css",
+    "src/styles/Track.css",
+    "vite.config.ts",
+    "src/types/Track.ts",
+    "src/types/Playlist.ts",
+    "src/utils/api.ts",
+    "src/utils/constants.ts"
+  ]
+}

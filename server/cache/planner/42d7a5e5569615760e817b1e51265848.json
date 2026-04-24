@@ -1,0 +1,14 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/styles/tailwind-lite.css",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/Card.tsx",
+    "src/hooks/useFetch.ts",
+    "src/types/index.d.ts"
+  ]
+}

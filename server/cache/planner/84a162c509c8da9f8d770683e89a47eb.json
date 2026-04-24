@@ -1,0 +1,21 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/Map.tsx",
+    "src/components/DriverList.tsx",
+    "src/components/RideRequest.tsx",
+    "src/components/UserProfile.tsx",
+    "src/hooks/useRideRequest.ts",
+    "src/hooks/useMap.ts",
+    "src/styles/global.css",
+    "src/types/index.d.ts",
+    "src/utils/api.ts",
+    "src/utils/constants.ts",
+    "vite.config.ts",
+    "public/favicon.ico",
+    "public/manifest.json"
+  ]
+}
