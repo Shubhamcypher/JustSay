@@ -18,6 +18,10 @@ button{cursor:pointer;background-color:transparent;background-image:none}
 .gap-2{gap:.5rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}
 .space-x-2>*+*{margin-left:.5rem}.space-x-4>*+*{margin-left:1rem}
 .space-y-2>*+*{margin-top:.5rem}.space-y-4>*+*{margin-top:1rem}
+.items-stretch{align-items:stretch}
+.justify-start{justify-content:flex-start}
+.justify-around{justify-content:space-around}
+.justify-evenly{justify-content:space-evenly}
 
 /* Sizing */
 .w-full{width:100%}.w-1\\/2{width:50%}.w-1\\/3{width:33.333%}.w-auto{width:auto}
@@ -25,6 +29,10 @@ button{cursor:pointer;background-color:transparent;background-image:none}
 .min-h-screen{min-height:100vh}.max-w-md{max-width:28rem}.max-w-lg{max-width:32rem}
 .max-w-xl{max-width:36rem}.max-w-2xl{max-width:42rem}.max-w-4xl{max-width:56rem}.max-w-6xl{max-width:72rem}
 .mx-auto{margin-left:auto;margin-right:auto}
+.w-24{width:6rem}
+.w-32{width:8rem}
+.w-48{width:12rem}
+.w-64{width:16rem}
 
 /* Spacing */
 .p-2{padding:.5rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-8{padding:2rem}
@@ -33,6 +41,14 @@ button{cursor:pointer;background-color:transparent;background-image:none}
 .m-0{margin:0}.m-2{margin:.5rem}.m-4{margin:1rem}.mt-2{margin-top:.5rem}.mt-4{margin-top:1rem}.mt-8{margin-top:2rem}
 .mb-2{margin-bottom:.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}
 .ml-2{margin-left:.5rem}.mr-2{margin-right:.5rem}
+.p-1{padding:0.25rem}
+.p-3{padding:0.75rem}
+.p-5{padding:1.25rem}
+.p-10{padding:2.5rem}
+
+.m-1{margin:0.25rem}
+.m-3{margin:0.75rem}
+.m-5{margin:1.25rem}
 
 /* Typography */
 .text-xs{font-size:.75rem}.text-sm{font-size:.875rem}.text-base{font-size:1rem}.text-lg{font-size:1.125rem}
@@ -64,6 +80,9 @@ button{cursor:pointer;background-color:transparent;background-image:none}
 .border-gray-200{border-color:#e5e7eb}.border-gray-300{border-color:#d1d5db}.border-blue-500{border-color:#3b82f6}
 .rounded{border-radius:.25rem}.rounded-md{border-radius:.375rem}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}
 .border-transparent{border-color:transparent}
+.border-gray-100{border-color:#f3f4f6}
+.border-gray-400{border-color:#9ca3af}
+.border-red-500{border-color:#ef4444}
 
 /* Shadows */
 .shadow{box-shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06)}
@@ -108,44 +127,56 @@ button{cursor:pointer;background-color:transparent;background-image:none}
 .list-none{list-style-type:none}.pointer-events-none{pointer-events:none}
 .whitespace-nowrap{white-space:nowrap}.break-words{overflow-wrap:break-word}
 .aspect-square{aspect-ratio:1/1}.aspect-video{aspect-ratio:16/9}
+
+
+.card{
+  background:#fff;
+  border-radius:0.75rem;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  padding:1rem;
+}
 `;
 
 export function fixTailwind(files: Record<string, any>) {
     const newFiles = { ...files };
 
+    newFiles["src/styles/tailwind-lite.css"] = {
+        content: TAILWIND_INLINE
+      };
+
     // Strip any Tailwind build deps from package.json
     if (newFiles["package.json"]) {
         try {
-          const pkg = JSON.parse(newFiles["package.json"].content);
-      
-          // ✅ ENSURE REQUIRED DEPENDENCIES
-          pkg.dependencies = pkg.dependencies || {};
-          pkg.devDependencies = pkg.devDependencies || {};
-      
-          // 🔥 REQUIRED FOR VITE TO RUN
-          pkg.devDependencies["vite"] = "^4.5.0";
-          pkg.devDependencies["@vitejs/plugin-react"] = "^4.0.0";
-      
-          // 🔥 REQUIRED FOR REACT
-          pkg.dependencies["react"] = "^18.2.0";
-          pkg.dependencies["react-dom"] = "^18.2.0";
-      
-          // 🔥 ENSURE SCRIPTS
-          pkg.scripts = pkg.scripts || {};
-          pkg.scripts["dev"] = "vite";
-      
-          // ❌ REMOVE BROKEN TAILWIND SETUP
-          delete pkg.dependencies?.["@tailwindcss/vite"];
-          delete pkg.dependencies?.["tailwindcss"];
-          delete pkg.devDependencies?.["tailwindcss"];
-          delete pkg.devDependencies?.["postcss"];
-          delete pkg.devDependencies?.["autoprefixer"];
-      
-          newFiles["package.json"].content = JSON.stringify(pkg, null, 2);
+            const pkg = JSON.parse(newFiles["package.json"].content);
+
+            // ✅ ENSURE REQUIRED DEPENDENCIES
+            pkg.dependencies = pkg.dependencies || {};
+            pkg.devDependencies = pkg.devDependencies || {};
+
+            // 🔥 REQUIRED FOR VITE TO RUN
+            pkg.devDependencies["vite"] = "^4.5.0";
+            pkg.devDependencies["@vitejs/plugin-react"] = "^4.0.0";
+
+            // 🔥 REQUIRED FOR REACT
+            pkg.dependencies["react"] = "^18.2.0";
+            pkg.dependencies["react-dom"] = "^18.2.0";
+
+            // 🔥 ENSURE SCRIPTS
+            pkg.scripts = pkg.scripts || {};
+            pkg.scripts["dev"] = "vite";
+
+            // ❌ REMOVE BROKEN TAILWIND SETUP
+            delete pkg.dependencies?.["@tailwindcss/vite"];
+            delete pkg.dependencies?.["tailwindcss"];
+            delete pkg.devDependencies?.["tailwindcss"];
+            delete pkg.devDependencies?.["postcss"];
+            delete pkg.devDependencies?.["autoprefixer"];
+
+            newFiles["package.json"].content = JSON.stringify(pkg, null, 2);
         } catch (err) {
-          console.error("❌ package.json fix failed", err);
+            console.error("❌ package.json fix failed", err);
         }
-      }
+    }
 
     // Clean vite.config - no Tailwind plugin needed
     newFiles["vite.config.ts"] = {
@@ -160,15 +191,13 @@ export function fixTailwind(files: Record<string, any>) {
     };
 
     // Inject inlined CSS into index.html, remove any CDN refs
-    if (!newFiles["index.html"].content.includes("TAILWIND_INLINE_MARK")) {
-        newFiles["index.html"].content = newFiles["index.html"].content
-            .replace(/<script src="https:\/\/cdn\.tailwindcss\.com.*?><\/script>\n?/g, "")
-            .replace(/<link.*?tailwind.*?>\n?/g, "")
+    newFiles["index.html"].content =
+        newFiles["index.html"].content
+            .replace(/<script src="https:\/\/cdn\.tailwindcss\.com.*?><\/script>/g, "")
             .replace(
                 "</head>",
-                `<style id="TAILWIND_INLINE_MARK">${TAILWIND_INLINE}</style>\n</head>`
+                `<link rel="stylesheet" href="/src/styles/tailwind-lite.css" />\n</head>`
             );
-    }
 
     // global.css - just a body font reset, no @tailwind directives
     newFiles["src/styles/global.css"] = {
