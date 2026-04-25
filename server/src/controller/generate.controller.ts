@@ -9,6 +9,7 @@ import { injectImages } from "../utils/injectImages";
 import { enhanceFiles } from "../utils/enhanceFiles";
 import { fixTailwind } from "../utils/fixTailwind";
 import { normalizeFiles } from "../utils/normalizeFiles";
+import { fixCommonBugs } from "../utils/fixCommonBugs";
 
 type ProjectPlan = {
     files: string[];
@@ -78,7 +79,7 @@ export const generateProject = async (req: Request, res: Response) => {
         const result = await generateFilesBatch(textFiles, prompt);
 
         let files = normalizeFiles(result.files);
-
+        files = fixCommonBugs(files);
         files = fixTailwind(files);      // FIRST
         files = enhanceFiles(files);     // THEN
         files = injectImages(files, prompt); // LAST
