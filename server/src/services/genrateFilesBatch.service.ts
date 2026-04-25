@@ -45,9 +45,9 @@ export async function generateFilesBatch(files: any, prompt: string) {
 
 
     const res = await openai.chat.completions.create({
-        model: "gpt-4o",  //open ai model for planner
+        model: "gpt-5",  //open ai model for planner
         // model: "google/gemma-3-12b-it:free", // llama model works freely but too scratchy
-        temperature: 0.2,
+        // temperature: 0.2,
         messages: [
             {
                 role: "system",
@@ -176,7 +176,19 @@ STRUCTURE
 
 * Ensure file structure is logical:
 
-* Ensure arrow function is like : () => {}, not like () = {}
+STRICT SYNTAX RULES (MUST FOLLOW):
+
+- NEVER write: () = {}
+- ALWAYS write: () => {}
+
+- NEVER assign className inside functions or event handlers
+  ❌ WRONG: onClick={() => { className = "..." }}
+  ✅ CORRECT: use state or conditional rendering
+
+- ALL event handlers must be valid arrow functions:
+  onClick={() => handleClick()}
+
+- INVALID JS/TS CODE IS STRICTLY FORBIDDEN
 
   * components/
   * hooks/
