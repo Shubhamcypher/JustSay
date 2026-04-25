@@ -1,0 +1,19 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/ProductList.tsx",
+    "src/components/ProductCard.tsx",
+    "src/components/Cart.tsx",
+    "src/components/Checkout.tsx",
+    "src/styles/tailwind-lite.css",
+    "src/utils/api.ts",
+    "src/utils/hooks.ts",
+    "src/types/Product.ts",
+    "src/types/Cart.ts"
+  ]
+}
