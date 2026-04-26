@@ -1,3 +1,12 @@
+import OpenAI from "openai";
+
+
+//for OpenAI
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+
+
 export async function fixGeneratedCode(files: Record<string, any>) {
     const res = await openai.chat.completions.create({
       model: "gpt-4o-mini",
