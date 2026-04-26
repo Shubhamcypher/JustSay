@@ -10,6 +10,7 @@ import { enhanceFiles } from "../utils/enhanceFiles";
 import { fixTailwind } from "../utils/fixTailwind";
 import { normalizeFiles } from "../utils/normalizeFiles";
 import { fixCommonBugs } from "../utils/fixCommonBugs";
+import { fixGeneratedCode } from "../services/fixGeneratedCode.service";
 
 type ProjectPlan = {
     files: string[];
@@ -79,6 +80,7 @@ export const generateProject = async (req: Request, res: Response) => {
         const result = await generateFilesBatch(textFiles, prompt);
 
         let files = normalizeFiles(result.files);
+        files = (await fixGeneratedCode(files)).files;
         files = fixCommonBugs(files);
         files = fixTailwind(files);      // FIRST
         files = enhanceFiles(files);     // THEN
