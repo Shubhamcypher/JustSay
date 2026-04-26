@@ -1,0 +1,15 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/components/Banner.tsx",
+    "src/components/Row.tsx",
+    "src/components/Modal.tsx",
+    "src/hooks/useFetch.ts",
+    "src/types/Content.ts",
+    "src/styles/tailwind-lite.css"
+  ]
+}
