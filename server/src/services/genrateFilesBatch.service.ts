@@ -164,7 +164,7 @@ https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400
 
 ========================
 STRUCTURE
-=========
+========================
 
 * Split UI into reusable components
 
@@ -194,6 +194,16 @@ STRICT SYNTAX RULES (MUST FOLLOW):
   * hooks/
   * utils/
   * types/
+  * 
+
+If any invalid JavaScript is generated, the output is considered FAILED.
+
+INVALID PATTERNS (STRICTLY FORBIDDEN):
+- () = {}
+- className assignment inside functions
+- invalid onClick handlers
+
+You MUST self-correct BEFORE returning output.
 
 ========================
 FUNCTIONALITY
