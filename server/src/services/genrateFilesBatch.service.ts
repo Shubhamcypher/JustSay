@@ -207,7 +207,7 @@ You MUST self-correct BEFORE returning output.
 
 ========================
 FUNCTIONALITY
-=============
+========================
 
 * Include interactive UI elements
 * Buttons must perform actions (state updates, UI changes, etc.)
@@ -216,7 +216,7 @@ FUNCTIONALITY
 
 ========================
 FINAL OUTPUT RULES
-==================
+========================
 
 * The app must be complete and usable
 * No broken imports
