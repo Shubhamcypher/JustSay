@@ -142,30 +142,25 @@ export function fixTailwind(files: Record<string, any>) {
 
     newFiles["src/styles/tailwind-lite.css"] = {
         content: TAILWIND_INLINE
-      };
+    };
 
     // Strip any Tailwind build deps from package.json
     if (newFiles["package.json"]) {
         try {
             const pkg = JSON.parse(newFiles["package.json"].content);
 
-            // ✅ ENSURE REQUIRED DEPENDENCIES
             pkg.dependencies = pkg.dependencies || {};
             pkg.devDependencies = pkg.devDependencies || {};
 
-            // 🔥 REQUIRED FOR VITE TO RUN
             pkg.devDependencies["vite"] = "^4.5.0";
             pkg.devDependencies["@vitejs/plugin-react"] = "^4.0.0";
 
-            // 🔥 REQUIRED FOR REACT
             pkg.dependencies["react"] = "^18.2.0";
             pkg.dependencies["react-dom"] = "^18.2.0";
 
-            // 🔥 ENSURE SCRIPTS
             pkg.scripts = pkg.scripts || {};
             pkg.scripts["dev"] = "vite";
 
-            // ❌ REMOVE BROKEN TAILWIND SETUP
             delete pkg.dependencies?.["@tailwindcss/vite"];
             delete pkg.dependencies?.["tailwindcss"];
             delete pkg.devDependencies?.["tailwindcss"];
@@ -180,17 +175,32 @@ export function fixTailwind(files: Record<string, any>) {
 
     // Clean vite.config - no Tailwind plugin needed
     newFiles["vite.config.ts"] = {
-        content: `
-      import { defineConfig } from 'vite';
-      import react from '@vitejs/plugin-react';
-      
-      export default defineConfig({
-        plugins: [react()],
-      });
-      `.trim()
+        content: `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+});`
     };
 
-    // Inject inlined CSS into index.html, remove any CDN refs
+    // Guard: ensure index.html exists before touching it
+    if (!newFiles["index.html"]) {
+        newFiles["index.html"] = {
+            content: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>`
+        };
+    }
+
     newFiles["index.html"].content =
         newFiles["index.html"].content
             .replace(/<script src="https:\/\/cdn\.tailwindcss\.com.*?><\/script>/g, "")
@@ -203,7 +213,6 @@ export function fixTailwind(files: Record<string, any>) {
     newFiles["src/styles/global.css"] = {
         content: `body { font-family: system-ui, sans-serif; margin: 0; }`
     };
-
 
     // Remove PostCSS/Tailwind config files
     delete newFiles["tailwind.config.js"];
