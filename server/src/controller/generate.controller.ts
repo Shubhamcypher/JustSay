@@ -11,6 +11,8 @@ import { fixTailwind } from "../utils/fixTailwind";
 import { normalizeFiles } from "../utils/normalizeFiles";
 import { fixCommonBugs } from "../utils/fixCommonBugs";
 import { fixGeneratedCode } from "../services/fixGeneratedCode.service";
+import { runStage } from "../utils/runStage";
+import { enforceFileStructure } from "../utils/enforceFileStructure";
 
 type ProjectPlan = {
     files: string[];
@@ -79,12 +81,51 @@ export const generateProject = async (req: Request, res: Response) => {
         // 🔥 SINGLE API CALL
         const result = await generateFilesBatch(textFiles, prompt);
 
-        let files = normalizeFiles(result.files);
-        files = (await fixGeneratedCode(files)).files;
-        files = fixCommonBugs(files);
-        files = fixTailwind(files);      // FIRST
-        files = enhanceFiles(files);     // THEN
-        files = injectImages(files, prompt); // LAST
+        let files = await runStage("normalizeFiles (initial)", () =>
+            normalizeFiles(result.files)
+          );
+          
+          files = enforceFileStructure(files, "normalizeFiles initial");
+          
+          files = await runStage("fixGeneratedCode", async () => {
+            const fixed = await fixGeneratedCode(files);
+          
+            if (!fixed.files) throw new Error("Fixer failed");
+          
+            return fixed.files;
+          });
+          
+          files = enforceFileStructure(files, "fixGeneratedCode");
+          
+          files = await runStage("normalizeFiles (after fixer)", () =>
+            normalizeFiles(files)
+          );
+          
+          files = enforceFileStructure(files, "normalizeFiles after fixer");
+          
+          files = await runStage("fixCommonBugs", () =>
+            fixCommonBugs(files)
+          );
+          
+          files = enforceFileStructure(files, "fixCommonBugs");
+          
+          files = await runStage("fixTailwind", () =>
+            fixTailwind(files)
+          );
+          
+          files = enforceFileStructure(files, "fixTailwind");
+          
+          files = await runStage("enhanceFiles", () =>
+            enhanceFiles(files)
+          );
+          
+          files = enforceFileStructure(files, "enhanceFiles");
+          
+          files = await runStage("injectImages", () =>
+            injectImages(files, prompt)
+          );
+          
+          files = enforceFileStructure(files, "injectImages");
 
         // 🔥 LOOP ONLY FOR SAVING + STREAMING
         const allPaths = Object.keys(files);
