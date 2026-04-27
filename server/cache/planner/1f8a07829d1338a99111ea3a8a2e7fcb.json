@@ -1,0 +1,16 @@
+{
+  "files": [
+    "package.json",
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/MovieCard.tsx",
+    "src/components/Carousel.tsx",
+    "src/styles/tailwind-lite.css",
+    "src/hooks/useFetchMovies.ts",
+    "src/types/Movie.ts",
+    "src/utils/api.ts"
+  ]
+}
