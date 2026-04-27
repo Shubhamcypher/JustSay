@@ -45,9 +45,9 @@ export async function generateFilesBatch(files: any, prompt: string) {
 
 
     const res = await openai.chat.completions.create({
-        model: "gpt-5",  //open ai model for planner
+        model: "gpt-4o",  //open ai model for planner
         // model: "google/gemma-3-12b-it:free", // llama model works freely but too scratchy
-        // temperature: 0.2,
+        temperature: 0.2,
         messages: [
             {
                 role: "system",
