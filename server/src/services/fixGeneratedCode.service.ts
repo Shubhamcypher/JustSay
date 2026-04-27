@@ -7,15 +7,20 @@ const openai = new OpenAI({
 });
 
 
+
 export async function fixGeneratedCode(files: Record<string, any>) {
-    const res = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: `
+    const cacheKey = JSON.stringify(files);
+  
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          temperature: 0,
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content: `
   You are a strict TypeScript + React compiler.
   
   Fix ALL syntax and runtime errors.
@@ -46,13 +51,34 @@ export async function fixGeneratedCode(files: Record<string, any>) {
     }
   }
   `
-        },
-        {
-          role: "user",
-          content: JSON.stringify(files)
-        }
-      ]
-    });
+            },
+            {
+              role: "user",
+              content: JSON.stringify(files)
+            }
+          ]
+        });
   
-    return JSON.parse(res.choices[0].message.content || "{}");
+        const raw = res.choices[0].message.content || "";
+  
+        // 🔥 LOG RAW OUTPUT (IMPORTANT)
+        console.log("🛠️ FIXER RAW OUTPUT:", raw);
+  
+        const json = JSON.parse(raw);
+  
+        // 🔥 VALIDATION
+        if (!json.files || typeof json.files !== "object") {
+          throw new Error("Invalid fixer response");
+        }
+  
+        console.log("✅ Fixer success");
+        return json;
+  
+      } catch (err) {
+        console.error("❌ Fixer error:", err);
+        console.warn(`⚠️ Fixer retry ${attempt + 1}`);
+      }
+    }
+  
+    throw new Error("Fixer failed completely");
   }
