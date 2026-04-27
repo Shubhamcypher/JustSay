@@ -1,6 +1,6 @@
 import { applyFixPipeline } from "@/utils/fixFiles";
 import Editor from "@monaco-editor/react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 export default function CodeEditor({
   activeFile,
@@ -47,12 +47,49 @@ export default function CodeEditor({
     return applyFixPipeline(files)[activeFile]?.content || "";
   }, [files, activeFile]);
 
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+  
+    const model = editor.getModel();
+    if (!model) return;
+  
+    const current = model.getValue();
+    if (current === fixedContent) return;
+  
+    // check if user is near bottom
+    const visible = editor.getVisibleRanges();
+    const lastLine = model.getLineCount();
+  
+    const isAtBottom =
+      visible.length > 0 &&
+      visible[0].endLineNumber >= lastLine - 2;
+  
+    // update content WITHOUT resetting editor
+    model.pushEditOperations(
+      [],
+      [
+        {
+          range: model.getFullModelRange(),
+          text: fixedContent,
+        },
+      ],
+      () => null
+    );
+  
+    // auto scroll only if already at bottom
+    if (isAtBottom) {
+      editor.revealLine(lastLine);
+    }
+  }, [fixedContent]);
+
   return (
     <Editor
       height="100%"
       theme="vs-dark"
       path={`file:///${activeFile}`} // unique path per file — tells monaco to treat each file as a separate model, preserving undo history and cursor position
-      value={fixedContent}
+      defaultValue={fixedContent}
       language="typescript"
       beforeMount={(monaco) => {
         monacoRef.current = monaco; // store monaco API before editor renders, used for config/theming
