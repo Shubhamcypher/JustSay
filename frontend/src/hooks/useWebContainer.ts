@@ -11,6 +11,8 @@ export function useWebContainer(
   const wcRef = useRef<any>(null);
   const startedRef = useRef(false);
 
+  const lastPkgRef = useRef<string | null>(null);
+
   // 🚀 Boot WebContainer ONCE
   useEffect(() => {
     let mounted = true;
@@ -66,46 +68,185 @@ export function useWebContainer(
 
     const wc = wcRef.current;
 
-    const init = async () => {
-      try {
-        console.log("Initializing WebContainer");
-        console.log("FILES CHECK:", files["vite.config.ts"]);
-        console.log("PKG CHECK:", files["package.json"]);
-        console.log("CSS FILE CHECK:", files["src/styles/tailwind-lite.css"]);
+    const run = async () => {
+      const pkgString = JSON.stringify(files["package.json"] || {});
+      const pkgChanged = pkgString !== lastPkgRef.current;
 
-        onLog?.("📁 Mounting files...", "start");
-        await wc.mount(buildTree(files));
-        onLog?.("📁 Mounting files...", "end");
+      // 🚀 FIRST RUN
+      if (!startedRef.current) {
+        try {
+          console.log("🚀 Initializing WebContainer");
 
-        onLog?.("📦 Installing dependencies...", "start");
-        const install = await wc.spawn("npm", ["install", "--prefer-offline", "--no-audit", "--no-fund"]);
-        await install.exit;
-        onLog?.("📦 Installing dependencies...", "end");
+          onLog?.("Building File Tree");
+          await wc.mount(buildTree(files));
 
-        onLog?.("🚀 Running dev server...", "start");
-        const dev = await wc.spawn("npm", ["run", "dev"]);
-        onLog?.("🚀 Running dev server...", "end");
+          console.log("📦 PKG RAW:", files["package.json"]);
 
-        dev.output.pipeTo(
-          new WritableStream({
-            write(data) {
-              console.log(data.toString());
-            },
-          })
-        );
+          // 🔥 FORCE package.json write (CRITICAL)
+          const pkgContent =
+            typeof files["package.json"] === "string"
+              ? files["package.json"]
+              : files["package.json"]?.content;
 
-        startedRef.current = true;
-      } catch (err) {
-        console.error("❌ INIT ERROR:", err);
-        startedRef.current = false;
+
+          console.log("📦 PKG CONTENT STRING:", pkgContent);
+
+          onLog?.("Writing package.json");
+          await wc.fs.writeFile("package.json", pkgContent);
+          console.log("📦 package.json written");
+
+          // 🔍 VERIFY WRITE
+          const readPkg = await wc.fs.readFile("package.json", "utf-8");
+          console.log("📦 PKG ON DISK:", readPkg);
+
+
+          onLog?.("Installing dependencies");
+          const install = await wc.spawn("npm", ["install"]);
+
+          // install.output.pipeTo(
+          //   new WritableStream({
+          //     write(data) {
+          //       console.log("📦 npm install:", data.toString());
+          //     },
+          //   })
+          // );
+
+          await install.exit;
+          console.log("📦 INSTALL DONE");
+
+          onLog?.("Checking dedpendencies");
+          const check = await wc.spawn("npm", ["ls", "react-router-dom"]);
+
+          check.output.pipeTo(
+            new WritableStream({
+              write(data) {
+                console.log("📦 CHECK RRD:", data.toString());
+              },
+            })
+          );
+
+          onLog?.("Checking node modules");
+          const lsNodeModules = await wc.spawn("ls", ["node_modules"]);
+
+          lsNodeModules.output.pipeTo(
+            new WritableStream({
+              write(data) {
+                console.log("📦 node_modules:", data.toString());
+              },
+            })
+          );
+
+          onLog?.("Running dev server");
+          const dev = await wc.spawn("npm", ["run", "dev"]);
+
+          dev.output.pipeTo(
+            new WritableStream({
+              write(data) {
+                console.log(data.toString());
+              },
+            })
+          );
+
+          lastPkgRef.current = pkgString;
+          startedRef.current = true;
+
+        } catch (err) {
+          console.error("❌ INIT ERROR:", err);
+        }
+
+        return;
       }
-    };
 
-    const syncFiles = async () => {
+      // 🔁 PACKAGE CHANGED → reinstall
+      if (pkgChanged) {
+        try {
+          onLog?.("Package Updated reinstalling");
+          console.log("🔁 package.json changed → reinstall");
+
+          onLog?.("Stopping dev server");
+          await wc.spawn("pkill", ["node"]);
+
+          onLog?.("Rebuilding tree");
+          await wc.mount(buildTree(files));
+
+          console.log("🔁 PKG RAW:", files["package.json"]);
+
+          // 🔥 FORCE package.json write again
+          const pkgContent =
+            typeof files["package.json"] === "string"
+              ? files["package.json"]
+              : files["package.json"]?.content;
+
+          console.log("🔁 PKG CONTENT:", pkgContent);
+
+          onLog?.("Rewriting package.json");
+          await wc.fs.writeFile("package.json", pkgContent);
+
+          // verify disk
+          const readPkg = await wc.fs.readFile("package.json", "utf-8");
+          console.log("🔁 PKG ON DISK:", readPkg);
+
+          onLog?.("Removing node modules");
+          await wc.spawn("rm", ["-rf", "node_modules"]);
+
+          onLog?.("Reinstalling dependecies...");
+          const install = await wc.spawn("npm", ["install"]);
+
+          // install.output.pipeTo(
+          //   new WritableStream({
+          //     write(data) {
+          //       console.log("🔁 npm install:", data.toString());
+          //     },
+          //   })
+          // );
+
+          await install.exit;
+          console.log("🔁 INSTALL DONE");
+
+          onLog?.("Checking package.json");
+          const check = await wc.spawn("npm", ["ls", "react-router-dom"]);
+
+          check.output.pipeTo(
+            new WritableStream({
+              write(data) {
+                console.log("🔁 CHECK RRD:", data.toString());
+              },
+            })
+          );
+
+          onLog?.("Checking node modules");
+          const ls = await wc.spawn("ls", ["node_modules"]);
+
+          ls.output.pipeTo(
+            new WritableStream({
+              write(data) {
+                console.log("🔁 node_modules:", data.toString());
+              },
+            })
+          );
+
+          onLog?.("Running dev server");
+          const dev = await wc.spawn("npm", ["run", "dev"]);
+
+          dev.output.pipeTo(
+            new WritableStream({
+              write(data) {
+                console.log(data.toString());
+              },
+            })
+          );
+
+          lastPkgRef.current = pkgString;
+
+        } catch (err) {
+          console.error("❌ REINSTALL ERROR:", err);
+        }
+
+        return;
+      }
+
+      // 🔄 NORMAL FILE SYNC
       try {
-        if (!startedRef.current) return;
-
-        //update files live
         for (const [path, file] of Object.entries(files)) {
           const content =
             typeof file === "string"
@@ -114,20 +255,12 @@ export function useWebContainer(
 
           await wc.fs.writeFile(path, content);
         }
-
       } catch (err) {
         console.error("❌ SYNC ERROR:", err);
       }
     };
 
-    // 🚀 run init once
-    if (!startedRef.current) {
-      init();
-    } else {
-      // 🔥 run sync on every change
-      syncFiles();
-    }
-
+    run();
   }, [files, isReady]);
 
   return url;
