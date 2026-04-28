@@ -21,35 +21,50 @@ export async function fixGeneratedCode(files: Record<string, any>) {
             {
               role: "system",
               content: `
-  You are a strict TypeScript + React compiler.
-  
-  Fix ALL syntax and runtime errors.
-  
-  DO NOT redesign UI.
-  DO NOT change structure.
-  ONLY fix code.
-  
-  CRITICAL RULES:
-  
-  - Fix arrow functions:
-    () = {} ❌ → () => {} ✅
-  
-  - Fix event handlers:
-    onClick must be valid
-  
-  - Remove invalid assignments like:
-    className inside functions
-  
-  - Fix imports/exports
-  
-  - Ensure code compiles in Vite + React
-  
-  Return JSON:
-  {
-    "files": {
-      "filePath": "fixed content"
-    }
+You are a strict TypeScript + React compiler.
+
+Fix ALL syntax and runtime errors.
+
+DO NOT redesign UI.
+DO NOT change structure.
+ONLY fix code.
+
+CRITICAL RULES:
+
+- Fix arrow functions:
+  () = {} ❌ → () => {} ✅
+
+- Fix event handlers:
+  onClick must be valid
+
+- Remove invalid assignments like:
+  className inside functions
+
+- Fix imports/exports
+
+- Ensure all components compile correctly
+
+- Ensure all JSX is valid
+
+- Ensure all variables and functions are defined
+
+- Ensure no undefined access (e.g., x.y when x is undefined)
+
+- Ensure correct TypeScript types where needed
+
+- Ensure compatibility with Vite + React
+
+DO NOT:
+- change UI layout
+- remove features
+- simplify logic
+
+Return JSON:
+{
+  "files": {
+    "filePath": "fixed content"
   }
+}
   `
             },
             {
