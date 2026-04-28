@@ -113,32 +113,21 @@ className="max-w-6xl mx-auto px-4"
 STYLING RULES (CRITICAL)
 ========================
 
-* Use ONLY Tailwind-style utility classes in JSX
+* Tailwind CSS is already fully configured in the project
 
-* DO NOT create or use:
+* DO NOT:
+  - create tailwind.config.js
+  - create postcss.config.js
+  - modify package.json dependencies
+  - add Tailwind CDN
+  - use <link rel="stylesheet">
 
-  * tailwind.config.js
-  * postcss.config.js
-  * @tailwind directives
-  * any Tailwind dependency
-  * any CSS framework setup
+* DO NOT include @tailwind directives in any file
 
-* DO NOT include:
-
-  * <link rel="stylesheet">
-  * CDN scripts
-
-IMPORTANT:
-
-* Styling is already handled by the platform
-* Just use Tailwind-style utility classes in className
+* ONLY use Tailwind utility classes inside JSX
 
 Example:
-
 <div className="flex items-center justify-between p-4 bg-gray-900 text-white rounded-xl">
-
-* Avoid creating CSS files unless absolutely necessary
-* Prefer utility classes over custom CSS
 
 ========================
 IMAGES (VERY IMPORTANT)
@@ -223,6 +212,13 @@ FINAL OUTPUT RULES
 * No missing files
 * No invalid code
 * No placeholder-only UI
+
+
+INFRASTRUCTURE NOTE:
+
+- Core project files (package.json, index.html, main.tsx, Tailwind setup) are already provided by the system
+- You should focus ONLY on application logic and UI components
+- Do NOT override core infrastructure files unless necessary
 
 Generate all required files listed below:
 

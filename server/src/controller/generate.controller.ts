@@ -7,12 +7,13 @@ import { planProject } from "../services/planner.service";
 import { generateFilesBatch } from "../services/genrateFilesBatch.service";
 import { injectImages } from "../utils/injectImages";
 import { enhanceFiles } from "../utils/enhanceFiles";
-import { fixTailwind } from "../utils/fixTailwind";
+// import { fixTailwind } from "../utils/fixTailwind";
 import { normalizeFiles } from "../utils/normalizeFiles";
 import { fixCommonBugs } from "../utils/fixCommonBugs";
 import { fixGeneratedCode } from "../services/fixGeneratedCode.service";
 import { runStage } from "../utils/runStage";
 import { enforceFileStructure } from "../utils/enforceFileStructure";
+import { loadTemplate } from "../utils/loadTemplate";
 
 type ProjectPlan = {
     files: string[];
@@ -83,49 +84,67 @@ export const generateProject = async (req: Request, res: Response) => {
 
         let files = await runStage("normalizeFiles (initial)", () =>
             normalizeFiles(result.files)
-          );
-          
-          files = enforceFileStructure(files, "normalizeFiles initial");
-          
-          files = await runStage("fixGeneratedCode", async () => {
+        );
+
+        files = enforceFileStructure(files, "normalizeFiles initial");
+
+        files = await runStage("fixGeneratedCode", async () => {
             const fixed = await fixGeneratedCode(files);
-          
+
             if (!fixed.files) throw new Error("Fixer failed");
-          
+
             return fixed.files;
-          });
-          
-          files = enforceFileStructure(files, "fixGeneratedCode");
-          
-          files = await runStage("normalizeFiles (after fixer)", () =>
+        });
+
+        files = enforceFileStructure(files, "fixGeneratedCode");
+
+        files = await runStage("normalizeFiles (after fixer)", () =>
             normalizeFiles(files)
-          );
-          
-          files = enforceFileStructure(files, "normalizeFiles after fixer");
-          
-          files = await runStage("fixCommonBugs", () =>
+        );
+
+        files = enforceFileStructure(files, "normalizeFiles after fixer");
+
+        files = await runStage("fixCommonBugs", () =>
             fixCommonBugs(files)
-          );
-          
-          files = enforceFileStructure(files, "fixCommonBugs");
-          
-          files = await runStage("fixTailwind", () =>
-            fixTailwind(files)
-          );
-          
-          files = enforceFileStructure(files, "fixTailwind");
-          
-          files = await runStage("enhanceFiles", () =>
+        );
+
+        files = enforceFileStructure(files, "fixCommonBugs");
+
+
+        files = await runStage("enhanceFiles", () =>
             enhanceFiles(files)
-          );
-          
-          files = enforceFileStructure(files, "enhanceFiles");
-          
-          files = await runStage("injectImages", () =>
+        );
+
+        files = enforceFileStructure(files, "enhanceFiles");
+
+        files = await runStage("injectImages", () =>
             injectImages(files, prompt)
-          );
-          
-          files = enforceFileStructure(files, "injectImages");
+        );
+
+        files = enforceFileStructure(files, "injectImages");
+
+
+        const TEMPLATE_OVERRIDE_FILES = new Set([
+            "package.json",
+            "vite.config.ts",
+            "tailwind.config.js",
+            "postcss.config.js",
+            "index.html",
+            "src/index.css",
+            "src/main.tsx" 
+        ]);
+        
+        const template = loadTemplate();
+        const safeTemplate: Record<string, any> = {};
+        
+        for (const [path, value] of Object.entries(template)) {
+            if (TEMPLATE_OVERRIDE_FILES.has(path)) {
+                safeTemplate[path] = value;
+            }
+        }
+        
+        files = { ...files, ...safeTemplate };
+        files = enforceFileStructure(files, "template merge");
 
         // 🔥 LOOP ONLY FOR SAVING + STREAMING
         const allPaths = Object.keys(files);

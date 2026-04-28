@@ -59,24 +59,41 @@ Rules:
 - NEVER return empty array
 - DO NOT include webpack.config.js
   Use Vite only
-- Always include at least:
+- The system already provides core infrastructure files:
   - package.json
   - index.html
   - src/main.tsx
+  - Tailwind configuration
+
+- You MUST include:
   - src/App.tsx
--Do not include binary files like .png, .jpg, .ico.
+  - all additional components, hooks, contexts, and utilities required for the app
+
+- Do NOT rely on generating infrastructure files unless absolutely necessary
+- Do not include binary files like .png, .jpg, .ico.
   - Use external URLs instead.
 
 IMPORTANT STYLING RULE:
 
-- DO NOT create ANY .css files
-- DO NOT include files inside src/styles except:
-  - src/styles/tailwind-lite.css (this is handled by the system)
+- Tailwind CSS is already pre-configured in the project template.
+
+- DO NOT create:
+  - tailwind.config.js
+  - postcss.config.js
+  - any CSS framework setup
+
+- DO NOT include Tailwind CDN or external stylesheets
+
+- DO NOT modify styling infrastructure
+
+- ONLY use Tailwind utility classes inside JSX
+
+- DO NOT create additional CSS files unless absolutely necessary
 
 - All styling MUST be done using utility classes inside JSX
 
 FAIL CONDITION:
-If any .css file (other than tailwind-lite.css) is included, the output is invalid
+If Tailwind config files or CDN scripts are added, output is invalid
 
 No explanation. Only JSON.
 `
