@@ -6,7 +6,7 @@ import { planProject } from "../services/planner.service";
 // import { generateFile } from "../services/generator.service";
 import { generateFilesBatch } from "../services/genrateFilesBatch.service";
 import { injectImages } from "../utils/injectImages";
-import { enhanceFiles } from "../utils/enhanceFiles";
+// import { enhanceFiles } from "../utils/enhanceFiles";
 // import { fixTailwind } from "../utils/fixTailwind";
 import { normalizeFiles } from "../utils/normalizeFiles";
 import { fixCommonBugs } from "../utils/fixCommonBugs";
@@ -111,11 +111,11 @@ export const generateProject = async (req: Request, res: Response) => {
         files = enforceFileStructure(files, "fixCommonBugs");
 
 
-        files = await runStage("enhanceFiles", () =>
-            enhanceFiles(files)
-        );
+        // files = await runStage("enhanceFiles", () =>
+        //     enhanceFiles(files)
+        // );
 
-        files = enforceFileStructure(files, "enhanceFiles");
+        // files = enforceFileStructure(files, "enhanceFiles");
 
         files = await runStage("injectImages", () =>
             injectImages(files, prompt)
