@@ -1,0 +1,15 @@
+{
+  "files": [
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/PortfolioItem.tsx",
+    "src/components/PortfolioList.tsx",
+    "src/components/ContactForm.tsx",
+    "src/hooks/usePortfolio.ts",
+    "src/contexts/PortfolioContext.tsx",
+    "src/utils/api.ts",
+    "src/utils/constants.ts",
+    "src/types/portfolio.ts"
+  ]
+}
