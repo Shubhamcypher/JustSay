@@ -1,0 +1,12 @@
+{
+  "files": [
+    "src/App.tsx",
+    "src/components/TodoList.tsx",
+    "src/components/TodoItem.tsx",
+    "src/components/TodoForm.tsx",
+    "src/hooks/useTodos.ts",
+    "src/contexts/TodoContext.tsx",
+    "src/utils/localStorage.ts",
+    "src/types/Todo.ts"
+  ]
+}
