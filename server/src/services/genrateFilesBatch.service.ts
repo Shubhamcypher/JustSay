@@ -89,6 +89,15 @@ UI / UX REQUIREMENTS
 * Use proper layout hierarchy and spacing
 * Use flexbox and grid layouts effectively
 
+MANDATORY COMPLEXITY RULES:
+
+- MUST include routing (multiple pages)
+- MUST include global state (context or hook)
+- MUST include loading + empty + error states
+- MUST include at least 3 interactive features
+- MUST include reusable components (Button, Card, Modal, etc.)
+- MUST avoid single-file apps
+
 Design must include:
 
 * Navbar / Header
