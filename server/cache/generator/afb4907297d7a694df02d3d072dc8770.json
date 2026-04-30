@@ -1,0 +1,6 @@
+{
+  "files": {
+    "src/utils/trackData.ts": "import { Track } from '../types/Track';\n\nexport const trackData: Track[] = [\n  {\n    id: '1',\n    title: 'Song of the Sea',\n    artist: 'Ocean Waves',\n    albumCover: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=400',\n    audioUrl: 'https://www.example.com/audio/song-of-the-sea.mp3'\n  },\n  {\n    id: '2',\n    title: 'Mountain Echoes',\n    artist: 'High Peaks',\n    albumCover: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=400',\n    audioUrl: 'https://www.example.com/audio/mountain-echoes.mp3'\n  },\n  {\n    id: '3',\n    title: 'Forest Whisper',\n    artist: 'Nature Sounds',\n    albumCover: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=400',\n    audioUrl: 'https://www.example.com/audio/forest-whisper.mp3'\n  }\n];\n",
+    "src/types/Track.ts": "export interface Track {\n  id: string;\n  title: string;\n  artist: string;\n  albumCover: string;\n  audioUrl: string;\n}\n"
+  }
+}
