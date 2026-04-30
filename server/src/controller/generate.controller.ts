@@ -1,19 +1,19 @@
 import { Request, Response } from "express";
 import { pool } from "../config/db";
-// import { streamLLM } from "../services/ai.service";
-// import { parseStream } from "../utils/streamParser";
 import { planProject } from "../services/planner.service";
-// import { generateFile } from "../services/generator.service";
 import { generateFilesBatch } from "../services/genrateFilesBatch.service";
 import { injectImages } from "../utils/injectImages";
-// import { enhanceFiles } from "../utils/enhanceFiles";
-// import { fixTailwind } from "../utils/fixTailwind";
 import { normalizeFiles } from "../utils/normalizeFiles";
 import { fixCommonBugs } from "../utils/fixCommonBugs";
-import { fixGeneratedCode } from "../services/fixGeneratedCode.service";
 import { runStage } from "../utils/runStage";
 import { enforceFileStructure } from "../utils/enforceFileStructure";
 import { loadTemplate } from "../utils/loadTemplate";
+// import { streamLLM } from "../services/ai.service";
+// import { parseStream } from "../utils/streamParser";
+// import { enhanceFiles } from "../utils/enhanceFiles";
+// import { fixTailwind } from "../utils/fixTailwind";
+// import { fixGeneratedCode } from "../services/fixGeneratedCode.service";
+// import { generateFile } from "../services/generator.service";
 
 type ProjectPlan = {
     files: string[];
@@ -46,14 +46,15 @@ export const generateProject = async (req: Request, res: Response) => {
 
         //Create project
         const projectRes = await pool.query(
-            `INSERT INTO projects (name, stack, status, owner_id)
-       VALUES ($1,$2,$3,$4)
+            `INSERT INTO projects (name, stack, status, owner_id, prompt)
+       VALUES ($1,$2,$3,$4,$5)
        RETURNING id`,
             [
                 prompt.slice(0, 30), // template name
                 "vite-react",
                 "generating",
-                req.user.userId
+                req.user.userId,
+                prompt
             ]
         );
 
@@ -79,8 +80,43 @@ export const generateProject = async (req: Request, res: Response) => {
         // 🔥 FILTER TEXT FILES ONLY
         const textFiles = plan.files.filter(f => !isBinaryFile(f));
 
-        // 🔥 SINGLE API CALL
-        const result = await generateFilesBatch(textFiles, prompt);
+        //Generate in chunk
+        async function generateInChunks(files: string[], prompt: string, chunkSize = 4) {
+            const chunks: string[][] = [];
+            for (let i = 0; i < files.length; i += chunkSize) {
+                chunks.push(files.slice(i, i + chunkSize));
+            }
+
+            let allFiles: Record<string, any> = {};
+
+            for (const chunk of chunks) {
+                console.log(`Generating chunk: ${chunk.join(", ")}`);
+              
+                const result = await generateFilesBatch(chunk, prompt);
+              
+                if (result?.files) {
+                  for (const [path, content] of Object.entries(result.files)) {
+              
+                    // 🔥 STREAM IMMEDIATELY
+                    res.write(
+                      `data: ${JSON.stringify({
+                        type: "file",
+                        path,
+                        content,
+                      })}\n\n`
+                    );
+              
+                    // store for later processing
+                    allFiles[path] = content;
+                  }
+                }
+              }
+
+            return { files: allFiles };
+        }
+
+        // Then use it:
+        const result = await generateInChunks(textFiles, prompt, 4);
 
         let files = await runStage("normalizeFiles (initial)", () =>
             normalizeFiles(result.files)
@@ -88,15 +124,15 @@ export const generateProject = async (req: Request, res: Response) => {
 
         files = enforceFileStructure(files, "normalizeFiles initial");
 
-        files = await runStage("fixGeneratedCode", async () => {
-            const fixed = await fixGeneratedCode(files);
+        // files = await runStage("fixGeneratedCode", async () => {
+        //     const fixed = await fixGeneratedCode(files);
 
-            if (!fixed.files) throw new Error("Fixer failed");
+        //     if (!fixed.files) throw new Error("Fixer failed");
 
-            return fixed.files;
-        });
+        //     return fixed.files;
+        // });
 
-        files = enforceFileStructure(files, "fixGeneratedCode");
+        // files = enforceFileStructure(files, "fixGeneratedCode");
 
         files = await runStage("normalizeFiles (after fixer)", () =>
             normalizeFiles(files)
@@ -131,18 +167,18 @@ export const generateProject = async (req: Request, res: Response) => {
             "postcss.config.js",
             "index.html",
             "src/index.css",
-            "src/main.tsx" 
+            "src/main.tsx"
         ]);
-        
+
         const template = loadTemplate();
         const safeTemplate: Record<string, any> = {};
-        
+
         for (const [path, value] of Object.entries(template)) {
             if (TEMPLATE_OVERRIDE_FILES.has(path)) {
                 safeTemplate[path] = value;
             }
         }
-        
+
         files = { ...files, ...safeTemplate };
         files = enforceFileStructure(files, "template merge");
 
