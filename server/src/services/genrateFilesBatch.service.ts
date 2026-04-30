@@ -48,6 +48,7 @@ export async function generateFilesBatch(files: any, prompt: string) {
         model: "gpt-4o",  //open ai model for planner
         // model: "google/gemma-3-12b-it:free", // llama model works freely but too scratchy
         temperature: 0.2,
+         max_tokens: 4096,
         messages: [
             {
                 role: "system",
@@ -193,6 +194,18 @@ INVALID PATTERNS (STRICTLY FORBIDDEN):
 - invalid onClick handlers
 
 You MUST self-correct BEFORE returning output.
+
+
+REACT ROUTER RULES (CRITICAL):
+- Use react-router-dom v6 ONLY
+- Use <Routes> and <Route element={<X />}>
+- NEVER use <Switch> or component={X}
+- NEVER wrap App.tsx with BrowserRouter — main.tsx already provides HashRouter
+- Name route components "AppRoutes" never "Routes"
+
+HOOK RULES (CRITICAL):
+- export default hookName — never named exports
+- import hookName from '../hooks/hookName' — never { hookName }
 
 ========================
 FUNCTIONALITY
