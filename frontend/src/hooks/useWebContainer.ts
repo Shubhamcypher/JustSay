@@ -4,7 +4,9 @@ import { getWebContainer } from "@/lib/webContainer";
 export function useWebContainer(
   files: Record<string, any>,
   isReady: boolean,
-  onLog?: (msg: string, type?: string) => void
+  onLog?: (msg: string, type?: string) => void,
+  addStep?: (text: string, type?: string) => any,
+  completeStep?: (step: any) => void,
 ) {
   const [url, setUrl] = useState<string | null>(null);
 
@@ -77,8 +79,9 @@ export function useWebContainer(
         try {
           console.log("🚀 Initializing WebContainer");
 
-          onLog?.("Building File Tree");
+          const s1 = addStep?.("Building file tree", "build");
           await wc.mount(buildTree(files));
+          completeStep?.(s1);
 
           console.log("📦 PKG RAW:", files["package.json"]);
 
@@ -91,16 +94,17 @@ export function useWebContainer(
 
           console.log("📦 PKG CONTENT STRING:", pkgContent);
 
-          onLog?.("Writing package.json");
+          const s2 = addStep?.("Writing package.json", "build");
           await wc.fs.writeFile("package.json", pkgContent);
           console.log("📦 package.json written");
+          completeStep?.(s2);
 
           // 🔍 VERIFY WRITE
           const readPkg = await wc.fs.readFile("package.json", "utf-8");
           console.log("📦 PKG ON DISK:", readPkg);
 
 
-          onLog?.("Installing dependencies");
+          const s3 = addStep?.("Installing dependencies", "build");
           const install = await wc.spawn("npm", ["install"]);
 
           // install.output.pipeTo(
@@ -113,9 +117,13 @@ export function useWebContainer(
 
           await install.exit;
           console.log("📦 INSTALL DONE");
+          completeStep?.(s3);
 
-          onLog?.("Checking dedpendencies");
+
+          const s4 = addStep?.("Checking dependencies", "build");
           const check = await wc.spawn("npm", ["ls", "react-router-dom"]);
+          await check.exit;
+          completeStep?.(s4);
 
           check.output.pipeTo(
             new WritableStream({
@@ -125,8 +133,10 @@ export function useWebContainer(
             })
           );
 
-          onLog?.("Checking node modules");
+          const s5 = addStep?.("Checking node modules", "build");
           const lsNodeModules = await wc.spawn("ls", ["node_modules"]);
+          lsNodeModules.exit;
+          completeStep?.(s5);
 
           lsNodeModules.output.pipeTo(
             new WritableStream({
@@ -136,8 +146,9 @@ export function useWebContainer(
             })
           );
 
-          onLog?.("Running dev server");
+          const s6 = addStep?.("Running dev server", "build");
           const dev = await wc.spawn("npm", ["run", "dev"]);
+          completeStep?.(s6);
 
           dev.output.pipeTo(
             new WritableStream({
@@ -160,14 +171,17 @@ export function useWebContainer(
       // 🔁 PACKAGE CHANGED → reinstall
       if (pkgChanged) {
         try {
-          onLog?.("Package Updated reinstalling");
+          const s1 = addStep?.("Change in package detected", "build");
           console.log("🔁 package.json changed → reinstall");
+          completeStep?.(s1);
 
-          onLog?.("Stopping dev server");
+          const s2 = addStep?.("Stopping dev server", "build");
           await wc.spawn("pkill", ["node"]);
+          completeStep?.(s2);
 
-          onLog?.("Rebuilding tree");
+          const s3 = addStep?.("Rebuilding file tree", "build");
           await wc.mount(buildTree(files));
+          completeStep?.(s3);
 
           console.log("🔁 PKG RAW:", files["package.json"]);
 
@@ -179,17 +193,20 @@ export function useWebContainer(
 
           console.log("🔁 PKG CONTENT:", pkgContent);
 
-          onLog?.("Rewriting package.json");
+          const s4 = addStep?.("Rewriting package.json", "build");
           await wc.fs.writeFile("package.json", pkgContent);
+          completeStep?.(s4);
 
           // verify disk
           const readPkg = await wc.fs.readFile("package.json", "utf-8");
           console.log("🔁 PKG ON DISK:", readPkg);
 
-          onLog?.("Removing node modules");
-          await wc.spawn("rm", ["-rf", "node_modules"]);
+          const s5 = addStep?.("Removing deprecated files from node modules", "build");
+          const rm = await wc.spawn("rm", ["-rf", "node_modules"]);
+          rm.exit;
+          completeStep?.(s5);
 
-          onLog?.("Reinstalling dependecies...");
+          const s6 = addStep?.("Reinstalling dependencies", "build");
           const install = await wc.spawn("npm", ["install"]);
 
           // install.output.pipeTo(
@@ -202,9 +219,13 @@ export function useWebContainer(
 
           await install.exit;
           console.log("🔁 INSTALL DONE");
+          completeStep?.(s6);
 
-          onLog?.("Checking package.json");
+
+          const s7 = addStep?.("Checking package.json with new file updates", "build");
           const check = await wc.spawn("npm", ["ls", "react-router-dom"]);
+          check.exit;
+          completeStep?.(s7);
 
           check.output.pipeTo(
             new WritableStream({
@@ -214,8 +235,10 @@ export function useWebContainer(
             })
           );
 
-          onLog?.("Checking node modules");
+          const s8 = addStep?.("Checking node modules", "build");
           const ls = await wc.spawn("ls", ["node_modules"]);
+          ls.exit;
+          completeStep?.(s8);
 
           ls.output.pipeTo(
             new WritableStream({
@@ -225,8 +248,9 @@ export function useWebContainer(
             })
           );
 
-          onLog?.("Running dev server");
+          const s9 = addStep?.("Running dev server", "build");
           const dev = await wc.spawn("npm", ["run", "dev"]);
+          completeStep?.(s9);
 
           dev.output.pipeTo(
             new WritableStream({
