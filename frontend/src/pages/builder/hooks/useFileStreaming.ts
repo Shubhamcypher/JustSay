@@ -7,7 +7,6 @@ export function useFileStreaming({
     setActiveFile,
     addStep,
     completeStep,
-    completeStepByText,
     files,
     userSelectedRef
 }: any) {
@@ -79,6 +78,9 @@ export function useFileStreaming({
     useEffect(() => {
         if (!prompt) return;
 
+        const s1 = addStep("🤖 Understanding your idea...", "ai");
+        // const s2 = addStep("🧠 Planning project structure...", "ai");
+
         const controller = new AbortController(); // used to cancel the fetch if component unmounts
 
         const start = async () => {
@@ -118,8 +120,9 @@ export function useFileStreaming({
                         // Mark initial steps complete on first file received
                         if (!hasStreamStartedRef.current) {
                             hasStreamStartedRef.current = true;
-                            completeStepByText("🤖 Understanding your idea...");
-                            completeStepByText("🧠 Planning project structure...");
+
+                            completeStep(s1);
+                            // completeStep(s2);
                         }
 
                         // Push to queue and kick off processor (no-op if already running)
@@ -135,7 +138,7 @@ export function useFileStreaming({
                             }
 
                             const step = addStep("Finalizing project...");
-                            await sleep(400); // brief pause so user sees the step
+                            // await sleep(400); // brief pause so user sees the step
                             completeStep(step);
 
                             // Snapshot files via ref to avoid stale closure issue
