@@ -1,0 +1,6 @@
+{
+  "files": {
+    "src/types/Message.ts": "export interface Message {\n  id: string;\n  senderId: string;\n  content: string;\n  timestamp: Date;\n  reactions?: { [emoji: string]: number };\n  readBy?: string[];\n  type: 'text' | 'image' | 'video' | 'file' | 'voice';\n  status: 'sent' | 'delivered' | 'read';\n}",
+    "src/types/User.ts": "export interface User {\n  id: string;\n  name: string;\n  email: string;\n  profilePictureUrl?: string;\n  statusMessage?: string;\n  aboutMe?: string;\n  isOnline: boolean;\n  lastSeen: Date;\n  settings: {\n    darkMode: boolean;\n    notificationsEnabled: boolean;\n  };\n}"
+  }
+}

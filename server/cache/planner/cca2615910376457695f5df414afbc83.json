@@ -1,0 +1,18 @@
+{
+  "files": [
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/Home.tsx",
+    "src/components/Menu.tsx",
+    "src/components/Contact.tsx",
+    "src/components/ProductCard.tsx",
+    "src/components/Cart.tsx",
+    "src/hooks/useCart.ts",
+    "src/contexts/CartContext.tsx",
+    "src/utils/api.ts",
+    "src/utils/constants.ts",
+    "src/routes.tsx",
+    "src/styles/global.ts"
+  ]
+}

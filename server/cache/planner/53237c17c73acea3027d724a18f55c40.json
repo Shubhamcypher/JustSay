@@ -1,0 +1,21 @@
+{
+  "files": [
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/ProductList.tsx",
+    "src/components/ProductItem.tsx",
+    "src/components/Cart.tsx",
+    "src/components/Checkout.tsx",
+    "src/components/ProductDetail.tsx",
+    "src/components/CategoryFilter.tsx",
+    "src/components/SearchBar.tsx",
+    "src/hooks/useCart.ts",
+    "src/hooks/useProducts.ts",
+    "src/contexts/CartContext.tsx",
+    "src/contexts/ProductContext.tsx",
+    "src/utils/api.ts",
+    "src/utils/constants.ts",
+    "src/utils/helpers.ts"
+  ]
+}

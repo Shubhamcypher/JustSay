@@ -1,0 +1,5 @@
+{
+  "files": {
+    "src/utils/helpers.ts": "export const formatPrice = (price: number): string => `$${price.toFixed(2)}`;\n\nexport const filterProducts = (products, filters) => {\n  return products.filter(product => {\n    return Object.keys(filters).every(key => {\n      if (!filters[key]) return true;\n      if (Array.isArray(filters[key])) {\n        return filters[key].includes(product[key]);\n      }\n      return product[key] === filters[key];\n    });\n  });\n};\n\nexport const sortProducts = (products, sortBy) => {\n  return [...products].sort((a, b) => {\n    if (sortBy === 'price-asc') return a.price - b.price;\n    if (sortBy === 'price-desc') return b.price - a.price;\n    return 0;\n  });\n};"
+  }
+}
