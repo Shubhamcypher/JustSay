@@ -8,6 +8,8 @@ import { fixCommonBugs } from "../utils/fixCommonBugs";
 import { runStage } from "../utils/runStage";
 import { enforceFileStructure } from "../utils/enforceFileStructure";
 import { loadTemplate } from "../utils/loadTemplate";
+import { expandFeatures } from "../services/featureExpander.service";
+import { enhanceUX } from "../services/enhanceUX.service";
 // import { streamLLM } from "../services/ai.service";
 // import { parseStream } from "../utils/streamParser";
 // import { enhanceFiles } from "../utils/enhanceFiles";
@@ -80,8 +82,11 @@ export const generateProject = async (req: Request, res: Response) => {
         // 🔥 FILTER TEXT FILES ONLY
         const textFiles = plan.files.filter(f => !isBinaryFile(f));
 
+        const featureData = await expandFeatures(prompt);
+        const features = featureData.features || [];
+
         //Generate in chunk
-        async function generateInChunks(files: string[], prompt: string, chunkSize = 4) {
+        async function generateInChunks(files: string[], prompt: string, chunkSize = 2) {
             const chunks: string[][] = [];
             for (let i = 0; i < files.length; i += chunkSize) {
                 chunks.push(files.slice(i, i + chunkSize));
@@ -91,26 +96,33 @@ export const generateProject = async (req: Request, res: Response) => {
 
             for (const chunk of chunks) {
                 console.log(`Generating chunk: ${chunk.join(", ")}`);
-              
-                const result = await generateFilesBatch(chunk, prompt);
-              
+
+                // const result = await generateFilesBatch(chunk, prompt);
+                const result = await generateFilesBatch(chunk, `
+                    User Prompt:
+                    ${prompt}
+                    
+                    Features to include:
+                    ${features.join("\n")}
+                    `);
+
                 if (result?.files) {
-                  for (const [path, content] of Object.entries(result.files)) {
-              
-                    // 🔥 STREAM IMMEDIATELY
-                    res.write(
-                      `data: ${JSON.stringify({
-                        type: "file",
-                        path,
-                        content,
-                      })}\n\n`
-                    );
-              
-                    // store for later processing
-                    allFiles[path] = content;
-                  }
+                    for (const [path, content] of Object.entries(result.files)) {
+
+                        // 🔥 STREAM IMMEDIATELY
+                        res.write(
+                            `data: ${JSON.stringify({
+                                type: "file",
+                                path,
+                                content,
+                            })}\n\n`
+                        );
+
+                        // store for later processing
+                        allFiles[path] = content;
+                    }
                 }
-              }
+            }
 
             return { files: allFiles };
         }
@@ -145,6 +157,19 @@ export const generateProject = async (req: Request, res: Response) => {
         );
 
         files = enforceFileStructure(files, "fixCommonBugs");
+
+
+        files = await runStage("enhanceUX", async () => {
+            const enhanced = await enhanceUX(files);
+            return enhanced.files;
+          });
+
+
+          files = await runStage("fixAfterEnhance", () =>
+            fixCommonBugs(files)
+          );
+          
+          files = enforceFileStructure(files, "fixAfterEnhance");
 
 
         // files = await runStage("enhanceFiles", () =>
