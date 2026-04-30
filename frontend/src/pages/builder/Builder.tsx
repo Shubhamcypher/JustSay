@@ -55,7 +55,9 @@ export default function Builder() {
                     activeStepRef.current = null;
                 }
             }
-        }
+        },
+        addStep,
+        completeStep
     );
 
 
