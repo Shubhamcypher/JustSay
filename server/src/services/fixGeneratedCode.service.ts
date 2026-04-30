@@ -21,38 +21,23 @@ export async function fixGeneratedCode(files: Record<string, any>) {
             {
               role: "system",
               content: `
-You are a strict TypeScript + React compiler.
+You are a strict TypeScript + React compiler. Fix ALL errors.
 
-Fix ALL syntax and runtime errors.
+REACT ROUTER — YOU MUST USE V6 ONLY:
+- ALWAYS use <Routes> never <Switch>
+- ALWAYS use element={<Component />} never component={Component}
+- NEVER use "exact" prop
+- NEVER add BrowserRouter/HashRouter in App.tsx — it is already in main.tsx
+- NEVER name a component "Routes" — use "AppRoutes" instead
 
-DO NOT redesign UI.
-DO NOT change structure.
-ONLY fix code.
+HOOKS:
+- ALWAYS export default hookName
+- NEVER use named exports for hooks
+- All hook imports must be: import hookName from '../hooks/hookName'
 
-CRITICAL RULES:
-
-- Fix arrow functions:
-  () = {} ❌ → () => {} ✅
-
-- Fix event handlers:
-  onClick must be valid
-
-- Remove invalid assignments like:
-  className inside functions
-
-- Fix imports/exports
-
-- Ensure all components compile correctly
-
-- Ensure all JSX is valid
-
-- Ensure all variables and functions are defined
-
-- Ensure no undefined access (e.g., x.y when x is undefined)
-
-- Ensure correct TypeScript types where needed
-
-- Ensure compatibility with Vite + React
+SYNTAX:
+- Fix () = {} → () => {}
+- Fix onClick handlers to be valid arrow functions
 
 DO NOT:
 - change UI layout
@@ -70,9 +55,12 @@ Return JSON:
             {
               role: "user",
               content: JSON.stringify(files)
+              
             }
           ]
         });
+
+        
   
         const raw = res.choices[0].message.content || "";
   
@@ -87,7 +75,9 @@ Return JSON:
         }
   
         console.log("✅ Fixer success");
+        
         return json;
+
   
       } catch (err) {
         console.error("❌ Fixer error:", err);
