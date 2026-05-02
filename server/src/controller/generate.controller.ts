@@ -10,6 +10,7 @@ import { enforceFileStructure } from "../utils/enforceFileStructure";
 import { loadTemplate } from "../utils/loadTemplate";
 import { expandFeatures } from "../services/featureExpander.service";
 import { enhanceUX } from "../services/enhanceUX.service";
+import { generateSkeletons, SkeletonMap } from "../services/generateSkeletons.service";
 // import { streamLLM } from "../services/ai.service";
 // import { parseStream } from "../utils/streamParser";
 // import { enhanceFiles } from "../utils/enhanceFiles";
@@ -70,23 +71,18 @@ export const generateProject = async (req: Request, res: Response) => {
             })}\n\n`
         );
 
-        let buffer = "";
-        // 🔥 PLAN
-        const plan: ProjectPlan = await planProject(prompt);
-        plan.files = plan.files.filter(f => !isBinaryFile(f));
 
-        if (!plan.files || !Array.isArray(plan.files)) {
-            throw new Error("Invalid plan from LLM");
-        }
-
-        // 🔥 FILTER TEXT FILES ONLY
-        const textFiles = plan.files.filter(f => !isBinaryFile(f));
-
-        const featureData = await expandFeatures(prompt);
-        const features = featureData.features || [];
 
         //Generate in chunk
-        async function generateInChunks(files: string[], prompt: string, chunkSize = 2) {
+        async function generateInChunks(
+            files: string[],
+            prompt: string,
+            features: string[],
+            chunkSize: number,
+            skeletons: SkeletonMap,
+            res: Response,
+            streamedPaths: Set<string>   // 👈 from Fix 4 — pass in to track what's been sent
+        ) {
             const chunks: string[][] = [];
             for (let i = 0; i < files.length; i += chunkSize) {
                 chunks.push(files.slice(i, i + chunkSize));
@@ -95,30 +91,28 @@ export const generateProject = async (req: Request, res: Response) => {
             let allFiles: Record<string, any> = {};
 
             for (const chunk of chunks) {
-                console.log(`Generating chunk: ${chunk.join(", ")}`);
+                console.log(`Generating chunk (${chunk.length} files): ${chunk.join(", ")}`);
 
-                // const result = await generateFilesBatch(chunk, prompt);
-                const result = await generateFilesBatch(chunk, `
-                    User Prompt:
-                    ${prompt}
-                    
-                    Features to include:
-                    ${features.join("\n")}
-                    `);
+                const enrichedPrompt = `
+          User Prompt:
+          ${prompt}
+          
+          Features to include:
+          ${features.join("\n")}
+              `;
+
+                const result = await generateFilesBatch(
+                    chunk,
+                    enrichedPrompt,
+                    skeletons       // 👈 pass the full skeleton map
+                );
 
                 if (result?.files) {
                     for (const [path, content] of Object.entries(result.files)) {
-
-                        // 🔥 STREAM IMMEDIATELY
                         res.write(
-                            `data: ${JSON.stringify({
-                                type: "file",
-                                path,
-                                content,
-                            })}\n\n`
+                            `data: ${JSON.stringify({ type: "file", path, content })}\n\n`
                         );
-
-                        // store for later processing
+                        streamedPaths.add(path);   // 👈 track streamed paths (Fix 4)
                         allFiles[path] = content;
                     }
                 }
@@ -127,8 +121,37 @@ export const generateProject = async (req: Request, res: Response) => {
             return { files: allFiles };
         }
 
-        // Then use it:
-        const result = await generateInChunks(textFiles, prompt, 4);
+        // Planning phase — now parallel (Fix 5 preview)
+        const [plan, featureData] = await Promise.all([
+            planProject(prompt),
+            expandFeatures(prompt)
+        ]);
+
+        plan.files = plan.files.filter((f: string) => !isBinaryFile(f));
+
+        if (!plan.files || !Array.isArray(plan.files)) {
+            throw new Error("Invalid plan from LLM");
+        }
+
+        const textFiles = plan.files.filter((f: string) => !isBinaryFile(f));
+        const features = featureData.features || [];
+
+        // 🦴 NEW: Generate skeletons ONCE for all files
+        const skeletons = await generateSkeletons(textFiles, prompt, features);
+
+        // Track streamed paths to prevent double-streaming (Fix 4)
+        const streamedPaths = new Set<string>();
+
+        // Generate in chunks of 5 with full skeleton context
+        const result = await generateInChunks(
+            textFiles,
+            prompt,
+            features,
+            5,            // 👈 was 2, now 5
+            skeletons,
+            res,
+            streamedPaths
+        );
 
         let files = await runStage("normalizeFiles (initial)", () =>
             normalizeFiles(result.files)
@@ -162,14 +185,14 @@ export const generateProject = async (req: Request, res: Response) => {
         files = await runStage("enhanceUX", async () => {
             const enhanced = await enhanceUX(files);
             return enhanced.files;
-          });
+        });
 
 
-          files = await runStage("fixAfterEnhance", () =>
+        files = await runStage("fixAfterEnhance", () =>
             fixCommonBugs(files)
-          );
-          
-          files = enforceFileStructure(files, "fixAfterEnhance");
+        );
+
+        files = enforceFileStructure(files, "fixAfterEnhance");
 
 
         // files = await runStage("enhanceFiles", () =>
@@ -209,8 +232,8 @@ export const generateProject = async (req: Request, res: Response) => {
 
         // 🔥 LOOP ONLY FOR SAVING + STREAMING
         const allPaths = Object.keys(files);
+        // ✅ Only stream if NOT already sent during generation
         for (const filePath of allPaths) {
-
             let content = "";
 
             if (isBinaryFile(filePath)) {
@@ -219,21 +242,19 @@ export const generateProject = async (req: Request, res: Response) => {
                 content = files?.[filePath]?.content || "";
             }
 
-            // save
+            // Always save to DB
             await pool.query(
                 `INSERT INTO project_files (project_id, path, content)
          VALUES ($1,$2,$3)`,
                 [projectId, filePath, content]
             );
 
-            // stream
-            res.write(
-                `data: ${JSON.stringify({
-                    type: "file",
-                    path: filePath,
-                    content,
-                })}\n\n`
-            );
+            // Only stream if not already sent
+            if (!streamedPaths.has(filePath)) {
+                res.write(
+                    `data: ${JSON.stringify({ type: "file", path: filePath, content })}\n\n`
+                );
+            }
         }
 
 
