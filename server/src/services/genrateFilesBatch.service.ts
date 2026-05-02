@@ -1,61 +1,124 @@
 import OpenAI from "openai";
 import { getCache, setCache } from "../utils/cacheAiResponse";
+import { SkeletonMap } from "./generateSkeletons.service";
+import {
+  REFERENCE_NAVBAR,
+  REFERENCE_HERO,
+  REFERENCE_CARD_GRID,
+} from "../utils/referenceComponents";
 
 //for OpenAI
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 
-//for groq
-// const openai = new OpenAI({
-//     apiKey: process.env.GROQ_API_KEY,
-//     baseURL: "https://api.groq.com/openai/v1",
-// });
-
-//for openRouter
-// const openai = new OpenAI({
-//     apiKey: process.env.OPENROUTER_API_KEY,
-//     baseURL: "https://openrouter.ai/api/v1",
-//     defaultHeaders: {
-//         "HTTP-Referer": "http://localhost:3000",
-//         "X-Title": "JustSay",
-//     },
-// });
-
 function cleanJSON(text: string) {
-    return text
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
+  return text
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
+}
+
+// New helper — formats the skeleton map into a readable context block
+function formatSkeletonContext(
+  currentFiles: string[],
+  allSkeletons: SkeletonMap
+): string {
+  const lines: string[] = [];
+
+  // Full skeleton of every file in the project (for awareness)
+  lines.push("=== FULL PROJECT STRUCTURE (all files) ===");
+  for (const [path, skeleton] of Object.entries(allSkeletons)) {
+    lines.push(`${path} → ${skeleton.componentName}: ${skeleton.purpose}`);
+  }
+
+  lines.push("\n=== DETAILED SKELETONS FOR FILES YOU ARE GENERATING NOW ===");
+  for (const filePath of currentFiles) {
+    const s = allSkeletons[filePath];
+    if (!s) continue;
+    lines.push(`
+File: ${filePath}
+Component: ${s.componentName}
+Purpose: ${s.purpose}
+Props: ${s.props.length ? s.props.join(", ") : "none"}
+Sections to build: ${s.sections.join(" | ")}
+Imports from project: ${s.imports.length ? s.imports.join(", ") : "none"}
+`);
+  }
+
+  return lines.join("\n");
 }
 
 
 
-export async function generateFilesBatch(files: any, prompt: string) {
-    const cacheKey = prompt + files.join(",");
+export async function generateFilesBatch(files: any, prompt: string, skeletons: SkeletonMap = {}, features: string[] = []) {
+  const cacheKey = prompt + files.join(",");
 
-    if (process.env.DEV_MODE === "true") {
-        const cached = getCache("generator", cacheKey);
-        if (cached) {
-            console.log("⚡ Using cached generator");
-            return cached;
-        }
+  if (process.env.DEV_MODE === "true") {
+    const cached = getCache("generator", cacheKey);
+    if (cached) {
+      console.log("⚡ Using cached generator");
+      return cached;
     }
+  }
 
 
-    const res = await openai.chat.completions.create({
-        model: "gpt-4o",  //open ai model for planner
-        // model: "google/gemma-3-12b-it:free", // llama model works freely but too scratchy
-        temperature: 0.2,
-         max_tokens: 4096,
-        messages: [
-            {
-                role: "system",
-                content: `
+  const skeletonContext = Object.keys(skeletons).length > 0
+    ? formatSkeletonContext(files, skeletons)
+    : "No skeleton context available.";
+
+  const res = await openai.chat.completions.create({
+    model: "gpt-4o",  //open ai model for planner
+    // model: "google/gemma-3-12b-it:free", // llama model works freely but too scratchy
+    temperature: 0.2,
+    max_tokens: 4096,
+    messages: [
+      {
+        role: "system",
+        content: `
 You are a senior frontend engineer and UI/UX expert.
 
 Your task is to generate a COMPLETE, production-quality React + TypeScript application.
+
+
+========================
+REFERENCE EXAMPLES (QUALITY ANCHOR)
+========================
+
+The components below represent the MINIMUM quality bar. Every file you generate
+must match or exceed this level of polish — in layout, spacing, interactivity,
+and visual design.
+
+// --- REFERENCE: Navbar ---
+${REFERENCE_NAVBAR}
+
+// --- REFERENCE: Hero section ---
+${REFERENCE_HERO}
+
+// --- REFERENCE: Card grid ---
+${REFERENCE_CARD_GRID}
+
+Study the patterns above:
+- Dark theme with gray-950 / gray-800 surfaces
+- Indigo accent color (indigo-600 buttons, indigo-400 text accents)
+- rounded-xl / rounded-2xl corners, not rounded-md
+- Hover transitions on every interactive element
+- Real props — no hardcoded placeholder text
+- Responsive: mobile-first with md: / lg: breakpoints
+
+
+========================
+PROJECT STRUCTURE CONTEXT
+========================
+
+${skeletonContext}
+
+Use the skeleton above as your blueprint:
+- Implement EXACTLY the sections listed for each file
+- Use EXACTLY the props listed
+- Wire up EXACTLY the imports listed
+- Every component must fit into the larger app coherently
 
 STRICT RULES:
 
@@ -242,47 +305,96 @@ INFRASTRUCTURE NOTE:
 - You should focus ONLY on application logic and UI components
 - Do NOT override core infrastructure files unless necessary
 
+
+========================
+ALLOWED PACKAGES (STRICT)
+========================
+
+You may ONLY import from these packages:
+- react
+- react-dom  
+- react-router-dom
+
+DO NOT import from ANY other npm package.
+DO NOT use axios — use fetch() instead.
+DO NOT use lodash, zustand, redux, or any utility library.
+
+If you need HTTP: use fetch().
+If you need state: use useState / useContext / useReducer.
+If you need routing: use react-router-dom v6 only.
+
+Any import from an unlisted package = INVALID OUTPUT.
+
+
+========================
+QUALITY ENFORCEMENT
+========================
+
+Before returning output, self-check every generated component against the reference examples above:
+
+- Does every page have a real Navbar with navigation links?
+- Does the landing/home page have a Hero section with a headline, subtext, and CTA button?
+- Are cards using rounded-2xl, hover:border transitions, and icon slots?
+- Are all buttons using the indigo-600 + hover:indigo-500 + transition pattern?
+- Is the color palette consistent: gray-950 bg, gray-800 surfaces, white text, gray-400 muted text?
+- Are there loading states, empty states, and error states on any data-fetching components?
+
+If ANY component is below reference quality → rewrite it before outputting.
+
 Generate all required files listed below:
 
 Files:
 ${files.join("\n")}
-
 `
-            },
-            {
-                role: "user",
-                content: `
-Prompt:
+      },
+      {
+        role: "user",
+        content: `
+========================
+REQUIRED FEATURES — IMPLEMENT ALL OF THESE
+========================
+
+Every feature below MUST be visibly present in the UI.
+Do not skip, summarize, or combine them.
+If a feature requires a new component or page — create it.
+
+${features.map((f: string, i: number) => `${i + 1}. ${f}`).join("\n")}
+
+========================
+USER'S GOAL
+========================
+
 ${prompt}
 
-Files:
+========================
+FILES TO GENERATE NOW
+========================
+
 ${files.join("\n")}
 
-Return:
+Return ONLY this JSON shape, nothing else:
 {
   "files": {
-    "filePath": "content"
+    "filePath": "full file content"
   }
 }
 `
-            }
-        ]
-    });
-    console.log("Received file in generate files batch:", res);
-    const raw = res.choices[0].message.content || "";
-    const cleaned = cleanJSON(raw);
+      }
+    ]
+  });
 
-    const json = JSON.parse(cleaned);
-    try {
-        if (!json.files || typeof json.files !== "object") {
-            throw new Error("Invalid batch response");
-        }
+  console.log("Received files in generateFilesBatch:", files);
+  const raw = res.choices[0].message.content || "";
+  const cleaned = cleanJSON(raw);
+  const json = JSON.parse(cleaned);
 
-        setCache("generator", cacheKey, json);
-
-        return json;
+  try {
+    if (!json.files || typeof json.files !== "object") {
+      throw new Error("Invalid batch response");
     }
-    catch {
-        console.warn("⚠️ JSON failed, retrying once...");
-    }
+    setCache("generator", cacheKey, json);
+    return json;
+  } catch {
+    console.warn("⚠️ JSON parse failed in generateFilesBatch");
+  }
 }
