@@ -1,0 +1,20 @@
+{
+  "files": [
+    "src/App.tsx",
+    "src/routes/AppRoutes.tsx",
+    "src/pages/HomePage.tsx",
+    "src/pages/ProductPage.tsx",
+    "src/pages/CartPage.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/ProductCard.tsx",
+    "src/components/CartItem.tsx",
+    "src/components/LoadingSpinner.tsx",
+    "src/context/CartContext.tsx",
+    "src/hooks/useFetchProducts.ts",
+    "src/hooks/useCart.ts",
+    "src/utils/api.ts",
+    "src/utils/constants.ts",
+    "src/utils/helpers.ts"
+  ]
+}

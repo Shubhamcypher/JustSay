@@ -1,0 +1,20 @@
+{
+  "files": [
+    "src/App.tsx",
+    "src/routes/AppRoutes.tsx",
+    "src/pages/HomePage.tsx",
+    "src/pages/VideoPage.tsx",
+    "src/pages/ProfilePage.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/VideoCard.tsx",
+    "src/components/Sidebar.tsx",
+    "src/context/UserContext.tsx",
+    "src/hooks/useFetchVideos.ts",
+    "src/utils/constants.ts",
+    "src/components/SearchBar.tsx",
+    "src/pages/UploadPage.tsx",
+    "src/components/VideoPlayer.tsx",
+    "src/components/CommentSection.tsx"
+  ]
+}
