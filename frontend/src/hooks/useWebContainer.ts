@@ -1,6 +1,32 @@
 import { useEffect, useRef, useState } from "react";
 import { getWebContainer } from "@/lib/webContainer";
 
+
+const TEMPLATE_PACKAGE_JSON = JSON.stringify({
+  name: "app",
+  private: true,
+  version: "1.0.0",
+  type: "module",
+  scripts: {
+    dev: "vite",
+    build: "vite build",
+    preview: "vite preview"
+  },
+  dependencies: {
+    "react": "^18",
+    "react-dom": "^18",
+    "react-router-dom": "^6.26.0"
+  },
+  devDependencies: {
+    "vite": "^5",
+    "typescript": "^5",
+    "@vitejs/plugin-react": "^4",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8",
+    "autoprefixer": "^10"
+  }
+}, null, 2);
+
 export function useWebContainer(
   files: Record<string, any>,
   isReady: boolean,
@@ -86,17 +112,21 @@ export function useWebContainer(
           console.log("📦 PKG RAW:", files["package.json"]);
 
           // 🔥 FORCE package.json write (CRITICAL)
-          const pkgContent =
-            typeof files["package.json"] === "string"
-              ? files["package.json"]
-              : files["package.json"]?.content;
+          // const pkgContent =
+          //   typeof files["package.json"] === "string"
+          //     ? files["package.json"]
+          //     : files["package.json"]?.content;
 
 
-          console.log("📦 PKG CONTENT STRING:", pkgContent);
+          // console.log("📦 PKG CONTENT STRING:", pkgContent);
 
+          // const s2 = addStep?.("Writing package.json", "build");
+          // await wc.fs.writeFile("package.json", pkgContent);
+          // console.log("📦 package.json written");
+          // completeStep?.(s2);
           const s2 = addStep?.("Writing package.json", "build");
-          await wc.fs.writeFile("package.json", pkgContent);
-          console.log("📦 package.json written");
+          await wc.fs.writeFile("package.json", TEMPLATE_PACKAGE_JSON);
+          console.log("📦 package.json written from hardcoded template");
           completeStep?.(s2);
 
           // 🔍 VERIFY WRITE
@@ -190,6 +220,8 @@ export function useWebContainer(
             typeof files["package.json"] === "string"
               ? files["package.json"]
               : files["package.json"]?.content;
+
+
 
           console.log("🔁 PKG CONTENT:", pkgContent);
 
