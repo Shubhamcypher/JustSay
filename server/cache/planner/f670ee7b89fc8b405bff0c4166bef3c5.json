@@ -1,0 +1,19 @@
+{
+  "files": [
+    "src/App.tsx",
+    "src/routes/AppRoutes.tsx",
+    "src/pages/HomePage.tsx",
+    "src/pages/LibraryPage.tsx",
+    "src/pages/PlaylistPage.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/TrackList.tsx",
+    "src/components/TrackItem.tsx",
+    "src/context/MusicContext.tsx",
+    "src/hooks/useFetchTracks.ts",
+    "src/utils/constants.ts",
+    "src/main.tsx",
+    "index.html",
+    "package.json"
+  ]
+}

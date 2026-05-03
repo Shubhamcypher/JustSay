@@ -1,0 +1,19 @@
+{
+  "files": [
+    "src/App.tsx",
+    "src/routes/AppRoutes.tsx",
+    "src/pages/HomePage.tsx",
+    "src/pages/ProductPage.tsx",
+    "src/pages/CartPage.tsx",
+    "src/components/Header.tsx",
+    "src/components/Footer.tsx",
+    "src/components/ProductCard.tsx",
+    "src/components/CartItem.tsx",
+    "src/context/CartContext.tsx",
+    "src/hooks/useFetchProducts.ts",
+    "src/utils/constants.ts",
+    "src/main.tsx",
+    "index.html",
+    "package.json"
+  ]
+}
