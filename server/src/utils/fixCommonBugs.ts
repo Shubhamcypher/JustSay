@@ -90,26 +90,81 @@ export function fixCommonBugs(files: Record<string, any>) {
     }
 
 
-    // Remove Router wrappers from context files too
-    // (model sometimes wraps providers with BrowserRouter)
-    if (path.includes("context/") || path.includes("Context.")) {
-      content = content.replace(
-        /import\s+\{[^}]*(?:BrowserRouter|HashRouter|MemoryRouter)(?:\s+as\s+\w+)?[^}]*\}\s+from\s+['"]react-router-dom['"];\n?/g,
-        ""
-      );
-      content = content.replace(
-        /import\s+\{[^}]*\bas\s+Router\b[^}]*\}\s+from\s+['"]react-router-dom['"];\n?/g,
-        ""
-      );
-      content = content.replace(
-        /<(?:BrowserRouter|HashRouter|MemoryRouter|Router)(?:\s[^>]*)?>[\s]*/g,
-        ""
-      );
-      content = content.replace(
-        /\s*<\/(?:BrowserRouter|HashRouter|MemoryRouter|Router)>/g,
-        ""
-      );
+    // ✅ Fix missing exports in context files
+if (path.includes("context/") || path.includes("Context.")) {
+
+  // 1. Fix createContext — ensure named export exists
+  const contextMatches = [...content.matchAll(
+    /const\s+([A-Z][a-zA-Z]*Context)\s*=\s*createContext/g
+  )];
+
+  for (const match of contextMatches) {
+    const contextName = match[1];
+
+    const isNamedExported = new RegExp(
+      `export\\s+const\\s+${contextName}|export\\s*\\{[^}]*${contextName}`
+    ).test(content);
+
+    const isDefaultExported = new RegExp(
+      `export\\s+default\\s+${contextName}`
+    ).test(content);
+
+    if (!isNamedExported) {
+      if (isDefaultExported) {
+        content = content.replace(
+          `export default ${contextName}`,
+          `export { ${contextName} };\nexport default ${contextName}`
+        );
+      } else {
+        content = content.replace(
+          `const ${contextName} = createContext`,
+          `export const ${contextName} = createContext`
+        );
+      }
+      console.log(`🔧 fixCommonBugs: added named export for ${contextName} in ${path}`);
     }
+  }
+
+  // 2. Fix Provider components — ensure named export exists
+  const providerMatches = [...content.matchAll(
+    /const\s+([A-Z][a-zA-Z]*Provider)\s*=/g
+  )];
+
+  for (const match of providerMatches) {
+    const providerName = match[1];
+    const isExported = new RegExp(
+      `export\\s+const\\s+${providerName}|export\\s+default\\s+${providerName}|export\\s*\\{[^}]*${providerName}`
+    ).test(content);
+
+    if (!isExported) {
+      content = content.replace(
+        `const ${providerName} =`,
+        `export const ${providerName} =`
+      );
+      console.log(`🔧 fixCommonBugs: added export for ${providerName} in ${path}`);
+    }
+  }
+
+  // 3. Fix useX hooks inside context files — ensure named export exists
+  const hookMatches = [...content.matchAll(
+    /const\s+(use[A-Z][a-zA-Z]*)\s*=/g
+  )];
+
+  for (const match of hookMatches) {
+    const hookName = match[1];
+    const isExported = new RegExp(
+      `export\\s+const\\s+${hookName}|export\\s+default\\s+${hookName}|export\\s*\\{[^}]*${hookName}`
+    ).test(content);
+
+    if (!isExported) {
+      content = content.replace(
+        `const ${hookName} =`,
+        `export const ${hookName} =`
+      );
+      console.log(`🔧 fixCommonBugs: added export for ${hookName} in ${path}`);
+    }
+  }
+}
 
 
     // ✅ ADD — strip axios import and usage (axios not in package.json)
