@@ -107,12 +107,27 @@ export const generateProject = async (req: Request, res: Response) => {
                     skeletons       // 👈 pass the full skeleton map
                 );
 
+                const NEVER_STREAM_FROM_AI = new Set([
+                    "package.json",
+                    "vite.config.ts",
+                    "tailwind.config.js",
+                    "postcss.config.js",
+                    "index.html",
+                    "src/index.css",
+                    "src/main.tsx"
+                ]);
+
                 if (result?.files) {
                     for (const [path, content] of Object.entries(result.files)) {
+                        if (NEVER_STREAM_FROM_AI.has(path)) {
+                            console.log(`🔒 Blocked AI stream of protected file: ${path}`);
+                            allFiles[path] = content;
+                            continue;
+                        }
                         res.write(
                             `data: ${JSON.stringify({ type: "file", path, content })}\n\n`
                         );
-                        streamedPaths.add(path);   // 👈 track streamed paths (Fix 4)
+                        streamedPaths.add(path);
                         allFiles[path] = content;
                     }
                 }
