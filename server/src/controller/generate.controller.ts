@@ -84,6 +84,15 @@ export const generateProject = async (req: Request, res: Response) => {
             streamedPaths: Set<string>   // 👈 from Fix 4 — pass in to track what's been sent
         ) {
             const chunks: string[][] = [];
+            const NEVER_STREAM_FROM_AI = new Set([
+                "package.json",
+                "vite.config.ts",
+                "tailwind.config.js",
+                "postcss.config.js",
+                "index.html",
+                "src/index.css",
+                "src/main.tsx"
+            ]);
             for (let i = 0; i < files.length; i += chunkSize) {
                 chunks.push(files.slice(i, i + chunkSize));
             }
@@ -107,15 +116,6 @@ export const generateProject = async (req: Request, res: Response) => {
                     skeletons       // 👈 pass the full skeleton map
                 );
 
-                const NEVER_STREAM_FROM_AI = new Set([
-                    "package.json",
-                    "vite.config.ts",
-                    "tailwind.config.js",
-                    "postcss.config.js",
-                    "index.html",
-                    "src/index.css",
-                    "src/main.tsx"
-                ]);
 
                 if (result?.files) {
                     for (const [path, content] of Object.entries(result.files)) {
@@ -215,6 +215,9 @@ export const generateProject = async (req: Request, res: Response) => {
         // );
 
         // files = enforceFileStructure(files, "enhanceFiles");
+
+        streamedPaths.clear();
+        console.log("🔄 Cleared streamedPaths — fixed files will be re-streamed");
 
         files = await runStage("injectImages", () =>
             injectImages(files, prompt)
