@@ -57,7 +57,7 @@ export default function Builder() {
             }
         },
         addStep,
-        completeStep
+        completeStep,
     );
 
 
