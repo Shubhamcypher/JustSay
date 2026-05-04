@@ -3,6 +3,7 @@ import { useState } from "react";
 type File = {
   path: string;
   content: string;
+  fromStream?: boolean;
 };
 
 export function useFiles(userSelectedRef: any) {
@@ -30,13 +31,14 @@ export function useFiles(userSelectedRef: any) {
     }
   };
 
-  const updateFileContent = (path: string, content: string) => {
+  const updateFileContent = (path: string, content: string, fromStream = false) => {
     // Updates content only — filePaths untouched, no tree re-render
     setFiles((prev) => ({
       ...prev,
       [path]: {
         ...prev[path],
         content,
+        fromStream
       },
     }));
   };
