@@ -72,7 +72,7 @@ export async function generateFilesBatch(files: any, prompt: string, skeletons: 
     model: "gpt-4o",  //open ai model for planner
     // model: "google/gemma-3-12b-it:free", // llama model works freely but too scratchy
     temperature: 0.2,
-    max_tokens: 4096,
+    max_tokens: 16000,
     messages: [
       {
         role: "system",
@@ -287,6 +287,57 @@ FUNCTIONALITY
 * Buttons must perform actions (state updates, UI changes, etc.)
 * Use useState / useEffect where needed
 * Avoid static-only UI
+
+
+========================
+DEFENSIVE CODING (CRITICAL — READ CAREFULLY)
+========================
+
+ALL components that receive props or render data MUST follow these rules:
+
+1. NEVER call methods on potentially undefined values
+   ❌ product.price.toFixed(2)
+   ✅ (product?.price ?? 0).toFixed(2)
+
+   ❌ items.map(...)
+   ✅ (items ?? []).map(...)
+
+   ❌ user.name.toUpperCase()
+   ✅ user?.name?.toUpperCase() ?? ""
+
+2. EVERY array prop must have a fallback before .map()
+   ❌ {products.map(p => <Card key={p.id} />)}
+   ✅ {(products ?? []).map(p => <Card key={p.id} />)}
+
+3. EVERY numeric value displayed must have a fallback
+   ❌ \${product.price}
+   ✅ \${product?.price ?? 0}
+   ❌ {count} items
+   ✅ {count ?? 0} items
+
+4. EVERY image src must have a fallback
+   ❌ <img src={item.image} />
+   ✅ <img src={item?.image || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400"} />
+
+
+
+5. EVERY object prop access must use optional chaining
+   ❌ <p>{user.address.city}</p>
+   ✅ <p>{user?.address?.city ?? "Unknown"}</p>
+
+6. Components with loading states MUST guard against undefined data
+   ✅ if (loading) return <LoadingSkeleton />
+   ✅ if (!data || data.length === 0) return <EmptyState />
+   ✅ if (error) return <ErrorState message={error} />
+   // THEN render with data — never render data before these checks
+
+7. Mock data arrays MUST be defined OUTSIDE the component
+   ❌ const MyComp = () => { const items = [...] }
+   ✅ const MOCK_ITEMS = [...];
+      const MyComp = () => { ... }
+
+Any component that violates these rules = INVALID OUTPUT.
+Self-check every component before returning.
 
 ========================
 FINAL OUTPUT RULES
