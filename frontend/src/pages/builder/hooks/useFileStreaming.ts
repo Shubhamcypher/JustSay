@@ -33,12 +33,12 @@ export function useFileStreaming({
 
             // Flush to state every 5 chars or on the last character
             if (i % 5 === 0 || i === fullContent.length - 1) {
-                updateFileContent(path, buffer);
+                updateFileContent(path, buffer, true);
                 await sleep(5);
             }
         }
 
-        updateFileContent(path, fullContent); // ensure final content is exactly correct
+        updateFileContent(path, fullContent, true); // ensure final content is exactly correct
     };
 
     // Extracts filename from path for display in steps e.g. "src/Button.tsx" → "Button.tsx"
