@@ -5,34 +5,36 @@ import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 function cleanJSON(text: string) {
-  return text.replace(/```json/g, "").replace(/```/g, "").trim();
+    return text.replace(/```json/g, "").replace(/```/g, "").trim();
 }
 
 export interface FileSkeleton {
-  componentName: string;
-  purpose: string;
-  props: string[];
-  sections: string[];
-  imports: string[];
+    componentName: string;
+    purpose: string;
+    props: string[];
+    sections: string[];
+    imports: string[];
+    mockData?: string[];
+    exports: string[];
 }
 
 export type SkeletonMap = Record<string, FileSkeleton>;
 
 export async function generateSkeletons(
-  files: string[],
-  prompt: string,
-  features: string[]
+    files: string[],
+    prompt: string,
+    features: string[]
 ): Promise<SkeletonMap> {
-  console.log("🦴 Generating skeletons for", files.length, "files");
+    console.log("🦴 Generating skeletons for", files.length, "files");
 
-  const res = await openai.chat.completions.create({
-    model: "gpt-4o",
-    temperature: 0.1,
-    max_tokens: 4096,
-    messages: [
-      {
-        role: "system",
-        content: `
+    const res = await openai.chat.completions.create({
+        model: "gpt-4o",
+        temperature: 0.1,
+        max_tokens: 8000,
+        messages: [
+            {
+                role: "system",
+                content: `
 You are a senior React architect.
 
 Your job is to design the STRUCTURE of a React + TypeScript app — not the full code.
@@ -53,7 +55,27 @@ Return ONLY valid JSON, no markdown, no backticks:
       "purpose": "Root component, sets up routing and global providers",
       "props": [],
       "sections": ["Router setup", "AppRoutes", "Global layout"],
-      "imports": ["src/routes/AppRoutes.tsx", "src/context/AppContext.tsx"]
+      "imports": ["src/routes/AppRoutes.tsx", "src/context/AppContext.tsx"],
+      "mockData": [],
+      "exports": ["default"]
+    },
+    "src/pages/HomePage.tsx": {
+      "componentName": "HomePage",
+      "purpose": "Landing page showing product grid and hero section",
+      "props": [],
+      "sections": ["Hero banner with CTA", "Category filter bar", "Product card grid", "Loading skeleton", "Empty state"],
+      "imports": ["src/components/ProductCard.tsx", "src/context/CartContext.tsx"],
+      "mockData": ["MOCK_PRODUCTS: { id: string; name: string; price: number; image: string }[]", "MOCK_CATEGORIES: string[]"],
+      "exports": ["default"]
+    },
+    "src/context/CartContext.tsx": {
+      "componentName": "CartProvider",
+      "purpose": "Global cart state with context, reducer and custom hook",
+      "props": ["children: ReactNode"],
+      "sections": ["CartContext creation", "cartReducer", "CartProvider component", "useCart hook"],
+      "imports": [],
+      "mockData": [],
+      "exports": ["CartContext", "CartProvider", "useCart"]
     }
   }
 }
@@ -64,11 +86,26 @@ Rules:
 - Imports must only reference other files in the input list
 - Props must be realistic for the component's purpose
 - Design the components to work TOGETHER as a coherent app
+- mockData: if this file is a page or renders a list, list the mock data arrays it should define
+  e.g. ["MOCK_PRODUCTS: Product[]", "MOCK_CATEGORIES: string[]"]
+  Mock data MUST be defined at module level, not inside components
+  
+- exports: list ALL named exports this file provides
+  e.g. ["ProductCard", "ProductList"] for components
+  e.g. ["CartContext", "CartProvider", "useCart"] for context files
+  e.g. ["CATEGORIES", "API_BASE_URL"] for utils/constants files
+  Hooks files: always ["default"] since hooks use default export
+
+Also add to skeleton rules:
+- Props that are arrays must be typed as: propName: ItemType[] — never just any[]
+- Props that are numbers must include: propName: number — never optional unless truly optional
+- If a component receives a product/item prop, its shape must be fully specified in props list
+  e.g. ["product: { id: string; name: string; price: number; image: string }"]
 `
-      },
-      {
-        role: "user",
-        content: `
+            },
+            {
+                role: "user",
+                content: `
 App idea: ${prompt}
 
 Required features:
@@ -79,18 +116,18 @@ ${files.join("\n")}
 
 Return the skeleton map for all files above.
 `
-      }
-    ]
-  });
+            }
+        ]
+    });
 
-  const raw = res.choices[0].message.content || "";
-  const cleaned = cleanJSON(raw);
-  const json = JSON.parse(cleaned);
+    const raw = res.choices[0].message.content || "";
+    const cleaned = cleanJSON(raw);
+    const json = JSON.parse(cleaned);
 
-  if (!json.skeletons || typeof json.skeletons !== "object") {
-    throw new Error("Invalid skeleton response from LLM");
-  }
+    if (!json.skeletons || typeof json.skeletons !== "object") {
+        throw new Error("Invalid skeleton response from LLM");
+    }
 
-  console.log("🦴 Skeletons generated:", Object.keys(json.skeletons).length, "files");
-  return json.skeletons as SkeletonMap;
+    console.log("🦴 Skeletons generated:", Object.keys(json.skeletons).length, "files");
+    return json.skeletons as SkeletonMap;
 }
