@@ -91,80 +91,122 @@ export function fixCommonBugs(files: Record<string, any>) {
 
 
     // ✅ Fix missing exports in context files
-if (path.includes("context/") || path.includes("Context.")) {
+    if (path.includes("context/") || path.includes("Context.")) {
 
-  // 1. Fix createContext — ensure named export exists
-  const contextMatches = [...content.matchAll(
-    /const\s+([A-Z][a-zA-Z]*Context)\s*=\s*createContext/g
-  )];
+      // 1. Fix createContext — ensure named export exists
+      const contextMatches = [...content.matchAll(
+        /const\s+([A-Z][a-zA-Z]*Context)\s*=\s*createContext/g
+      )];
 
-  for (const match of contextMatches) {
-    const contextName = match[1];
+      for (const match of contextMatches) {
+        const contextName = match[1];
 
-    const isNamedExported = new RegExp(
-      `export\\s+const\\s+${contextName}|export\\s*\\{[^}]*${contextName}`
-    ).test(content);
+        const isNamedExported = new RegExp(
+          `export\\s+const\\s+${contextName}|export\\s*\\{[^}]*${contextName}`
+        ).test(content);
 
-    const isDefaultExported = new RegExp(
-      `export\\s+default\\s+${contextName}`
-    ).test(content);
+        const isDefaultExported = new RegExp(
+          `export\\s+default\\s+${contextName}`
+        ).test(content);
 
-    if (!isNamedExported) {
-      if (isDefaultExported) {
-        content = content.replace(
-          `export default ${contextName}`,
-          `export { ${contextName} };\nexport default ${contextName}`
-        );
-      } else {
-        content = content.replace(
-          `const ${contextName} = createContext`,
-          `export const ${contextName} = createContext`
-        );
+        if (!isNamedExported) {
+          if (isDefaultExported) {
+            content = content.replace(
+              `export default ${contextName}`,
+              `export { ${contextName} };\nexport default ${contextName}`
+            );
+          } else {
+            content = content.replace(
+              `const ${contextName} = createContext`,
+              `export const ${contextName} = createContext`
+            );
+          }
+          console.log(`🔧 fixCommonBugs: added named export for ${contextName} in ${path}`);
+        }
       }
-      console.log(`🔧 fixCommonBugs: added named export for ${contextName} in ${path}`);
+
+      // 2. Fix Provider components — ensure named export exists
+      const providerMatches = [...content.matchAll(
+        /const\s+([A-Z][a-zA-Z]*Provider)\s*=/g
+      )];
+
+      for (const match of providerMatches) {
+        const providerName = match[1];
+        const isExported = new RegExp(
+          `export\\s+const\\s+${providerName}|export\\s+default\\s+${providerName}|export\\s*\\{[^}]*${providerName}`
+        ).test(content);
+
+        if (!isExported) {
+          content = content.replace(
+            `const ${providerName} =`,
+            `export const ${providerName} =`
+          );
+          console.log(`🔧 fixCommonBugs: added export for ${providerName} in ${path}`);
+        }
+      }
+
+      // 3. Fix useX hooks inside context files — ensure named export exists
+      const hookMatches = [...content.matchAll(
+        /const\s+(use[A-Z][a-zA-Z]*)\s*=/g
+      )];
+
+      for (const match of hookMatches) {
+        const hookName = match[1];
+        const isExported = new RegExp(
+          `export\\s+const\\s+${hookName}|export\\s+default\\s+${hookName}|export\\s*\\{[^}]*${hookName}`
+        ).test(content);
+
+        if (!isExported) {
+          content = content.replace(
+            `const ${hookName} =`,
+            `export const ${hookName} =`
+          );
+          console.log(`🔧 fixCommonBugs: added export for ${hookName} in ${path}`);
+        }
+      }
     }
-  }
 
-  // 2. Fix Provider components — ensure named export exists
-  const providerMatches = [...content.matchAll(
-    /const\s+([A-Z][a-zA-Z]*Provider)\s*=/g
-  )];
+    // ✅ Fix .toFixed() on potentially undefined values
+    // e.g. product.price.toFixed(2) → (product?.price ?? 0).toFixed(2)
+    content = content.replace(
+      /(\w+(?:\??\.\w+)+)\.toFixed\(/g,
+      "($1 ?? 0).toFixed("
+    );
 
-  for (const match of providerMatches) {
-    const providerName = match[1];
-    const isExported = new RegExp(
-      `export\\s+const\\s+${providerName}|export\\s+default\\s+${providerName}|export\\s*\\{[^}]*${providerName}`
-    ).test(content);
+    // ✅ Fix .map() on potentially undefined arrays in JSX
+    // e.g. {products.map( → {(products ?? []).map(
+    content = content.replace(
+      /\{(\s*)([a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*)*)\.map\(/g,
+      (_: any, space: any, expr: any) => {
+        // Don't double-wrap already safe expressions
+        if (expr.startsWith("(") || expr.includes("??")) return `{${space}${expr}.map(`;
+        return `{${space}(${expr} ?? []).map(`;
+      }
+    );
 
-    if (!isExported) {
-      content = content.replace(
-        `const ${providerName} =`,
-        `export const ${providerName} =`
-      );
-      console.log(`🔧 fixCommonBugs: added export for ${providerName} in ${path}`);
-    }
-  }
-
-  // 3. Fix useX hooks inside context files — ensure named export exists
-  const hookMatches = [...content.matchAll(
-    /const\s+(use[A-Z][a-zA-Z]*)\s*=/g
-  )];
-
-  for (const match of hookMatches) {
-    const hookName = match[1];
-    const isExported = new RegExp(
-      `export\\s+const\\s+${hookName}|export\\s+default\\s+${hookName}|export\\s*\\{[^}]*${hookName}`
-    ).test(content);
-
-    if (!isExported) {
-      content = content.replace(
-        `const ${hookName} =`,
-        `export const ${hookName} =`
-      );
-      console.log(`🔧 fixCommonBugs: added export for ${hookName} in ${path}`);
-    }
-  }
-}
+    // ✅ Fix direct numeric prop display without null guard
+    // e.g. {product.price} → {product?.price ?? 0}
+    // Only in JSX expression positions (inside {})
+    content = content.replace(
+      /\{([a-zA-Z_$][a-zA-Z0-9_$]*)\.price\}/g,
+      "{$1?.price ?? 0}"
+    );
+    content = content.replace(
+      /\{([a-zA-Z_$][a-zA-Z0-9_$]*)\.count\}/g,
+      "{$1?.count ?? 0}"
+    );
+    content = content.replace(
+      /\{([a-zA-Z_$][a-zA-Z0-9_$]*)\.quantity\}/g,
+      "{$1?.quantity ?? 0}"
+    );
+    content = content.replace(
+      /\{([a-zA-Z_$][a-zA-Z0-9_$]*)\.total\}/g,
+      "{$1?.total ?? 0}"
+    );
+    content = content.replace(
+      /\{([a-zA-Z_$][a-zA-Z0-9_$]*)\.amount\}/g,
+      "{$1?.amount ?? 0}"
+    );
 
 
     // ✅ ADD — strip axios import and usage (axios not in package.json)
