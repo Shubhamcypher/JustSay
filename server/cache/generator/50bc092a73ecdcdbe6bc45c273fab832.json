@@ -1,0 +1,5 @@
+{
+  "files": {
+    "package.json": "{\n  \"name\": \"job-posting-website\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A job posting platform with user registration, job search, and employer dashboards.\",\n  \"main\": \"src/main.tsx\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"serve\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"react\": \"^18.0.0\",\n    \"react-dom\": \"^18.0.0\",\n    \"react-router-dom\": \"^6.0.0\"\n  },\n  \"devDependencies\": {\n    \"@types/react\": \"^18.0.0\",\n    \"@types/react-dom\": \"^18.0.0\",\n    \"typescript\": \"^4.0.0\",\n    \"vite\": \"^3.0.0\"\n  }\n}"
+  }
+}
