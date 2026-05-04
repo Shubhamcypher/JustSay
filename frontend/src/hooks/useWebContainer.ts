@@ -33,6 +33,7 @@ export function useWebContainer(
   onLog?: (msg: string, type?: string) => void,
   addStep?: (text: string, type?: string) => any,
   completeStep?: (step: any) => void,
+
 ) {
   const [url, setUrl] = useState<string | null>(null);
 
@@ -304,11 +305,15 @@ export function useWebContainer(
       // 🔄 NORMAL FILE SYNC
       try {
         for (const [path, file] of Object.entries(files)) {
+          // Only sync files that arrived from the stream
+          // Skip files the user has manually edited (fromStream = false)
+          if (file.fromStream !== true) continue;
           const content =
             typeof file === "string"
               ? file
               : file?.content || "";
-
+          // Skip empty content — file is still being streamed
+          if (!content || content.length < 10) continue;
           await wc.fs.writeFile(path, content);
         }
       } catch (err) {
