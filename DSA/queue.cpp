@@ -1,4 +1,6 @@
 #include <iostream>
+#include <queue>
+#include <deque>
 
 using namespace std;
 
@@ -66,14 +68,31 @@ class Queue{
 
 
 int main(){
-    Queue q;
+    queue<int>q;
+    deque<int>dq;
+    // Queue q;
 
-    q.push(1);
-    q.push(2);
-    q.push(3);
+    // q.push(1);
+    // q.push(2);
+    // q.push(3);
+    // q.push(3);
+    // q.push(3);
 
-    while(!q.empty()){
-        cout<< q.front() << " ";
-        q.pop();
+    // while(!q.empty()){
+    //     cout<< q.front() << " ";
+    //     q.pop();
+    // }
+
+    dq.push_front(4);
+    dq.push_front(3);
+    dq.push_front(2);
+    dq.push_front(1);
+    dq.push_back(5);
+    dq.push_back(6);
+
+    while(!dq.empty()){
+        cout<< dq.front() << " ";
+        dq.pop_front();
+        // cout<< dq.back() << " "; //6 5 4 3 2 1 with pop back
     }
 }
