@@ -23,7 +23,7 @@ class circularQueue{
             return;
         }
 
-        r = (r+1)%cap;
+        r = (r+1)%cap; //for maintaining circular nature
         arr[r]=val;
         currSize++;
     }
@@ -34,7 +34,7 @@ class circularQueue{
             return;
         }
 
-        f = (f+1)%cap;
+        f = (f+1)%cap; //for maintaining circular nature
         currSize--;
     }
 
