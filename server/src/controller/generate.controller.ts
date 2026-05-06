@@ -279,10 +279,15 @@ export const generateProject = async (req: Request, res: Response) => {
                 [projectId, filePath, content]
             );
 
-            // Only stream if not already sent
             if (!streamedPaths.has(filePath)) {
+                // Decide event type:
+                // - template files (never streamed by AI) → "file" 
+                // - files changed by fix pipeline → "patch" (silent, no animation)
+                const wasStreamedRaw = preFixSnapshot.hasOwnProperty(filePath);
+                const eventType = wasStreamedRaw ? "patch" : "file";
+
                 res.write(
-                    `data: ${JSON.stringify({ type: "file", path: filePath, content })}\n\n`
+                    `data: ${JSON.stringify({ type: eventType, path: filePath, content })}\n\n`
                 );
             }
         }
