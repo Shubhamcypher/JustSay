@@ -34,6 +34,7 @@ export function useWebContainer(
   addStep?: (text: string, type?: string) => any,
   completeStep?: (step: any) => void,
 
+
 ) {
   const [url, setUrl] = useState<string | null>(null);
 
@@ -217,17 +218,9 @@ export function useWebContainer(
           console.log("🔁 PKG RAW:", files["package.json"]);
 
           // 🔥 FORCE package.json write again
-          const pkgContent =
-            typeof files["package.json"] === "string"
-              ? files["package.json"]
-              : files["package.json"]?.content;
-
-
-
-          console.log("🔁 PKG CONTENT:", pkgContent);
-
           const s4 = addStep?.("Rewriting package.json", "build");
-          await wc.fs.writeFile("package.json", pkgContent);
+          await wc.fs.writeFile("package.json", TEMPLATE_PACKAGE_JSON);
+          console.log("🔁 package.json rewritten from hardcoded template");
           completeStep?.(s4);
 
           // verify disk
@@ -304,17 +297,15 @@ export function useWebContainer(
 
       // 🔄 NORMAL FILE SYNC
       try {
-        for (const [path, file] of Object.entries(files)) {
-          // Only sync files that arrived from the stream
-          // Skip files the user has manually edited (fromStream = false)
-          if (file.fromStream !== true) continue;
+        for (const [filePath, file] of Object.entries(files)) {
           const content =
             typeof file === "string"
               ? file
-              : file?.content || "";
-          // Skip empty content — file is still being streamed
+              : (file as any)?.content || "";
+
           if (!content || content.length < 10) continue;
-          await wc.fs.writeFile(path, content);
+
+          await wc.fs.writeFile(filePath, content);
         }
       } catch (err) {
         console.error("❌ SYNC ERROR:", err);
