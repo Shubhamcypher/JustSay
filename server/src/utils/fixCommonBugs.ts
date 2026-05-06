@@ -240,8 +240,61 @@ export function fixCommonBugs(files: Record<string, any>) {
       content = content.replace(/axios\.\w+/g, "fetch");
     }
 
+    // ✅ Remove commented-out import lines — Vite still resolves them
+    content = content.replace(
+      /\/\/\s*import\s+\w+\s+from\s+['"][^'"]+['"];?\n?/g,
+      ""
+    );
+
+    // ✅ Fix invalid // comments inside JSX return blocks
+    content = content.replace(
+      /(\s*)\/\/\s*(<[A-Z][^>\n]*(?:\/?>|\n[^<]*\/>))/g,
+      "$1{/* $2 */}"
+    );
+
     newFiles[path].content = content;
   }
 
+  // ✅ Remove imports of files that don't exist in the project
+  const knownComponents = new Set(
+    Object.keys(newFiles)
+      .filter(p => p.endsWith(".tsx") || p.endsWith(".ts"))
+      .map(p => p.split("/").pop()?.replace(/\.(tsx|ts)$/, ""))
+      .filter(Boolean)
+  );
+
+  for (const p in newFiles) {
+    let c = newFiles[p]?.content;
+    if (typeof c !== "string") continue;
+
+    c = c.replace(
+      /import\s+(\w+)\s+from\s+['"](\.[^'"]+)['"]/g,
+      (fullMatch: string, importName: string, importPath: string) => {
+        const fileName = importPath.split("/").pop()?.replace(/\.(tsx|ts)$/, "") || "";
+        if (!knownComponents.has(fileName) && !knownComponents.has(importName)) {
+          console.warn(`🔧 Removed missing import: ${importName} from ${importPath} in ${p}`);
+          return `// removed: import ${importName} — file not in project`;
+        }
+        return fullMatch;
+      }
+    );
+
+    // Remove JSX usage of removed imports
+    const removed = [...c.matchAll(/\/\/ removed: import (\w+)/g)].map((m: any) => m[1]);
+    for (const name of removed) {
+      c = c.replace(
+        new RegExp(`<${name}[^>]*\\/\\s*>`, "g"),
+        `{/* ${name} not available */}`
+      );
+      c = c.replace(
+        new RegExp(`<${name}[^>]*>[\\s\\S]*?<\\/${name}>`, "g"),
+        `{/* ${name} not available */}`
+      );
+    }
+
+    newFiles[p].content = c;
+  }
+
   return newFiles;
+
 }
