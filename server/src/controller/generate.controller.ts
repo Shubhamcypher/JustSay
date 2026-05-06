@@ -168,6 +168,12 @@ export const generateProject = async (req: Request, res: Response) => {
             streamedPaths
         );
 
+        const preFixSnapshot: Record<string, string> = {};
+        for (const [p, f] of Object.entries(result.files)) {
+            preFixSnapshot[p] = typeof f === "string" ? f : (f as any)?.content || "";
+        }
+
+
         let files = await runStage("normalizeFiles (initial)", () =>
             normalizeFiles(result.files)
         );
