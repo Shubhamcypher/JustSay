@@ -58,6 +58,7 @@ export default function Builder() {
         },
         addStep,
         completeStep,
+        userSelectedRef
     );
 
 
