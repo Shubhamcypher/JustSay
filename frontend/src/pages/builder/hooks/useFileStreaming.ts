@@ -130,6 +130,11 @@ export function useFileStreaming({
                         processQueue().catch(console.error);
                     }
 
+                    if (data.type === "patch") {
+                        // Silent fix — no animation, no step, no queue
+                        updateFileContent(data.path, data.content, true);
+                    }
+
                     if (data.type === "done") {
                         // Server says all files sent — wait for queue to fully drain before finalizing
                         const waitForQueue = async () => {
