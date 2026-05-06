@@ -222,8 +222,14 @@ export const generateProject = async (req: Request, res: Response) => {
 
         // files = enforceFileStructure(files, "enhanceFiles");
 
-        streamedPaths.clear();
-        console.log("🔄 Cleared streamedPaths — fixed files will be re-streamed");
+        for (const [filePath, file] of Object.entries(files)) {
+            const fixedContent = typeof file === "string" ? file : (file as any)?.content || "";
+            const originalContent = preFixSnapshot[filePath] || "";
+            if (fixedContent !== originalContent) {
+                streamedPaths.delete(filePath);
+                console.log(`🔄 Re-streaming changed file: ${filePath}`);
+            }
+        }
 
         files = await runStage("injectImages", () =>
             injectImages(files, prompt)
