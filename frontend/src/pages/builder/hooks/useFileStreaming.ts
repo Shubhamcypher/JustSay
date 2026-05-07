@@ -41,6 +41,19 @@ export function useFileStreaming({
         updateFileContent(path, fullContent, true); // ensure final content is exactly correct
     };
 
+    // Animated patch — same as streamFile but silent (no step, no focus switch)
+    const streamPatch = async (path: string, fullContent: string) => {
+        let buffer = "";
+        for (let i = 0; i < fullContent.length; i++) {
+            buffer += fullContent[i];
+            if (i % 5 === 0 || i === fullContent.length - 1) {
+                updateFileContent(path, buffer, true);
+                await sleep(3); // slightly faster than initial stream
+            }
+        }
+        updateFileContent(path, fullContent, true);
+    };
+
     // Extracts filename from path for display in steps e.g. "src/Button.tsx" → "Button.tsx"
     const getFileName = (path: string) =>
         path.split("/").pop();
@@ -131,8 +144,10 @@ export function useFileStreaming({
                     }
 
                     if (data.type === "patch") {
-                        // Silent fix — no animation, no step, no queue
-                        updateFileContent(data.path, data.content, true);
+                        // Animate the fix — stream character by character like vibe coding
+                        // but no step added, no active file switch
+                        streamPatch(data.path, data.content).catch(console.error);
+
                     }
 
                     if (data.type === "done") {
