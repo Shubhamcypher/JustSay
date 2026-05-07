@@ -240,6 +240,49 @@ export function fixCommonBugs(files: Record<string, any>) {
       content = content.replace(/axios\.\w+/g, "fetch");
     }
 
+    // ─── DATA HANDLING ────────────────────────────────────────────
+
+    // 1. axios → fetch (keep for future backend compatibility)
+    if (content.includes("axios")) {
+      // ... your existing axios block unchanged ...
+    }
+
+    // 2. Strip fetch API calls inside useEffect
+    content = content.replace(
+      /useEffect\s*\(\s*\(\s*\)\s*=>\s*\{[\s\S]*?fetch\s*\([^)]+\)[\s\S]*?\}\s*,\s*\[[^\]]*\]\s*\)/g,
+      (match:any) => {
+        const setterMatch = match.match(/\.(then|set)\s*\(?\s*(set[A-Z]\w*)/);
+        const setter = setterMatch?.[2];
+        return setter
+          ? `// API call removed — ${setter} should use mock data from useState initial value`
+          : `// API call removed — use mock data instead`;
+      }
+    );
+
+    // 3. Strip standalone await fetch() calls
+    content = content.replace(
+      /const\s+\w+\s*=\s*await\s+fetch\s*\(['"]/g,
+      "// const data = await fetch('"
+    );
+
+    // 4. Remove api utility imports
+    content = content.replace(
+      /import\s+\{[^}]+\}\s+from\s+['"][^'"]*\/utils\/api['"]\n?/g,
+      ""
+    );
+    content = content.replace(
+      /import\s+\{[^}]+\}\s+from\s+['"][^'"]*\/api\/[^'"]+['"]\n?/g,
+      ""
+    );
+
+    // 5. Ensure list hooks default to empty array not null
+    if (path.includes("hooks/") && content.includes("fetch(")) {
+      content = content.replace(
+        /const\s+\[(\w+),\s*set\1\]\s*=\s*useState\s*\(\s*(?:null|undefined)\s*\)/g,
+        (match:any) => match.replace(/useState\s*\(\s*(?:null|undefined)\s*\)/, "useState([])")
+      );
+    }
+
     // ✅ Remove commented-out import lines — Vite still resolves them
     content = content.replace(
       /\/\/\s*import\s+\w+\s+from\s+['"][^'"]+['"];?\n?/g,
