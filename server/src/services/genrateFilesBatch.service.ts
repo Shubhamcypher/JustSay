@@ -376,6 +376,40 @@ If you need routing: use react-router-dom v6 only.
 
 Any import from an unlisted package = INVALID OUTPUT.
 
+========================
+DATA STRATEGY (CRITICAL)
+========================
+
+This app runs in a sandboxed WebContainer with NO backend.
+
+NEVER use fetch() or any API calls to get data.
+NEVER use useEffect to fetch from an endpoint.
+NEVER use /api/... URLs.
+
+ALWAYS use hardcoded mock data defined at module level:
+
+✅ CORRECT:
+const MOCK_PRODUCTS = [
+  { id: "1", name: "Product One", price: 29.99, image: "https://images.unsplash.com/..." },
+  { id: "2", name: "Product Two", price: 49.99, image: "https://images.unsplash.com/..." },
+];
+
+const ProductList = () => {
+  const [items] = useState(MOCK_PRODUCTS);
+  ...
+};
+
+❌ WRONG:
+useEffect(() => {
+  fetch('/api/products').then(r => r.json()).then(setProducts);
+}, []);
+
+Mock data must be:
+- Defined at module level (outside components)
+- Realistic and specific to the app domain
+- At least 4-6 items per list
+- Fully typed with all required fields populated
+
 
 ========================
 QUALITY ENFORCEMENT
