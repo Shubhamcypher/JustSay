@@ -242,15 +242,10 @@ export function fixCommonBugs(files: Record<string, any>) {
 
     // ─── DATA HANDLING ────────────────────────────────────────────
 
-    // 1. axios → fetch (keep for future backend compatibility)
-    if (content.includes("axios")) {
-      // ... your existing axios block unchanged ...
-    }
-
-    // 2. Strip fetch API calls inside useEffect
+    // 1. Strip fetch API calls inside useEffect
     content = content.replace(
       /useEffect\s*\(\s*\(\s*\)\s*=>\s*\{[\s\S]*?fetch\s*\([^)]+\)[\s\S]*?\}\s*,\s*\[[^\]]*\]\s*\)/g,
-      (match:any) => {
+      (match: any) => {
         const setterMatch = match.match(/\.(then|set)\s*\(?\s*(set[A-Z]\w*)/);
         const setter = setterMatch?.[2];
         return setter
@@ -259,13 +254,13 @@ export function fixCommonBugs(files: Record<string, any>) {
       }
     );
 
-    // 3. Strip standalone await fetch() calls
+    // 2. Strip standalone await fetch() calls
     content = content.replace(
       /const\s+\w+\s*=\s*await\s+fetch\s*\(['"]/g,
       "// const data = await fetch('"
     );
 
-    // 4. Remove api utility imports
+    // 3. Remove api utility imports
     content = content.replace(
       /import\s+\{[^}]+\}\s+from\s+['"][^'"]*\/utils\/api['"]\n?/g,
       ""
@@ -275,12 +270,34 @@ export function fixCommonBugs(files: Record<string, any>) {
       ""
     );
 
-    // 5. Ensure list hooks default to empty array not null
+    // 4. Ensure list hooks default to empty array not null
     if (path.includes("hooks/") && content.includes("fetch(")) {
       content = content.replace(
         /const\s+\[(\w+),\s*set\1\]\s*=\s*useState\s*\(\s*(?:null|undefined)\s*\)/g,
-        (match:any) => match.replace(/useState\s*\(\s*(?:null|undefined)\s*\)/, "useState([])")
+        (match: any) => match.replace(/useState\s*\(\s*(?:null|undefined)\s*\)/, "useState([])")
       );
+    }
+
+    // ✅ Fix constants.ts — remove API_ENDPOINTS, ensure mock data exists
+    if (path.includes("utils/constants") || path.endsWith("constants.ts")) {
+      // Remove API_ENDPOINTS — no backend
+      content = content.replace(
+        /export\s+const\s+API_ENDPOINTS\s*=\s*\{[^}]*\};?\n?/g,
+        "// API_ENDPOINTS removed — no backend\n"
+      );
+
+      // If constants has no MOCK_ arrays at all, add a generic fallback
+      if (!content.includes("export const MOCK_")) {
+        content += `\n
+// Auto-generated mock data fallback
+export const MOCK_ITEMS = [
+  { id: "1", name: "Item One", price: 29.99, image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400", description: "A great item" },
+  { id: "2", name: "Item Two", price: 49.99, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400", description: "Premium quality" },
+  { id: "3", name: "Item Three", price: 19.99, image: "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?w=400", description: "Best value" },
+  { id: "4", name: "Item Four", price: 39.99, image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400", description: "Top rated" },
+];
+`;
+      }
     }
 
     // ✅ Remove commented-out import lines — Vite still resolves them
@@ -298,6 +315,20 @@ export function fixCommonBugs(files: Record<string, any>) {
     newFiles[path].content = content;
   }
 
+
+  // ✅ Fix files importing MOCK_ names not exported from constants
+  const constantsFile = Object.keys(newFiles).find(p =>
+    p.includes("utils/constants") || p.endsWith("constants.ts")
+  );
+
+  const exportedMocks = new Set<string>();
+  if (constantsFile) {
+    const constantsContent = newFiles[constantsFile]?.content || "";
+    const mockMatches = [...constantsContent.matchAll(/export\s+const\s+(MOCK_\w+)/g)];
+    for (const m of mockMatches) exportedMocks.add(m[1]);
+  }
+
+
   // ✅ Remove imports of files that don't exist in the project
   const knownComponents = new Set(
     Object.keys(newFiles)
@@ -309,6 +340,51 @@ export function fixCommonBugs(files: Record<string, any>) {
   for (const p in newFiles) {
     let c = newFiles[p]?.content;
     if (typeof c !== "string") continue;
+
+    const pendingInlineMocks: string[] = [];  // 👈 collect mocks here
+
+    c = c.replace(
+      /import\s+\{([^}]+)\}\s+from\s+['"][^'"]*constants['"]/g,
+      (fullMatch: string, importList: string) => {
+        const imports = importList.split(",").map((s: string) => s.trim()).filter(Boolean);
+        const validImports: string[] = [];
+        const missingMocks: string[] = [];
+
+        for (const imp of imports) {
+          const cleanImp = imp.split(" as ")[0].trim();
+          if (cleanImp.startsWith("MOCK_") && !exportedMocks.has(cleanImp)) {
+            missingMocks.push(cleanImp);
+          } else {
+            validImports.push(imp);
+          }
+        }
+
+        if (missingMocks.length === 0) return fullMatch;
+
+        // Collect inline mocks to prepend later
+        missingMocks.forEach(mockName => {
+          const entityName = mockName.replace("MOCK_", "").toLowerCase();
+          pendingInlineMocks.push(`const ${mockName} = [
+  { id: "1", name: "${entityName} One", price: 29.99, image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400", description: "Quality ${entityName}" },
+  { id: "2", name: "${entityName} Two", price: 49.99, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400", description: "Premium ${entityName}" },
+  { id: "3", name: "${entityName} Three", price: 19.99, image: "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?w=400", description: "Affordable ${entityName}" },
+  { id: "4", name: "${entityName} Four", price: 39.99, image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400", description: "Popular ${entityName}" },
+];`);
+        });
+
+        console.log(`🔧 fixCommonBugs: inlined missing mocks [${missingMocks.join(", ")}] in ${p}`);
+
+        if (validImports.length === 0) {
+          return `// removed empty constants import`;
+        }
+        return `import { ${validImports.join(", ")} } from '../utils/constants'`;
+      }
+    );
+
+    // Prepend collected mocks AFTER replace is done
+    if (pendingInlineMocks.length > 0) {
+      c = pendingInlineMocks.join("\n\n") + "\n\n" + c;
+    }
 
     c = c.replace(
       /import\s+(\w+)\s+from\s+['"](\.[^'"]+)['"]/g,
@@ -335,7 +411,7 @@ export function fixCommonBugs(files: Record<string, any>) {
       );
     }
 
-    newFiles[p].content = c;
+    newFiles[p].content = c;  // 👈 single assignment at the end
   }
 
   return newFiles;
