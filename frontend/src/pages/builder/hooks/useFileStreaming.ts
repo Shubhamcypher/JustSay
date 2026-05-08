@@ -5,6 +5,7 @@ export function useFileStreaming({
     addFile,
     updateFileContent,
     setActiveFile,
+    activeFile,
     addStep,
     completeStep,
     files,
@@ -17,6 +18,7 @@ export function useFileStreaming({
     const isStreamingRef = useRef(false);           // prevents processQueue from running concurrently
     const hasStreamStartedRef = useRef(false);      // tracks if first file has arrived, used to trigger step completions
     const filesRef = useRef(files);                 // mirror of files state in a ref so waitForQueue can snapshot it without stale closure
+    const activeFileRef = useRef<string | null>(null); //for active file tracking
 
     const sleep = (ms: number) =>
         new Promise((res) => setTimeout(res, ms));
@@ -41,17 +43,72 @@ export function useFileStreaming({
         updateFileContent(path, fullContent, true); // ensure final content is exactly correct
     };
 
-    // Animated patch — same as streamFile but silent (no step, no focus switch)
-    const streamPatch = async (path: string, fullContent: string) => {
-        let buffer = "";
-        for (let i = 0; i < fullContent.length; i++) {
-            buffer += fullContent[i];
-            if (i % 5 === 0 || i === fullContent.length - 1) {
-                updateFileContent(path, buffer, true);
-                await sleep(3); // slightly faster than initial stream
+    // Diff-aware animated patch — only animates changed lines
+    const streamPatch = async (path: string, newContent: string) => {
+        const oldContent = filesRef.current[path]?.content || "";
+        const oldLines = oldContent.split("\n");
+        const newLines = newContent.split("\n");
+
+        // Find which line indices changed
+        const changedIndices: number[] = [];
+        const maxLen = Math.max(oldLines.length, newLines.length);
+        for (let i = 0; i < maxLen; i++) {
+            if (oldLines[i] !== newLines[i]) {
+                changedIndices.push(i);
             }
         }
-        updateFileContent(path, fullContent, true);
+
+        // Nothing changed — skip entirely
+        if (changedIndices.length === 0) return;
+
+        // Remember what file user was viewing
+        const previousFile = activeFileRef.current;
+
+        // Switch editor to patched file so user sees the animation
+        if (!userSelectedRef.current) {
+            setActiveFile(path);
+            await sleep(50); // let editor switch before animating
+        }
+
+        // Work on a copy of old lines
+        const workingLines = [...oldLines];
+
+        for (const lineIdx of changedIndices) {
+            const targetLine = newLines[lineIdx] ?? "";
+
+            // Line was deleted
+            if (lineIdx >= newLines.length) {
+                workingLines.splice(lineIdx, 1);
+                updateFileContent(path, workingLines.join("\n"), true);
+                await sleep(30);
+                continue;
+            }
+
+            // Animate the new line character by character
+            let charBuffer = "";
+            for (let i = 0; i < targetLine.length; i++) {
+                charBuffer += targetLine[i];
+                workingLines[lineIdx] = charBuffer;
+
+                if (i % 3 === 0 || i === targetLine.length - 1) {
+                    updateFileContent(path, workingLines.join("\n"), true);
+                    await sleep(8);
+                }
+            }
+
+            // Ensure line is exactly correct
+            workingLines[lineIdx] = targetLine;
+            await sleep(20); // brief pause between changed lines
+        }
+
+        // Final write — guarantee exact content
+        updateFileContent(path, newContent, true);
+
+        // Switch back to what user was viewing
+        if (!userSelectedRef.current && previousFile && previousFile !== path) {
+            await sleep(300); // let user see the completed patch
+            setActiveFile(previousFile);
+        }
     };
 
     // Extracts filename from path for display in steps e.g. "src/Button.tsx" → "Button.tsx"
@@ -144,10 +201,7 @@ export function useFileStreaming({
                     }
 
                     if (data.type === "patch") {
-                        // Animate the fix — stream character by character like vibe coding
-                        // but no step added, no active file switch
                         streamPatch(data.path, data.content).catch(console.error);
-
                     }
 
                     if (data.type === "done") {
@@ -184,6 +238,11 @@ export function useFileStreaming({
     useEffect(() => {
         filesRef.current = files;
     }, [files]);
+
+    // Keep activeFileRef in sync
+    useEffect(() => {
+        activeFileRef.current = activeFile;
+    }, [activeFile]);
 
     return {
         isReady,    // consumer uses this to know when to show the final result
