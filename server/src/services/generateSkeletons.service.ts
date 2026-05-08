@@ -1,6 +1,5 @@
-// src/services/generateSkeletons.service.ts
-
 import OpenAI from "openai";
+import { getCachedSkeletons, setCachedSkeletons } from "../utils/cacheAiResponse";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -25,6 +24,9 @@ export async function generateSkeletons(
     prompt: string,
     features: string[]
 ): Promise<SkeletonMap> {
+    const cached = getCachedSkeletons(prompt);
+    if (cached) { console.log("⚡ Cache hit: skeletons"); return cached; }
+
     console.log("🦴 Generating skeletons for", files.length, "files");
 
     const res = await openai.chat.completions.create({
@@ -101,6 +103,22 @@ Also add to skeleton rules:
 - Props that are numbers must include: propName: number — never optional unless truly optional
 - If a component receives a product/item prop, its shape must be fully specified in props list
   e.g. ["product: { id: string; name: string; price: number; image: string }"]
+
+- For src/utils/constants.ts specifically:
+  - Its exports list MUST include every named export that ANY other file imports from it
+  - Scan ALL other files imports sections and collect everything they need from constants
+  - ALWAYS include mock data arrays named MOCK_[ENTITY] matching the app domain
+    e.g. for ecommerce: ["MOCK_PRODUCTS", "MOCK_CATEGORIES"]
+    e.g. for job board: ["MOCK_JOBS", "MOCK_COMPANIES", "JOB_CATEGORIES"]
+    e.g. for streaming: ["MOCK_VIDEOS", "MOCK_CHANNELS", "VIDEO_CATEGORIES"]
+  - Mock data shape MUST exactly match the props expected by components that use them
+  - NEVER include API_ENDPOINTS — this app has no backend
+  - Every MOCK_ array must have at least 4-6 realistic items fully typed
+
+- For ALL files that import from constants:
+  - Their imports list MUST use the exact same names listed in constants.ts exports
+  - NEVER import a name that is not in constants.ts exports list
+  - If a page needs mock data, import it from constants — do not redefine it locally
 `
             },
             {
@@ -129,5 +147,6 @@ Return the skeleton map for all files above.
     }
 
     console.log("🦴 Skeletons generated:", Object.keys(json.skeletons).length, "files");
+    setCachedSkeletons(prompt, json.skeletons);
     return json.skeletons as SkeletonMap;
 }
