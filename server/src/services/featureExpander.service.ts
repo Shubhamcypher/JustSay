@@ -1,10 +1,13 @@
 import OpenAI from "openai";
+import { getCachedFeatures, setCachedFeatures } from "../utils/cacheAiResponse";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function expandFeatures(prompt: string) {
+  const cached = getCachedFeatures(prompt);
+  if (cached) return cached;
   const res = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     temperature: 0.3,
@@ -37,5 +40,8 @@ Rules:
     ]
   });
 
-  return JSON.parse(res.choices[0].message.content || "{}");
+  const result = JSON.parse(res.choices[0].message.content || "{}");
+  setCachedFeatures(prompt, result);
+  return result;
+
 }
