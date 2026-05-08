@@ -11,6 +11,7 @@ import { loadTemplate } from "../utils/loadTemplate";
 import { expandFeatures } from "../services/featureExpander.service";
 import { enhanceUX } from "../services/enhanceUX.service";
 import { generateSkeletons, SkeletonMap } from "../services/generateSkeletons.service";
+import { getCachedFinalFiles, setCachedFinalFiles } from "../utils/cacheAiResponse";
 // import { streamLLM } from "../services/ai.service";
 // import { parseStream } from "../utils/streamParser";
 // import { enhanceFiles } from "../utils/enhanceFiles";
@@ -71,7 +72,33 @@ export const generateProject = async (req: Request, res: Response) => {
             })}\n\n`
         );
 
+        const cachedFinal = getCachedFinalFiles(prompt);
+        if (cachedFinal) {
+            console.log("⚡ Full cache hit — skipping all LLM calls");
 
+            for (const [filePath, file] of Object.entries(cachedFinal)) {
+                const content = file?.content || "";
+
+                res.write(`data: ${JSON.stringify({
+                    type: "file",
+                    path: filePath,
+                    content
+                })}\n\n`);
+
+                await pool.query(
+                    `INSERT INTO project_files (project_id, path, content) VALUES ($1,$2,$3)`,
+                    [projectId, filePath, content]
+                );
+            }
+
+            await pool.query(
+                `UPDATE projects SET status=$1 WHERE id=$2`,
+                ["completed", projectId]
+            );
+            res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+            res.end();
+            return;
+        }
 
         //Generate in chunk
         async function generateInChunks(
@@ -259,6 +286,8 @@ export const generateProject = async (req: Request, res: Response) => {
 
         files = { ...files, ...safeTemplate };
         files = enforceFileStructure(files, "template merge");
+
+        setCachedFinalFiles(prompt, files);
 
         // 🔥 LOOP ONLY FOR SAVING + STREAMING
         const allPaths = Object.keys(files);
