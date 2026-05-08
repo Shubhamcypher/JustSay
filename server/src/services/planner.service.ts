@@ -1,32 +1,27 @@
 import OpenAI from "openai";
-import { getCache, setCache } from "../utils/cacheAiResponse";
+import { getCachedPlan, setCachedPlan } from "../utils/cacheAiResponse";
+
 
 //for OpenAI
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 
 export async function planProject(prompt: string) {
-    console.log("DEV_MODE:", process.env.DEV_MODE);
-    const cacheKey = prompt;
-    if (process.env.DEV_MODE === "true") {
-        const cached = getCache("planner", cacheKey);
-        if (cached) {
-            console.log("⚡ Using cached planner");
-            return cached;
-        }
-    }
-    for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-            const res = await openai.chat.completions.create({
-                model: "gpt-4o-mini", //open ai model for planner
-                temperature: 0,
-                response_format: { type: "json_object" },
-                messages: [
-                    {
-                        role: "system",
-                        content: `
+  console.log("DEV_MODE:", process.env.DEV_MODE);
+  const cached = getCachedPlan(prompt);
+  if (cached) return cached;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await openai.chat.completions.create({
+        model: "gpt-4o-mini", //open ai model for planner
+        temperature: 0,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: `
 You are an expert frontend architect.
 
 Your job is to decide ALL required files for the project.
@@ -100,32 +95,32 @@ If Tailwind config files or CDN scripts are added, output is invalid
 
 No explanation. Only JSON.
 `
-                    },
-                    {
-                        role: "user",
-                        content: prompt,
-                    },
-                ],
-            });
-            console.log("Planning done");
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      });
+      console.log("Planning done");
 
 
-            const raw = res.choices[0].message.content || "";
-            console.log("RAW PLANNER OUTPUT:", raw);
-            const json = JSON.parse(raw);
+      const raw = res.choices[0].message.content || "";
+      console.log("RAW PLANNER OUTPUT:", raw);
+      const json = JSON.parse(raw);
 
-            if (!Array.isArray(json.files)) {
-                throw new Error("Invalid format");
-            }
-            // ✅ SAVE CACHE
-            setCache("planner", cacheKey, json);
-            return json;
-        } catch (err) {
-            console.log("Planning error: ", err);
+      if (!Array.isArray(json.files)) {
+        throw new Error("Invalid format");
+      }
+      // ✅ SAVE CACHE
+      setCachedPlan(prompt, json);
+      return json;
+    } catch (err) {
+      console.log("Planning error: ", err);
 
-            console.warn(`⚠️ Planner retry ${attempt + 1}`);
-        }
+      console.warn(`⚠️ Planner retry ${attempt + 1}`);
     }
+  }
 
-    throw new Error("Planner failed");
+  throw new Error("Planner failed");
 }
