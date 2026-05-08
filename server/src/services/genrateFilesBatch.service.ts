@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { getCache, setCache } from "../utils/cacheAiResponse";
 import { SkeletonMap } from "./generateSkeletons.service";
 import {
   REFERENCE_NAVBAR,
@@ -38,13 +37,15 @@ function formatSkeletonContext(
     const s = allSkeletons[filePath];
     if (!s) continue;
     lines.push(`
-File: ${filePath}
-Component: ${s.componentName}
-Purpose: ${s.purpose}
-Props: ${s.props.length ? s.props.join(", ") : "none"}
-Sections to build: ${s.sections.join(" | ")}
-Imports from project: ${s.imports.length ? s.imports.join(", ") : "none"}
-`);
+      File: ${filePath}
+      Component: ${s.componentName}
+      Purpose: ${s.purpose}
+      Props: ${s.props.length ? s.props.join(", ") : "none"}
+      Sections to build: ${s.sections.join(" | ")}
+      Imports from project: ${s.imports.length ? s.imports.join(", ") : "none"}
+      Must export: ${s.exports?.length ? s.exports.join(", ") : "default only"}
+      Mock data to define: ${s.mockData?.length ? s.mockData.join(", ") : "none"}
+      `);
   }
 
   return lines.join("\n");
@@ -53,15 +54,6 @@ Imports from project: ${s.imports.length ? s.imports.join(", ") : "none"}
 
 
 export async function generateFilesBatch(files: any, prompt: string, skeletons: SkeletonMap = {}, features: string[] = []) {
-  const cacheKey = prompt + files.join(",");
-
-  if (process.env.DEV_MODE === "true") {
-    const cached = getCache("generator", cacheKey);
-    if (cached) {
-      console.log("⚡ Using cached generator");
-      return cached;
-    }
-  }
 
 
   const skeletonContext = Object.keys(skeletons).length > 0
@@ -356,6 +348,29 @@ INFRASTRUCTURE NOTE:
 - You should focus ONLY on application logic and UI components
 - Do NOT override core infrastructure files unless necessary
 
+========================
+IMPORT DISCIPLINE (CRITICAL)
+========================
+
+You may ONLY import from:
+1. Files listed in FILES TO GENERATE NOW
+2. Files listed in FULL PROJECT STRUCTURE context
+3. react, react-dom, react-router-dom packages
+
+NEVER import from a file not in the project structure.
+NEVER import Hero, Modal, Button, or any component unless it exists in the file list.
+If you want a Hero section — build it inline in the page component.
+
+For constants imports specifically:
+- ONLY import names that are listed in constants.ts "Must export" field above
+- If constants.ts exports MOCK_PRODUCTS — import MOCK_PRODUCTS
+- If constants.ts does NOT export MOCK_PRODUCTS — do NOT import it, define it inline
+- Mismatched imports = INVALID OUTPUT
+
+Self-check before returning:
+- For every import statement, verify the imported file/export exists in project structure
+- For every constants import, verify the name is in constants.ts exports list
+
 
 ========================
 ALLOWED PACKAGES (STRICT)
@@ -477,7 +492,6 @@ Return ONLY this JSON shape, nothing else:
     if (!json.files || typeof json.files !== "object") {
       throw new Error("Invalid batch response");
     }
-    setCache("generator", cacheKey, json);
     return json;
   } catch {
     console.warn("⚠️ JSON parse failed in generateFilesBatch");
