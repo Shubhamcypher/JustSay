@@ -1,0 +1,266 @@
+{
+  "src/App.tsx": {
+    "componentName": "App",
+    "purpose": "Root component, sets up routing and global providers",
+    "props": [],
+    "sections": [
+      "Router setup",
+      "AppRoutes",
+      "Global layout"
+    ],
+    "imports": [
+      "src/routes/AppRoutes.tsx",
+      "src/context/CartContext.tsx",
+      "src/components/Header.tsx",
+      "src/components/Footer.tsx"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/routes/AppRoutes.tsx": {
+    "componentName": "AppRoutes",
+    "purpose": "Defines all application routes and associated components",
+    "props": [],
+    "sections": [
+      "Route definitions"
+    ],
+    "imports": [
+      "src/pages/HomePage.tsx",
+      "src/pages/ProductPage.tsx",
+      "src/pages/CartPage.tsx"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/pages/HomePage.tsx": {
+    "componentName": "HomePage",
+    "purpose": "Landing page showing product grid and promotional banners",
+    "props": [],
+    "sections": [
+      "Hero banner with CTA",
+      "Promotional banners",
+      "Category filter bar",
+      "Product card grid",
+      "Loading skeleton",
+      "Empty state"
+    ],
+    "imports": [
+      "src/components/ProductCard.tsx",
+      "src/context/CartContext.tsx"
+    ],
+    "mockData": [
+      "MOCK_PRODUCTS: { id: string; name: string; price: number; image: string; category: string; rating: number }[]",
+      "MOCK_CATEGORIES: string[]"
+    ],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/pages/ProductPage.tsx": {
+    "componentName": "ProductPage",
+    "purpose": "Displays detailed information about a single product",
+    "props": [
+      "productId: string"
+    ],
+    "sections": [
+      "Product image gallery",
+      "Product details",
+      "Customer reviews",
+      "Related products"
+    ],
+    "imports": [
+      "src/components/ProductCard.tsx"
+    ],
+    "mockData": [
+      "MOCK_PRODUCT_DETAILS: { id: string; name: string; price: number; description: string; images: string[]; reviews: { user: string; rating: number; comment: string }[] }"
+    ],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/pages/CartPage.tsx": {
+    "componentName": "CartPage",
+    "purpose": "Displays the user's shopping cart with options to modify items",
+    "props": [],
+    "sections": [
+      "Cart item list",
+      "Order summary",
+      "Checkout button",
+      "Empty state"
+    ],
+    "imports": [
+      "src/components/CartItem.tsx",
+      "src/context/CartContext.tsx"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/Header.tsx": {
+    "componentName": "Header",
+    "purpose": "Displays the main navigation bar with search and user account options",
+    "props": [],
+    "sections": [
+      "Logo",
+      "Navigation links",
+      "Search bar",
+      "User account menu"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/Footer.tsx": {
+    "componentName": "Footer",
+    "purpose": "Displays footer information including links and contact details",
+    "props": [],
+    "sections": [
+      "Footer links",
+      "Contact information",
+      "Social media icons"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/ProductCard.tsx": {
+    "componentName": "ProductCard",
+    "purpose": "Displays a brief overview of a product in a grid",
+    "props": [
+      "product: { id: string; name: string; price: number; image: string; rating: number }"
+    ],
+    "sections": [
+      "Product image",
+      "Product name",
+      "Product price",
+      "Rating"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/CartItem.tsx": {
+    "componentName": "CartItem",
+    "purpose": "Displays a single item in the shopping cart with quantity controls",
+    "props": [
+      "item: { id: string; name: string; price: number; quantity: number; image: string }"
+    ],
+    "sections": [
+      "Item image",
+      "Item details",
+      "Quantity controls",
+      "Remove button"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/context/CartContext.tsx": {
+    "componentName": "CartProvider",
+    "purpose": "Global cart state with context, reducer and custom hook",
+    "props": [
+      "children: ReactNode"
+    ],
+    "sections": [
+      "CartContext creation",
+      "cartReducer",
+      "CartProvider component",
+      "useCart hook"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "CartContext",
+      "CartProvider",
+      "useCart"
+    ]
+  },
+  "src/hooks/useCart.ts": {
+    "componentName": "useCart",
+    "purpose": "Custom hook to access and manipulate cart state",
+    "props": [],
+    "sections": [
+      "Cart state access",
+      "Cart manipulation functions"
+    ],
+    "imports": [
+      "src/context/CartContext.tsx"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/utils/constants.ts": {
+    "componentName": "constants",
+    "purpose": "Defines application-wide constants",
+    "props": [],
+    "sections": [
+      "API endpoints",
+      "Category list",
+      "Payment options"
+    ],
+    "imports": [],
+    "mockData": [
+      "CATEGORIES: string[]",
+      "API_BASE_URL: string",
+      "PAYMENT_OPTIONS: string[]"
+    ],
+    "exports": [
+      "CATEGORIES",
+      "API_BASE_URL",
+      "PAYMENT_OPTIONS"
+    ]
+  },
+  "src/main.tsx": {
+    "componentName": "main",
+    "purpose": "Entry point for the React application",
+    "props": [],
+    "sections": [
+      "ReactDOM render"
+    ],
+    "imports": [
+      "src/App.tsx"
+    ],
+    "mockData": [],
+    "exports": []
+  },
+  "index.html": {
+    "componentName": "index",
+    "purpose": "HTML template for the React application",
+    "props": [],
+    "sections": [
+      "HTML structure",
+      "Root div"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": []
+  },
+  "package.json": {
+    "componentName": "package",
+    "purpose": "Defines project dependencies and scripts",
+    "props": [],
+    "sections": [
+      "Dependencies",
+      "Scripts",
+      "Project metadata"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": []
+  }
+}

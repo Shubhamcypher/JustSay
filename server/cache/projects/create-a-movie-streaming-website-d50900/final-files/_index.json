@@ -1,0 +1,21 @@
+[
+  "src/App.tsx",
+  "src/routes/AppRoutes.tsx",
+  "src/pages/HomePage.tsx",
+  "src/pages/MovieDetailsPage.tsx",
+  "src/pages/WatchlistPage.tsx",
+  "src/components/Header.tsx",
+  "src/components/Footer.tsx",
+  "src/components/MovieCard.tsx",
+  "src/components/Loader.tsx",
+  "src/context/ThemeContext.tsx",
+  "src/hooks/useFetchMovies.ts",
+  "src/utils/constants.ts",
+  "src/main.tsx",
+  "index.html",
+  "package.json",
+  "postcss.config.js",
+  "src/index.css",
+  "tailwind.config.js",
+  "vite.config.ts"
+]
