@@ -119,6 +119,17 @@ Also add to skeleton rules:
   - Their imports list MUST use the exact same names listed in constants.ts exports
   - NEVER import a name that is not in constants.ts exports list
   - If a page needs mock data, import it from constants — do not redefine it locally
+
+- App.tsx skeleton MUST follow these rules:
+  - If Header.tsx is in the file list → imports MUST include "src/components/Header.tsx"
+  - If Footer.tsx is in the file list → imports MUST include "src/components/Footer.tsx"
+  - sections MUST include: "Header", "main content via AppRoutes", "Footer"
+  - NEVER list sections as just ["Router setup", "AppRoutes"] — that is INVALID
+  - exports: ["default"]
+
+- Pages (HomePage, MovieDetailsPage, etc.) must NOT include Header or Footer in their imports
+  - Header and Footer are global — rendered once in App.tsx only
+  - Pages only render their own content
 `
             },
             {
