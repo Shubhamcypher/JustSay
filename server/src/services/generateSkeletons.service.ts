@@ -143,6 +143,31 @@ ${features.map((f, i) => `${i + 1}. ${f}`).join("\n")}
 Files to skeleton:
 ${files.join("\n")}
 
+IMPORTANT — For src/utils/constants.ts:
+Carefully look at EVERY other file in the list above.
+Think about what data each file will need from constants.
+The constants.ts exports list must include ALL of the following that are relevant:
+
+- MOCK_[ENTITY] arrays for every data type the app uses
+  e.g. MOCK_VIDEOS, MOCK_CHANNELS, MOCK_CATEGORIES, TRENDING_VIDEOS,
+       RECOMMENDED_VIDEOS, RELATED_VIDEOS, CHANNEL_VIDEOS, MOCK_USERS,
+       MOCK_PRODUCTS, MOCK_JOBS, MOCK_ORDERS — whatever fits this app
+- Navigation arrays: NAV_LINKS, SIDEBAR_LINKS if Header/Sidebar exists
+- Filter/category arrays: CATEGORIES, GENRES, TAGS if browsing/filtering exists
+- Any shared config the app needs
+
+For a video streaming app, constants.ts MUST export at minimum:
+MOCK_VIDEOS, NAV_LINKS, MOCK_CATEGORIES, TRENDING_VIDEOS, RECOMMENDED_VIDEOS, RELATED_VIDEOS
+
+For an ecommerce app, constants.ts MUST export at minimum:
+MOCK_PRODUCTS, MOCK_CATEGORIES, NAV_LINKS, MOCK_ORDERS
+
+For a job board app, constants.ts MUST export at minimum:
+MOCK_JOBS, MOCK_COMPANIES, JOB_CATEGORIES, NAV_LINKS
+
+Always err on the side of MORE exports from constants — it is better to export
+something unused than to miss something needed.
+
 Return the skeleton map for all files above.
 `
             }
