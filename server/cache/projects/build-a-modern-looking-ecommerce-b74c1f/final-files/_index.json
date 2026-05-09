@@ -1,0 +1,21 @@
+[
+  "src/App.tsx",
+  "src/main.tsx",
+  "src/routes/AppRoutes.tsx",
+  "src/pages/HomePage.tsx",
+  "src/pages/ProductPage.tsx",
+  "src/pages/CartPage.tsx",
+  "src/components/Header.tsx",
+  "src/components/Footer.tsx",
+  "src/components/ProductCard.tsx",
+  "src/components/CartItem.tsx",
+  "src/context/CartContext.tsx",
+  "src/hooks/useCart.ts",
+  "src/utils/constants.ts",
+  "index.html",
+  "package.json",
+  "postcss.config.js",
+  "src/index.css",
+  "tailwind.config.js",
+  "vite.config.ts"
+]

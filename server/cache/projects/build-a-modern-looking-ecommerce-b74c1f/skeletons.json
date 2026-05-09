@@ -1,0 +1,234 @@
+{
+  "src/App.tsx": {
+    "componentName": "App",
+    "purpose": "Root component, sets up routing and global providers",
+    "props": [],
+    "sections": [
+      "Header",
+      "main content via AppRoutes",
+      "Footer"
+    ],
+    "imports": [
+      "src/routes/AppRoutes.tsx",
+      "src/context/CartContext.tsx",
+      "src/components/Header.tsx",
+      "src/components/Footer.tsx"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/main.tsx": {
+    "componentName": "Main",
+    "purpose": "Entry point for the React application",
+    "props": [],
+    "sections": [
+      "ReactDOM render",
+      "StrictMode"
+    ],
+    "imports": [
+      "src/App.tsx"
+    ],
+    "mockData": [],
+    "exports": []
+  },
+  "src/routes/AppRoutes.tsx": {
+    "componentName": "AppRoutes",
+    "purpose": "Defines all the routes for the application",
+    "props": [],
+    "sections": [
+      "Route definitions for HomePage, ProductPage, CartPage"
+    ],
+    "imports": [
+      "src/pages/HomePage.tsx",
+      "src/pages/ProductPage.tsx",
+      "src/pages/CartPage.tsx"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/pages/HomePage.tsx": {
+    "componentName": "HomePage",
+    "purpose": "Landing page showing product grid and hero section",
+    "props": [],
+    "sections": [
+      "Hero banner with CTA",
+      "Category filter bar",
+      "Product card grid",
+      "Loading skeleton",
+      "Empty state"
+    ],
+    "imports": [
+      "src/components/ProductCard.tsx",
+      "src/utils/constants.ts"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/pages/ProductPage.tsx": {
+    "componentName": "ProductPage",
+    "purpose": "Displays detailed information about a selected product",
+    "props": [],
+    "sections": [
+      "Product image and details",
+      "Add to cart button",
+      "Related products"
+    ],
+    "imports": [
+      "src/components/ProductCard.tsx",
+      "src/utils/constants.ts"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/pages/CartPage.tsx": {
+    "componentName": "CartPage",
+    "purpose": "Displays the user's shopping cart with items and total price",
+    "props": [],
+    "sections": [
+      "Cart item list",
+      "Total price calculation",
+      "Checkout button"
+    ],
+    "imports": [
+      "src/components/CartItem.tsx",
+      "src/hooks/useCart.ts"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/Header.tsx": {
+    "componentName": "Header",
+    "purpose": "Displays the navigation bar with links to different pages",
+    "props": [],
+    "sections": [
+      "Logo",
+      "Navigation links",
+      "Cart icon with item count"
+    ],
+    "imports": [
+      "src/utils/constants.ts"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/Footer.tsx": {
+    "componentName": "Footer",
+    "purpose": "Displays the footer with additional links and information",
+    "props": [],
+    "sections": [
+      "Footer links",
+      "Social media icons",
+      "Copyright notice"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/ProductCard.tsx": {
+    "componentName": "ProductCard",
+    "purpose": "Displays a single product's image, name, and price",
+    "props": [
+      "product: { id: string; name: string; price: number; image: string }"
+    ],
+    "sections": [
+      "Product image",
+      "Product name",
+      "Product price",
+      "Add to cart button"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/CartItem.tsx": {
+    "componentName": "CartItem",
+    "purpose": "Displays a single item in the shopping cart with quantity controls",
+    "props": [
+      "item: { id: string; name: string; price: number; quantity: number; image: string }"
+    ],
+    "sections": [
+      "Item image",
+      "Item name",
+      "Item price",
+      "Quantity controls",
+      "Remove button"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/context/CartContext.tsx": {
+    "componentName": "CartProvider",
+    "purpose": "Global cart state with context, reducer and custom hook",
+    "props": [
+      "children: ReactNode"
+    ],
+    "sections": [
+      "CartContext creation",
+      "cartReducer",
+      "CartProvider component",
+      "useCart hook"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "CartContext",
+      "CartProvider",
+      "useCart"
+    ]
+  },
+  "src/hooks/useCart.ts": {
+    "componentName": "useCart",
+    "purpose": "Custom hook to access and manipulate the cart state",
+    "props": [],
+    "sections": [
+      "Access cart context",
+      "Provide cart manipulation functions"
+    ],
+    "imports": [
+      "src/context/CartContext.tsx"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/utils/constants.ts": {
+    "componentName": "constants",
+    "purpose": "Holds all the constant values and mock data for the app",
+    "props": [],
+    "sections": [
+      "Mock data arrays",
+      "Navigation links"
+    ],
+    "imports": [],
+    "mockData": [
+      "MOCK_PRODUCTS: { id: string; name: string; price: number; image: string }[]",
+      "MOCK_CATEGORIES: string[]",
+      "NAV_LINKS: { name: string; path: string }[]"
+    ],
+    "exports": [
+      "MOCK_PRODUCTS",
+      "MOCK_CATEGORIES",
+      "NAV_LINKS"
+    ]
+  }
+}
