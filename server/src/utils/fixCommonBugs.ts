@@ -87,6 +87,44 @@ export function fixCommonBugs(files: Record<string, any>) {
         /\s*<\/(?:BrowserRouter|HashRouter|MemoryRouter|Router)>/g,
         ""
       );
+
+      // ✅ Inject Header if it exists in the project but isn't imported
+      const hasHeader = Object.keys(newFiles).some(p =>
+        p.endsWith("Header.tsx") || p.endsWith("Header.jsx")
+      );
+      const importsHeader = content.includes("import Header");
+
+      if (hasHeader && !importsHeader) {
+        content = `import Header from './components/Header';\n` + content;
+
+        // Try to inject before AppRoutes inside a wrapper tag
+        if (/<AppRoutes\s*\/>/.test(content)) {
+          content = content.replace(
+            /<AppRoutes\s*\/>/,
+            `<Header />\n        <AppRoutes />`
+          );
+        }
+        console.log(`🔧 fixCommonBugs: injected Header into App.tsx`);
+      }
+
+      // ✅ Inject Footer if it exists in the project but isn't imported
+      const hasFooter = Object.keys(newFiles).some(p =>
+        p.endsWith("Footer.tsx") || p.endsWith("Footer.jsx")
+      );
+      const importsFooter = content.includes("import Footer");
+
+      if (hasFooter && !importsFooter) {
+        content = `import Footer from './components/Footer';\n` + content;
+
+        // Inject after AppRoutes
+        if (/<AppRoutes\s*\/>/.test(content)) {
+          content = content.replace(
+            /<AppRoutes\s*\/>/,
+            `<AppRoutes />\n        <Footer />`
+          );
+        }
+        console.log(`🔧 fixCommonBugs: injected Footer into App.tsx`);
+      }
     }
 
 
