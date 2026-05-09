@@ -396,11 +396,21 @@ NEVER import from a file not in the project structure.
 NEVER import Hero, Modal, Button, or any component unless it exists in the file list.
 If you want a Hero section — build it inline in the page component.
 
-For constants imports specifically:
-- ONLY import names that are listed in constants.ts "Must export" field above
-- If constants.ts exports MOCK_PRODUCTS — import MOCK_PRODUCTS
-- If constants.ts does NOT export MOCK_PRODUCTS — do NOT import it, define it inline
-- Mismatched imports = INVALID OUTPUT
+For constants.ts specifically — when generating this file:
+- Export EVERY named constant that ANY other file in the project will need
+- Look at the "Must export" field in the skeleton context above — export ALL of them
+- Each MOCK_ array must have 4-6 fully typed realistic items
+- Each item must have ALL fields that components using it will access
+  e.g. for videos: { id, title, thumbnail, views, duration, channelName, channelAvatar }
+  e.g. for products: { id, name, price, image, description, rating, category }
+  e.g. for jobs: { id, title, company, location, salary, type, description, postedAt }
+- NAV_LINKS must match the actual routes defined in AppRoutes.tsx
+- NEVER export API_ENDPOINTS
+- It is better to export MORE than needed than to miss something
+
+For constants imports in other files:
+- ONLY import names listed in constants.ts "Must export" field
+- If a name is not listed — define it inline in that file instead
 
 Self-check before returning:
 - For every import statement, verify the imported file/export exists in project structure
