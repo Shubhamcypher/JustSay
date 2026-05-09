@@ -1,0 +1,21 @@
+[
+  "src/App.tsx",
+  "src/routes/AppRoutes.tsx",
+  "src/pages/HomePage.tsx",
+  "src/pages/VideoPage.tsx",
+  "src/pages/ChannelPage.tsx",
+  "src/components/Header.tsx",
+  "src/components/Footer.tsx",
+  "src/components/VideoCard.tsx",
+  "src/components/Sidebar.tsx",
+  "src/context/VideoContext.tsx",
+  "src/hooks/useFetchVideos.ts",
+  "src/utils/constants.ts",
+  "src/main.tsx",
+  "index.html",
+  "package.json",
+  "postcss.config.js",
+  "src/index.css",
+  "tailwind.config.js",
+  "vite.config.ts"
+]

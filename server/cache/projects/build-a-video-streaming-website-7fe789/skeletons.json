@@ -1,0 +1,261 @@
+{
+  "src/App.tsx": {
+    "componentName": "App",
+    "purpose": "Root component, sets up routing and global providers",
+    "props": [],
+    "sections": [
+      "Header",
+      "main content via AppRoutes",
+      "Footer"
+    ],
+    "imports": [
+      "src/routes/AppRoutes.tsx",
+      "src/context/VideoContext.tsx",
+      "src/components/Header.tsx",
+      "src/components/Footer.tsx"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/routes/AppRoutes.tsx": {
+    "componentName": "AppRoutes",
+    "purpose": "Defines the main application routes",
+    "props": [],
+    "sections": [
+      "Route definitions for HomePage, VideoPage, ChannelPage"
+    ],
+    "imports": [
+      "src/pages/HomePage.tsx",
+      "src/pages/VideoPage.tsx",
+      "src/pages/ChannelPage.tsx"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/pages/HomePage.tsx": {
+    "componentName": "HomePage",
+    "purpose": "Landing page displaying trending and recommended videos",
+    "props": [],
+    "sections": [
+      "Hero banner",
+      "Trending videos section",
+      "Recommended videos section",
+      "Loading skeleton",
+      "Empty state"
+    ],
+    "imports": [
+      "src/components/VideoCard.tsx",
+      "src/hooks/useFetchVideos.ts",
+      "src/utils/constants.ts"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/pages/VideoPage.tsx": {
+    "componentName": "VideoPage",
+    "purpose": "Displays a single video with comments and related videos",
+    "props": [],
+    "sections": [
+      "Video player",
+      "Comments section",
+      "Related videos sidebar",
+      "Loading skeleton",
+      "Empty state"
+    ],
+    "imports": [
+      "src/components/VideoCard.tsx",
+      "src/hooks/useFetchVideos.ts",
+      "src/utils/constants.ts"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/pages/ChannelPage.tsx": {
+    "componentName": "ChannelPage",
+    "purpose": "Displays a user's channel with their videos and playlists",
+    "props": [],
+    "sections": [
+      "Channel header",
+      "Uploaded videos grid",
+      "Playlists section",
+      "Loading skeleton",
+      "Empty state"
+    ],
+    "imports": [
+      "src/components/VideoCard.tsx",
+      "src/hooks/useFetchVideos.ts",
+      "src/utils/constants.ts"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/Header.tsx": {
+    "componentName": "Header",
+    "purpose": "Navigation bar with links to main sections and search bar",
+    "props": [],
+    "sections": [
+      "Logo",
+      "Navigation links",
+      "Search bar",
+      "User profile menu"
+    ],
+    "imports": [
+      "src/utils/constants.ts"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/Footer.tsx": {
+    "componentName": "Footer",
+    "purpose": "Displays site information and links to policies",
+    "props": [],
+    "sections": [
+      "Site links",
+      "Social media links",
+      "Legal information"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/VideoCard.tsx": {
+    "componentName": "VideoCard",
+    "purpose": "Displays a video thumbnail and basic info",
+    "props": [
+      "video: { id: string; title: string; thumbnail: string; views: number; duration: string }"
+    ],
+    "sections": [
+      "Thumbnail",
+      "Video title",
+      "Views and duration"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/components/Sidebar.tsx": {
+    "componentName": "Sidebar",
+    "purpose": "Displays navigation links and categories",
+    "props": [],
+    "sections": [
+      "Navigation links",
+      "Category list"
+    ],
+    "imports": [
+      "src/utils/constants.ts"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/context/VideoContext.tsx": {
+    "componentName": "VideoProvider",
+    "purpose": "Global video state with context and custom hook",
+    "props": [
+      "children: ReactNode"
+    ],
+    "sections": [
+      "VideoContext creation",
+      "videoReducer",
+      "VideoProvider component",
+      "useVideo hook"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": [
+      "VideoContext",
+      "VideoProvider",
+      "useVideo"
+    ]
+  },
+  "src/hooks/useFetchVideos.ts": {
+    "componentName": "useFetchVideos",
+    "purpose": "Custom hook to fetch videos from an API or mock data",
+    "props": [],
+    "sections": [
+      "Fetch logic",
+      "State management for loading and error"
+    ],
+    "imports": [
+      "src/utils/constants.ts"
+    ],
+    "mockData": [],
+    "exports": [
+      "default"
+    ]
+  },
+  "src/utils/constants.ts": {
+    "componentName": "constants",
+    "purpose": "Holds application-wide constants and mock data",
+    "props": [],
+    "sections": [
+      "Mock data arrays",
+      "Theme constants"
+    ],
+    "imports": [],
+    "mockData": [
+      "MOCK_VIDEOS: { id: string; title: string; thumbnail: string; views: number; duration: string }[]",
+      "MOCK_CATEGORIES: string[]"
+    ],
+    "exports": [
+      "MOCK_VIDEOS",
+      "MOCK_CATEGORIES"
+    ]
+  },
+  "src/main.tsx": {
+    "componentName": "main",
+    "purpose": "Entry point for the React application",
+    "props": [],
+    "sections": [
+      "ReactDOM.render call",
+      "StrictMode wrapper"
+    ],
+    "imports": [
+      "src/App.tsx"
+    ],
+    "mockData": [],
+    "exports": []
+  },
+  "index.html": {
+    "componentName": "index",
+    "purpose": "HTML template for the React application",
+    "props": [],
+    "sections": [
+      "HTML structure",
+      "Root div for React"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": []
+  },
+  "package.json": {
+    "componentName": "package",
+    "purpose": "Defines project dependencies and scripts",
+    "props": [],
+    "sections": [
+      "Dependencies",
+      "Scripts",
+      "Project metadata"
+    ],
+    "imports": [],
+    "mockData": [],
+    "exports": []
+  }
+}
