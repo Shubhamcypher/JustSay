@@ -316,25 +316,79 @@ export function fixCommonBugs(files: Record<string, any>) {
       );
     }
 
-    // ✅ Fix constants.ts — remove API_ENDPOINTS, ensure mock data exists
+    // ✅ Fix constants.ts — remove API_ENDPOINTS, ensure all needed exports exist
     if (path.includes("utils/constants") || path.endsWith("constants.ts")) {
+
       // Remove API_ENDPOINTS — no backend
       content = content.replace(
         /export\s+const\s+API_ENDPOINTS\s*=\s*\{[^}]*\};?\n?/g,
         "// API_ENDPOINTS removed — no backend\n"
       );
 
-      // If constants has no MOCK_ arrays at all, add a generic fallback
-      if (!content.includes("export const MOCK_")) {
-        content += `\n
-// Auto-generated mock data fallback
-export const MOCK_ITEMS = [
-  { id: "1", name: "Item One", price: 29.99, image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400", description: "A great item" },
-  { id: "2", name: "Item Two", price: 49.99, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400", description: "Premium quality" },
-  { id: "3", name: "Item Three", price: 19.99, image: "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?w=400", description: "Best value" },
-  { id: "4", name: "Item Four", price: 39.99, image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400", description: "Top rated" },
+      // Scan ALL other files to find what they import from constants
+      // and add any missing exports
+      const neededExports = new Set<string>();
+
+      for (const otherPath in newFiles) {
+        if (otherPath === path) continue;
+        const otherContent = newFiles[otherPath]?.content || "";
+
+        // Find imports from constants in other files
+        const importMatch = otherContent.match(
+          /import\s+\{([^}]+)\}\s+from\s+['"][^'"]*constants['"]/
+        );
+        if (importMatch) {
+          importMatch[1].split(",").forEach((imp: string) => {
+            const name = imp.trim().split(" as ")[0].trim();
+            if (name) neededExports.add(name);
+          });
+        }
+      }
+
+      // For each needed export, add it if missing from constants
+      for (const exportName of neededExports) {
+        if (content.includes(`export const ${exportName}`)) continue;
+
+        console.log(`🔧 fixCommonBugs: adding missing export ${exportName} to constants`);
+
+        if (exportName === "NAV_LINKS") {
+          content += `
+export const NAV_LINKS = [
+  { to: '/', label: 'Home' },
+  { to: '/browse', label: 'Browse' },
+  { to: '/trending', label: 'Trending' },
+  { to: '/library', label: 'Library' },
 ];
 `;
+        } else if (exportName === "MOCK_CATEGORIES" || exportName === "CATEGORIES") {
+          content += `
+export const ${exportName} = [
+  'All', 'Trending', 'Music', 'Gaming', 'Education', 'Sports', 'Technology', 'Lifestyle'
+];
+`;
+        } else if (exportName.startsWith("MOCK_") || exportName.startsWith("TRENDING_") ||
+          exportName.startsWith("RECOMMENDED_") || exportName.startsWith("RELATED_") ||
+          exportName.startsWith("CHANNEL_")) {
+          // Generic video/item array
+          const entityName = exportName.replace(/^(MOCK_|TRENDING_|RECOMMENDED_|RELATED_|CHANNEL_)/, "").toLowerCase();
+          content += `
+export const ${exportName} = [
+  { id: '1', title: '${entityName} One', thumbnail: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400', views: 123456, duration: '12:34', channelName: 'Channel One', description: 'A great ${entityName}' },
+  { id: '2', title: '${entityName} Two', thumbnail: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400', views: 654321, duration: '08:20', channelName: 'Channel Two', description: 'Another great ${entityName}' },
+  { id: '3', title: '${entityName} Three', thumbnail: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400', views: 789012, duration: '15:45', channelName: 'Channel Three', description: 'Premium ${entityName} content' },
+  { id: '4', title: '${entityName} Four', thumbnail: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400', views: 234567, duration: '05:30', channelName: 'Channel Four', description: 'Popular ${entityName}' },
+];
+`;
+        } else {
+          // Generic fallback for any other export name
+          content += `
+export const ${exportName} = [
+  { id: '1', name: '${exportName} Item One', value: 'item-1' },
+  { id: '2', name: '${exportName} Item Two', value: 'item-2' },
+  { id: '3', name: '${exportName} Item Three', value: 'item-3' },
+];
+`;
+        }
       }
     }
 
