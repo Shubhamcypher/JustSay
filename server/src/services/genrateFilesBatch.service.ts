@@ -348,6 +348,41 @@ INFRASTRUCTURE NOTE:
 - You should focus ONLY on application logic and UI components
 - Do NOT override core infrastructure files unless necessary
 
+
+========================
+LAYOUT RULES (CRITICAL)
+========================
+
+If Header.tsx exists in the project file list:
+- App.tsx MUST import Header and render it ABOVE AppRoutes
+- NEVER skip Header — every page must have navigation visible
+
+If Footer.tsx exists in the project file list:
+- App.tsx MUST import Footer and render it BELOW AppRoutes
+- NEVER skip Footer
+
+Correct App.tsx structure when Header and Footer exist:
+
+import Header from './components/Header';
+import Footer from './components/Footer';
+import AppRoutes from './routes/AppRoutes';
+
+const App = () => (
+  <ProviderWrapper>
+    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+      <Header />
+      <main className="flex-1">
+        <AppRoutes />
+      </main>
+      <Footer />
+    </div>
+  </ProviderWrapper>
+);
+
+Pages (HomePage, MovieDetailsPage etc.) must NOT include their own Header or Footer.
+Header and Footer are global — rendered once in App.tsx only.
+Violation of this rule = INVALID OUTPUT.
+
 ========================
 IMPORT DISCIPLINE (CRITICAL)
 ========================
