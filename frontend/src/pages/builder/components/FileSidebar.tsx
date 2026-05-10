@@ -1,8 +1,171 @@
-import React, { useEffect } from "react";
+// import React, { useEffect } from "react";
+// import { Icon } from "@iconify/react";
+
+
+// // maps file extensions to their corresponding iconify icon strings
+// function getFileIcon(name: string) {
+//     if (name.endsWith(".tsx")) return "logos:react";
+//     if (name.endsWith(".ts")) return "logos:typescript-icon";
+//     if (name.endsWith(".js")) return "logos:javascript";
+//     if (name.endsWith(".json")) return "vscode-icons:file-type-json";
+//     if (name.endsWith(".html")) return "vscode-icons:file-type-html";
+//     if (name.endsWith(".css")) return "vscode-icons:file-type-css";
+//     return "vscode-icons:default-file";
+// }
+
+// // Wrapped in React.memo so it only re-renders when its props actually change.
+// // This matters because FileTree calls itself recursively — without memo,
+// // opening one folder would re-render the entire tree.
+// const FileTree = React.memo(function FileTree({
+//     tree,
+//     activeFile,
+//     setActiveFile,
+//     openFolders,
+//     setOpenFolders,
+//     parentPath = "",
+//     level = 0,
+// }: any) {
+
+//     //for sorting folder first then files
+//     const sortEntries = (entries: [string, any][]) => {
+//         return entries.sort(([a, nodeA], [b, nodeB]) => {
+//             if (nodeA.type === "folder" && nodeB.type !== "folder") return -1;
+//             if (nodeA.type !== "folder" && nodeB.type === "folder") return 1;
+//             return a.localeCompare(b); //in folder files should be alphabetical order
+//         });
+//     };
+
+//     return (
+//         <div>
+//             {sortEntries(Object.entries(tree)).map(([name, node]: any) => {
+//                 const fullPath = parentPath ? `${parentPath}/${name}` : name;
+//                 const isOpen = openFolders[fullPath];
+
+//                 //FILE
+//                 if (node.type === "file") {
+//                     return (
+//                         <div
+//                             key={fullPath}
+//                             onClick={() => setActiveFile(node.path)}
+//                             className={`flex items-center gap-2 px-2 py-1 text-sm cursor-pointer rounded
+//                 ${activeFile === node.path ? "bg-gray-600" : "hover:bg-white/5"}
+//               `}
+//                             style={{ paddingLeft: 8 + level * 12 }}
+//                         >
+//                             <Icon icon={getFileIcon(name)} width={16} />
+//                             <span className="text-sm">{name}</span>
+//                         </div>
+//                     );
+//                 }
+
+
+
+//                 //FOLDER
+//                 return (
+//                     <div key={fullPath}>
+//                         <div
+//                             // Toggle this folder's open state in the openFolders map
+//                             onClick={() =>
+//                                 setOpenFolders((prev: any) => ({
+//                                     ...prev,
+//                                     [fullPath]: !prev[fullPath], // flip true ↔ false
+//                                 }))
+//                             }
+//                             className="flex items-center gap-2 px-2 py-1 text-sm cursor-pointer hover:bg-white/5 rounded"
+//                             style={{ paddingLeft: level * 12 }}
+//                         >
+//                             <Icon
+//                                 icon={isOpen ? "mdi:chevron-down" : "mdi:chevron-right"}
+//                                 width={16}
+//                             />
+//                             <span>{name}</span>
+//                         </div>
+//                         {/*if folder clicks and make isOpen true, make FileTree recursion of one level deeper file tree*/}
+//                         {isOpen && (
+//                             <FileTree
+//                                 tree={node.children}  // one level deeper subtree
+//                                 activeFile={activeFile}
+//                                 setActiveFile={setActiveFile}
+//                                 openFolders={openFolders}
+//                                 setOpenFolders={setOpenFolders}
+//                                 parentPath={fullPath} //  // e.g. "src/components" at first parentPath was "", then "src" and now "src/component"
+//                                 level={level + 1} //to indent one step deeper
+//                             />
+//                         )}
+//                     </div>
+//                 );
+//             })}
+//         </div>
+//     );
+// });
+
+// export default function FileSidebar({
+//     fileTree,
+//     activeFile,
+//     setActiveFile,
+// }: any) {
+//     // Tracks open/closed state for every folder, keyed by full path
+//     // e.g. { "src": true, "src/components": false }
+//     const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>(
+//         {}
+//     );
+
+//     useEffect(() => {
+//         // Recursively walks the tree and collects every folder's full path
+//         function collectFolders(tree: any, parent = ""): string[] {
+//             let folders: string[] = [];
+
+//             Object.entries(tree).forEach(([name, node]: any) => {
+//                 const fullPath = parent ? `${parent}/${name}` : name;
+
+//                 if (node.type === "folder") {
+//                     folders.push(fullPath);
+//                     // Recurse into children to collect nested folders too
+//                     folders = folders.concat(collectFolders(node.children, fullPath));
+//                 }
+//             });
+
+//             return folders;
+//         }
+
+//         const allFolders = collectFolders(fileTree);
+
+//         setOpenFolders((prev) => {
+//             const updated = { ...prev };
+
+//             for (const folder of allFolders) {
+//                 // Only auto-open folders we haven't tracked yet —
+//                 // this preserves folders the user manually closed
+//                 if (!(folder in updated)) {
+//                     updated[folder] = true;
+//                 }
+//             }
+
+//             return updated;
+//         });
+//     }, [fileTree]);
+//     return (
+//         <div className="w-[35%] border border-white/10 p-3 flex flex-col custom-scrollbar">
+//             {/* FILE TREE */}
+//             <div className="flex-1 overflow-y-auto">
+//                 <h2 className="text-sm mb-2 text-white/60">FILES</h2>
+//                 {/* Root level render — level=0, no parentPath and fileTree is passed */}
+//                 <FileTree
+//                     tree={fileTree}
+//                     activeFile={activeFile}
+//                     setActiveFile={setActiveFile}
+//                     openFolders={openFolders}
+//                     setOpenFolders={setOpenFolders}
+//                 />
+//             </div>
+//         </div>
+//     );
+// }
+
+
+import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 
-
-// maps file extensions to their corresponding iconify icon strings
 function getFileIcon(name: string) {
     if (name.endsWith(".tsx")) return "logos:react";
     if (name.endsWith(".ts")) return "logos:typescript-icon";
@@ -13,9 +176,6 @@ function getFileIcon(name: string) {
     return "vscode-icons:default-file";
 }
 
-// Wrapped in React.memo so it only re-renders when its props actually change.
-// This matters because FileTree calls itself recursively — without memo,
-// opening one folder would re-render the entire tree.
 const FileTree = React.memo(function FileTree({
     tree,
     activeFile,
@@ -25,13 +185,11 @@ const FileTree = React.memo(function FileTree({
     parentPath = "",
     level = 0,
 }: any) {
-
-    //for sorting folder first then files
     const sortEntries = (entries: [string, any][]) => {
         return entries.sort(([a, nodeA], [b, nodeB]) => {
             if (nodeA.type === "folder" && nodeB.type !== "folder") return -1;
             if (nodeA.type !== "folder" && nodeB.type === "folder") return 1;
-            return a.localeCompare(b); //in folder files should be alphabetical order
+            return a.localeCompare(b);
         });
     };
 
@@ -41,15 +199,13 @@ const FileTree = React.memo(function FileTree({
                 const fullPath = parentPath ? `${parentPath}/${name}` : name;
                 const isOpen = openFolders[fullPath];
 
-                //FILE
                 if (node.type === "file") {
                     return (
                         <div
                             key={fullPath}
                             onClick={() => setActiveFile(node.path)}
                             className={`flex items-center gap-2 px-2 py-1 text-sm cursor-pointer rounded
-                ${activeFile === node.path ? "bg-gray-600" : "hover:bg-white/5"}
-              `}
+                                ${activeFile === node.path ? "bg-gray-600" : "hover:bg-white/5"}`}
                             style={{ paddingLeft: 8 + level * 12 }}
                         >
                             <Icon icon={getFileIcon(name)} width={16} />
@@ -58,17 +214,13 @@ const FileTree = React.memo(function FileTree({
                     );
                 }
 
-
-
-                //FOLDER
                 return (
                     <div key={fullPath}>
                         <div
-                            // Toggle this folder's open state in the openFolders map
                             onClick={() =>
                                 setOpenFolders((prev: any) => ({
                                     ...prev,
-                                    [fullPath]: !prev[fullPath], // flip true ↔ false
+                                    [fullPath]: !prev[fullPath],
                                 }))
                             }
                             className="flex items-center gap-2 px-2 py-1 text-sm cursor-pointer hover:bg-white/5 rounded"
@@ -80,16 +232,15 @@ const FileTree = React.memo(function FileTree({
                             />
                             <span>{name}</span>
                         </div>
-                        {/*if folder clicks and make isOpen true, make FileTree recursion of one level deeper file tree*/}
                         {isOpen && (
                             <FileTree
-                                tree={node.children}  // one level deeper subtree
+                                tree={node.children}
                                 activeFile={activeFile}
                                 setActiveFile={setActiveFile}
                                 openFolders={openFolders}
                                 setOpenFolders={setOpenFolders}
-                                parentPath={fullPath} //  // e.g. "src/components" at first parentPath was "", then "src" and now "src/component"
-                                level={level + 1} //to indent one step deeper
+                                parentPath={fullPath}
+                                level={level + 1}
                             />
                         )}
                     </div>
@@ -103,53 +254,66 @@ export default function FileSidebar({
     fileTree,
     activeFile,
     setActiveFile,
+    onFollowUp,
+    isProcessing,
+    isReady,
 }: any) {
-    // Tracks open/closed state for every folder, keyed by full path
-    // e.g. { "src": true, "src/components": false }
-    const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>(
-        {}
-    );
+    const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({});
+    const [followUpText, setFollowUpText] = useState("");
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
-        // Recursively walks the tree and collects every folder's full path
         function collectFolders(tree: any, parent = ""): string[] {
             let folders: string[] = [];
-
             Object.entries(tree).forEach(([name, node]: any) => {
                 const fullPath = parent ? `${parent}/${name}` : name;
-
                 if (node.type === "folder") {
                     folders.push(fullPath);
-                    // Recurse into children to collect nested folders too
                     folders = folders.concat(collectFolders(node.children, fullPath));
                 }
             });
-
             return folders;
         }
 
         const allFolders = collectFolders(fileTree);
-
         setOpenFolders((prev) => {
             const updated = { ...prev };
-
             for (const folder of allFolders) {
-                // Only auto-open folders we haven't tracked yet —
-                // this preserves folders the user manually closed
-                if (!(folder in updated)) {
-                    updated[folder] = true;
-                }
+                if (!(folder in updated)) updated[folder] = true;
             }
-
             return updated;
         });
     }, [fileTree]);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
+        }
+    };
+
+    const handleSubmit = () => {
+        if (!followUpText.trim() || isProcessing || !isReady) return;
+        onFollowUp(followUpText.trim());
+        setFollowUpText("");
+    };
+
+    // Auto-resize textarea
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setFollowUpText(e.target.value);
+        const ta = textareaRef.current;
+        if (ta) {
+            ta.style.height = "auto";
+            ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
+        }
+    };
+
     return (
-        <div className="w-[35%] border border-white/10 p-3 flex flex-col custom-scrollbar">
-            {/* FILE TREE */}
-            <div className="flex-1 overflow-y-auto">
+        <div className="w-[35%] border border-white/10 flex flex-col">
+
+            {/* File tree — scrollable */}
+            <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
                 <h2 className="text-sm mb-2 text-white/60">FILES</h2>
-                {/* Root level render — level=0, no parentPath and fileTree is passed */}
                 <FileTree
                     tree={fileTree}
                     activeFile={activeFile}
@@ -157,6 +321,76 @@ export default function FileSidebar({
                     openFolders={openFolders}
                     setOpenFolders={setOpenFolders}
                 />
+            </div>
+
+            {/* Follow-up prompt — fixed at bottom */}
+            <div className="border-t border-white/10 p-3 flex flex-col gap-2">
+
+                <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`w-1.5 h-1.5 rounded-full ${isReady ? "bg-green-500" : "bg-yellow-500 animate-pulse"}`} />
+                    <span className="text-xs text-white/40">
+                        {isReady ? "Ready for follow-up" : "Generating..."}
+                    </span>
+                </div>
+
+                <div className={`relative rounded-xl border transition-colors ${
+                    isReady && !isProcessing
+                        ? "border-white/10 focus-within:border-indigo-500/50"
+                        : "border-white/5 opacity-50"
+                }`}>
+                    <textarea
+                        ref={textareaRef}
+                        value={followUpText}
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
+                        disabled={!isReady || isProcessing}
+                        placeholder={
+                            !isReady
+                                ? "Wait for generation to finish..."
+                                : isProcessing
+                                ? "Applying changes..."
+                                : "Add a feature, fix a bug, change styling..."
+                        }
+                        rows={1}
+                        className="w-full bg-transparent text-sm text-white placeholder-white/20 
+                                   resize-none px-3 pt-3 pb-8 outline-none rounded-xl
+                                   custom-scrollbar"
+                        style={{ minHeight: "44px", maxHeight: "120px" }}
+                    />
+
+                    {/* Bottom bar inside textarea */}
+                    <div className="absolute bottom-2 left-3 right-2 flex items-center justify-between">
+                        <span className="text-[10px] text-white/20">
+                            {followUpText.length > 0 ? `${followUpText.length} chars` : "Shift+Enter for new line"}
+                        </span>
+
+                        <button
+                            onClick={handleSubmit}
+                            disabled={!followUpText.trim() || !isReady || isProcessing}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                                followUpText.trim() && isReady && !isProcessing
+                                    ? "bg-indigo-600 text-white hover:bg-indigo-500"
+                                    : "bg-white/5 text-white/20 cursor-not-allowed"
+                            }`}
+                        >
+                            {isProcessing ? (
+                                <>
+                                    <div className="w-3 h-3 border border-white/30 border-t-white/80 rounded-full animate-spin" />
+                                    <span>Working...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Icon icon="mdi:send" width={12} />
+                                    <span>Apply</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                <p className="text-[10px] text-white/20 text-center">
+                    Only changed files are updated • Press Enter to apply
+                </p>
             </div>
         </div>
     );
