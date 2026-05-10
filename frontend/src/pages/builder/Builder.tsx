@@ -8,11 +8,13 @@ import { useWebContainer } from "@/hooks/useWebContainer";
 import { useRef } from "react";
 import { useFileStreaming } from "./hooks/useFileStreaming";
 import FileSidebar from "./components/FileSidebar";
+import { useFollowUp } from "@/hooks/useFollowUp";
 
 
 export default function Builder() {
     const { state } = useLocation();
     const prompt = state?.prompt;
+    const projectId = state?.projectId;
 
     const userSelectedRef = useRef(false);
 
@@ -29,6 +31,18 @@ export default function Builder() {
         completeStep,
         completeStepByText,
         userSelectedRef
+    });
+
+    const { sendFollowUp, isProcessing } = useFollowUp({
+        files: fileSystem.files,
+        originalPrompt: prompt,
+        projectId,
+        updateFileContent: fileSystem.updateFileContent,
+        setActiveFile: fileSystem.setActiveFile,
+        activeFile: fileSystem.activeFile,
+        userSelectedRef,
+        addStep,
+        completeStep,
     });
 
     const editorRef = useRef<any>(null);
@@ -68,6 +82,9 @@ export default function Builder() {
                 fileTree={fileTree}
                 activeFile={fileSystem.activeFile}
                 setActiveFile={handleSetActiveFile}
+                onFollowUp={sendFollowUp}
+                isProcessing={isProcessing}
+                isReady={streaming.isReady}
 
             />
 
