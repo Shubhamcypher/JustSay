@@ -33,8 +33,7 @@ export function useWebContainer(
   onLog?: (msg: string, type?: string) => void,
   addStep?: (text: string, type?: string) => any,
   completeStep?: (step: any) => void,
-
-
+  isPatchingRef?: React.RefObject<boolean>
 ) {
   const [url, setUrl] = useState<string | null>(null);
 
@@ -42,6 +41,9 @@ export function useWebContainer(
   const startedRef = useRef(false);
 
   const lastPkgRef = useRef<string | null>(null);
+
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
 
   // 🚀 Boot WebContainer ONCE
   useEffect(() => {
@@ -295,9 +297,13 @@ export function useWebContainer(
         return;
       }
 
-      // 🔄 NORMAL FILE SYNC
+      // 🔄 NORMAL FILE SYNC — debounced to prevent rapid re-triggers during patch animation
       try {
-        for (const [filePath, file] of Object.entries(files)) {
+        if (isPatchingRef?.current) return;
+        // Small debounce — if another sync is already pending, skip this one
+        // The final sync after animation completes will have the correct content
+        const syncFiles = Object.entries(files);
+        for (const [filePath, file] of syncFiles) {
           const content =
             typeof file === "string"
               ? file
@@ -312,7 +318,10 @@ export function useWebContainer(
       }
     };
 
-    run();
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    syncTimeoutRef.current = setTimeout(() => {
+      run();
+    }, 100);
   }, [files, isReady]);
 
   return url;
