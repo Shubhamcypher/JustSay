@@ -33,7 +33,7 @@ export default function Builder() {
         userSelectedRef
     });
 
-    const { sendFollowUp, isProcessing } = useFollowUp({
+    const { sendFollowUp, isProcessing, isPatchingRef } = useFollowUp({
         files: fileSystem.files,
         originalPrompt: prompt,
         projectId,
@@ -72,6 +72,7 @@ export default function Builder() {
         },
         addStep,
         completeStep,
+        isPatchingRef
     );
 
 
