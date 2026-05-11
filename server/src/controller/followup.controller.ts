@@ -166,6 +166,13 @@ Return updated versions of all files listed above.
         fixedFiles = fixCommonBugs(fixedFiles);
         fixedFiles = enforceFileStructure(fixedFiles, "followup-fixed");
 
+        // Add before the for loop that streams patches
+        console.log("📝 Follow-up generated files:", Object.keys(fixedFiles));
+        for (const [filePath, file] of Object.entries(fixedFiles)) {
+            const content = typeof file === "string" ? file : (file as any)?.content || "";
+            console.log(`📄 ${filePath} (${content.length} chars):\n${content.slice(0, 200)}...`);
+        }
+
         // Stream each changed file as a patch event
         for (const [filePath, file] of Object.entries(fixedFiles)) {
             const content = typeof file === "string" ? file : (file as any)?.content || "";
