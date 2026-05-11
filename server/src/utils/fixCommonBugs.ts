@@ -493,10 +493,22 @@ export const ${exportName} = [
     // Remove JSX usage of removed imports
     const removed = [...c.matchAll(/\/\/ removed: import (\w+)/g)].map((m: any) => m[1]);
     for (const name of removed) {
+      // Inside .map() callbacks — return null (valid JSX, won't crash)
+      c = c.replace(
+        new RegExp(`\\.map\\([^)]*=>\\s*\\(\\s*<${name}[^>]*\\/\\s*>\\s*\\)`, "g"),
+        `.map(() => null)`
+      );
+      // Inside .map() callbacks — open/close tag variant
+      c = c.replace(
+        new RegExp(`\\.map\\([^)]*=>\\s*\\(\\s*<${name}[^>]*>[\\s\\S]*?<\\/${name}>\\s*\\)`, "g"),
+        `.map(() => null)`
+      );
+      // Standalone self-closing tag
       c = c.replace(
         new RegExp(`<${name}[^>]*\\/\\s*>`, "g"),
         `{/* ${name} not available */}`
       );
+      // Standalone open/close tag
       c = c.replace(
         new RegExp(`<${name}[^>]*>[\\s\\S]*?<\\/${name}>`, "g"),
         `{/* ${name} not available */}`
