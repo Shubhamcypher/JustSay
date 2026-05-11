@@ -15,6 +15,7 @@ export function useFollowUp({
     const [error, setError] = useState<string | null>(null);
     const filesRef = useRef(files);
     const activeFileRef = useRef<string | null>(null);
+    const isPatchingRef = useRef(false);
 
     // Keep refs in sync
     filesRef.current = files;
@@ -24,6 +25,7 @@ export function useFollowUp({
 
     // Diff-aware patch animation — reused from useFileStreaming
     const streamPatch = async (path: string, newContent: string) => {
+        isPatchingRef.current = true;  // block WebContainer sync
         const oldContent = filesRef.current[path]?.content || "";
         const oldLines = oldContent.split("\n");
         const newLines = newContent.split("\n");
@@ -70,6 +72,7 @@ export function useFollowUp({
         }
 
         updateFileContent(path, newContent, true);
+        isPatchingRef.current = false; // unblock
 
         if (!userSelectedRef.current && previousFile && previousFile !== path) {
             await sleep(300);
@@ -162,5 +165,5 @@ export function useFollowUp({
         }
     };
 
-    return { sendFollowUp, isProcessing, error };
+    return { sendFollowUp, isProcessing, error, isPatchingRef };
 }
