@@ -163,7 +163,7 @@
 // }
 
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { Icon } from "@iconify/react";
 
 function getFileIcon(name: string) {
