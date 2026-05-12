@@ -255,11 +255,10 @@ export default function FileSidebar({
     activeFile,
     setActiveFile,
     // onFollowUp,
-    isProcessing,
-    isReady,
+
 }: any) {
     const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({});
-    const [followUpText, setFollowUpText] = useState("");
+    // const [followUpText, setFollowUpText] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
@@ -299,14 +298,14 @@ export default function FileSidebar({
     // };
 
     // Auto-resize textarea
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setFollowUpText(e.target.value);
-        const ta = textareaRef.current;
-        if (ta) {
-            ta.style.height = "auto";
-            ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
-        }
-    };
+    // const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    //     setFollowUpText(e.target.value);
+    //     const ta = textareaRef.current;
+    //     if (ta) {
+    //         ta.style.height = "auto";
+    //         ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
+    //     }
+    // };
 
     return (
         <div className="w-[35%] border border-white/10 flex flex-col">
