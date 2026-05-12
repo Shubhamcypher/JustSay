@@ -302,16 +302,6 @@ export default function Builder() {
                             hasFiles={Object.keys(fileSystem.files).length > 0}
                         />
                     </div>
-
-                    {/* BUILDER tab
-                        FileSidebar already renders:
-                          ┌──────────────────────┐
-                          │  file tree           │  (scrollable)
-                          ├──────────────────────┤
-                          │  follow-up input     │  (built inside FileSidebar — untouched)
-                          └──────────────────────┘
-                        No changes to FileSidebar needed.
-                    */}
                     <div
                         className={`absolute inset-0 flex transition-opacity duration-200 ${rightTab === "builder"
                                 ? "opacity-100 pointer-events-auto"
