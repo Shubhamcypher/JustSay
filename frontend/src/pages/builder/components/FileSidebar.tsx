@@ -254,7 +254,7 @@ export default function FileSidebar({
     fileTree,
     activeFile,
     setActiveFile,
-    onFollowUp,
+    // onFollowUp,
     isProcessing,
     isReady,
 }: any) {
@@ -285,18 +285,18 @@ export default function FileSidebar({
         });
     }, [fileTree]);
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSubmit();
-        }
-    };
+    // const handleKeyDown = (e: React.KeyboardEvent) => {
+    //     if (e.key === "Enter" && !e.shiftKey) {
+    //         e.preventDefault();
+    //         handleSubmit();
+    //     }
+    // };
 
-    const handleSubmit = () => {
-        if (!followUpText.trim() || isProcessing || !isReady) return;
-        onFollowUp(followUpText.trim());
-        setFollowUpText("");
-    };
+    // const handleSubmit = () => {
+    //     if (!followUpText.trim() || isProcessing || !isReady) return;
+    //     onFollowUp(followUpText.trim());
+    //     setFollowUpText("");
+    // };
 
     // Auto-resize textarea
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -323,75 +323,8 @@ export default function FileSidebar({
                 />
             </div>
 
-            {/* Follow-up prompt — fixed at bottom */}
-            <div className="border-t border-white/10 p-3 flex flex-col gap-2">
 
-                <div className="flex items-center gap-1.5 mb-1">
-                    <div className={`w-1.5 h-1.5 rounded-full ${isReady ? "bg-green-500" : "bg-yellow-500 animate-pulse"}`} />
-                    <span className="text-xs text-white/40">
-                        {isReady ? "Ready for follow-up" : "Generating..."}
-                    </span>
-                </div>
-
-                <div className={`relative rounded-xl border transition-colors ${
-                    isReady && !isProcessing
-                        ? "border-white/10 focus-within:border-indigo-500/50"
-                        : "border-white/5 opacity-50"
-                }`}>
-                    <textarea
-                        ref={textareaRef}
-                        value={followUpText}
-                        onChange={handleChange}
-                        onKeyDown={handleKeyDown}
-                        disabled={!isReady || isProcessing}
-                        placeholder={
-                            !isReady
-                                ? "Wait for generation to finish..."
-                                : isProcessing
-                                ? "Applying changes..."
-                                : "Add a feature, fix a bug, change styling..."
-                        }
-                        rows={1}
-                        className="w-full bg-transparent text-sm text-white placeholder-white/20 
-                                   resize-none px-3 pt-3 pb-8 outline-none rounded-xl
-                                   custom-scrollbar"
-                        style={{ minHeight: "44px", maxHeight: "120px" }}
-                    />
-
-                    {/* Bottom bar inside textarea */}
-                    <div className="absolute bottom-2 left-3 right-2 flex items-center justify-between">
-                        <span className="text-[10px] text-white/20">
-                            {followUpText.length > 0 ? `${followUpText.length} chars` : "Shift+Enter for new line"}
-                        </span>
-
-                        <button
-                            onClick={handleSubmit}
-                            disabled={!followUpText.trim() || !isReady || isProcessing}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-                                followUpText.trim() && isReady && !isProcessing
-                                    ? "bg-indigo-600 text-white hover:bg-indigo-500"
-                                    : "bg-white/5 text-white/20 cursor-not-allowed"
-                            }`}
-                        >
-                            {isProcessing ? (
-                                <>
-                                    <div className="w-3 h-3 border border-white/30 border-t-white/80 rounded-full animate-spin" />
-                                    <span>Working...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Icon icon="mdi:send" width={12} />
-                                    <span>Apply</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </div>
-
-                <p className="text-[10px] text-white/20 text-center">
-                    Only changed files are updated • Press Enter to apply
-                </p>
-            </div>
+            
         </div>
     );
 }
