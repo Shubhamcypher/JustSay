@@ -163,7 +163,7 @@
 // }
 
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Icon } from "@iconify/react";
 
 function getFileIcon(name: string) {
@@ -259,7 +259,6 @@ export default function FileSidebar({
 }: any) {
     const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({});
     // const [followUpText, setFollowUpText] = useState("");
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         function collectFolders(tree: any, parent = ""): string[] {
