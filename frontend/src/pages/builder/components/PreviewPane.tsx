@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
-import StepsPanel from "./StepsPanel";
+// import StepsPanel from "./StepsPanel";
 import { useState } from "react";
 
 
 
 
-function PreviewLoading({ steps }: any) {
+function PreviewLoading() {
 
 
   return (
@@ -61,27 +61,7 @@ function PreviewLoading({ steps }: any) {
       </motion.div>
 
       {/* Status */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[320px] flex flex-col gap-3.5"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex gap-1">
-            {[0, 0.2, 0.4].map((delay, i) => (
-              <motion.div
-                key={i}
-                animate={{ opacity: [0.2, 1, 0.2] }}
-                transition={{ duration: 1.4, repeat: Infinity, delay }}
-                className="w-1 h-1 rounded-full bg-white/40"
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Steps */}
-        <StepsPanel steps={steps} />
-      </motion.div>
+      
 
     </div>
   );
@@ -98,10 +78,10 @@ function Shimmer({ className, delay = 0 }: { className?: string; delay?: number 
   );
 }
 
-export default function PreviewPane({ previewUrl, hasFiles, steps }: any) {
+export default function PreviewPane({ previewUrl, hasFiles }: any) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   return (
-    <div className="w-[50%] p-2">
+    <div className="w-full h-full p-2">
       {hasFiles && previewUrl ? (
         <div className="w-full h-full flex flex-col gap-2 relative">
           <button
@@ -118,7 +98,7 @@ export default function PreviewPane({ previewUrl, hasFiles, steps }: any) {
         </div>
       ) : (
         <div className="w-full h-full flex flex-col justify-center items-center gap-6">
-          <PreviewLoading steps={steps} />
+          <PreviewLoading />
         </div>
       )}
       {isFullscreen && (
