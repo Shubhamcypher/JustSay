@@ -312,7 +312,7 @@ export default function Builder() {
                             fileTree={fileTree}
                             activeFile={fileSystem.activeFile}
                             setActiveFile={handleSetActiveFile}
-                            onFollowUp={sendFollowUp}
+                            // onFollowUp={sendFollowUp}
                             isProcessing={isProcessing}
                             isReady={streaming.isReady}
                         />
