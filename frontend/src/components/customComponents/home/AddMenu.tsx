@@ -23,7 +23,7 @@ export default function AddMenu() {
       {/* ➕ Button */}
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="p-2 hover:bg-white/10 rounded-2xl transition"
+        className="p-2 hover:bg-white/10 rounded-3xl transition"
       >
         <Plus
           size={20}
