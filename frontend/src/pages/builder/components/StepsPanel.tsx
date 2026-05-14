@@ -9,7 +9,8 @@ type Step = {
 };
 
 export default function StepsPanel({ steps }: { steps: Step[] }) {
-  const visibleSteps = steps.slice(-5);
+  const overflowCount = Math.max(0, steps.length - 5);
+  const ITEM_H = 32;
 
   const progress = Math.floor(
     (steps.filter((s) => s.status === "done").length / (steps.length || 1)) * 100
@@ -42,50 +43,56 @@ export default function StepsPanel({ steps }: { steps: Step[] }) {
       </div>
 
       {/* STEPS */}
-      <div className="flex flex-col gap-2 overflow-hidden">
-        <AnimatePresence initial={false}>
-          {visibleSteps.map((step) => {
-            const isDone = step.status === "done";
+      <div className="overflow-hidden" style={{ height: `${6 * ITEM_H}px` }}>
+        <motion.div
+          className="flex flex-col gap-2"
+          animate={{ y: -(overflowCount * ITEM_H) }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <AnimatePresence initial={false}>
+            {steps.map((step) => {
+              const isDone = step.status === "done";
 
-            return (
-              <motion.div
-                key={step.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{
-                  opacity: isDone ? 0.3 : 1,
-                  y: 0,
-                }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="flex items-center gap-2"
-              >
-                {isDone ? (
-                  <svg width="12" height="12" viewBox="0 0 12 12">
-                    <circle cx="6" cy="6" r="5" fill="rgba(59,130,246,0.2)" />
-                    <path
-                      d="M3.5 6l2 2 3-3"
-                      stroke="#3b82f6"
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+              return (
+                <motion.div
+                  key={step.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{
+                    opacity: isDone ? 0.3 : 1,
+                    y: 0,
+                  }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex items-center gap-2"
+                  style={{ height: 24, flexShrink: 0 }}
+                >
+                  {isDone ? (
+                    <svg width="12" height="12" viewBox="0 0 12 12">
+                      <circle cx="6" cy="6" r="5" fill="rgba(59,130,246,0.2)" />
+                      <path
+                        d="M3.5 6l2 2 3-3"
+                        stroke="#3b82f6"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  ) : (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                      className="w-3 h-3 border border-indigo-400/50 border-t-transparent rounded-full"
                     />
-                  </svg>
-                ) : (
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                    className="w-3 h-3 border border-indigo-400/50 border-t-transparent rounded-full"
-                  />
-                )}
+                  )}
 
-                <span className={`text-[11px] ${isDone ? "text-white/30" : "text-white/60"}`}>
-                  {step.text}
-                </span>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+                  <span className={`text-[11px] ${isDone ? "text-white/30" : "text-white/60"}`}>
+                    {step.text}
+                  </span>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </div>
   );
