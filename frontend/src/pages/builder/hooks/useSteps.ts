@@ -29,23 +29,13 @@ export function useSteps() {
     );
   };
 
-  const completeStepByText = (text: string) => {
-    setSteps((prev) => prev.filter((s) => s.text !== text));
-  };
 
-  // auto cleanup
-//   useEffect(() => {
-//     const timer = setInterval(() => {
-//       setSteps((prev) => prev.filter((s) => s.status !== "done"));
-//     }, 300);
 
-//     return () => clearInterval(timer);
-//   }, []);
+
 
   return {
     steps,
     addStep,
     completeStep,
-    completeStepByText,
   };
 }
