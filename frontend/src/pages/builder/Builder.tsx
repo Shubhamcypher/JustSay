@@ -27,7 +27,7 @@ export default function Builder() {
     const [rightTab, setRightTab] = useState<RightTab>("preview");
 
     const fileSystem = useFiles(userSelectedRef);
-    const { steps, addStep, completeStep, completeStepByText } = useSteps();
+    const { steps, addStep, completeStep } = useSteps();
     const fileTree = useFileTree(fileSystem.filePaths);
 
     const streaming = useFileStreaming({
@@ -35,7 +35,6 @@ export default function Builder() {
         ...fileSystem,
         addStep,
         completeStep,
-        completeStepByText,
         userSelectedRef,
     });
 
@@ -108,6 +107,9 @@ export default function Builder() {
                         isReady={streaming.isReady}
                         isProcessing={isProcessing}
                         steps={steps}
+                        url={previewUrl}
+                        prompt={prompt}
+                        files={streaming.finalFiles}
                     />
                 </div>
 
