@@ -1,12 +1,18 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import StepsPanel from "./StepsPanel";
+import { useAppDescription } from "@/hooks/useAppDescription";
 
 type Props = {
     isReady: boolean;
     isProcessing: boolean;
     steps: any[];
+    url: string | null;
+    prompt: string;
+    files: Record<string, any>;
 };
+
+
 
 function humanizeStep(step: string) {
     const s = step.toLowerCase();
@@ -48,7 +54,12 @@ export default function BuilderAgent({
     isReady,
     isProcessing,
     steps,
+    url,
+    prompt,
+    files
 }: Props) {
+
+    const buildSummary = useAppDescription(url, prompt, files);
 
     // Latest unfinished step
     const activeStep =
@@ -62,7 +73,7 @@ export default function BuilderAgent({
             .reverse()
             .find((step) => step.completed);
 
-    const currentMessage = isReady
+    const currentMessage = url
         ? "Preview is ready. You can now explore and iterate on your app."
         : activeStep
             ? humanizeStep(activeStep.text)
@@ -73,9 +84,7 @@ export default function BuilderAgent({
 
             {/* AI Avatar */}
             <motion.div
-                animate={{
-                    scale: [1, 1.06, 1],
-                }}
+                animate={url ? { scale: 1 } : { scale: [1, 1.06, 1] }}
                 transition={{
                     duration: 2,
                     repeat: Infinity,
@@ -102,7 +111,7 @@ export default function BuilderAgent({
                     }}
                     transition={{
                         duration: 2,
-                        repeat: Infinity,
+                        repeat: url ? 0 : Infinity,
                     }}
                     className="absolute inset-0 rounded-2xl bg-violet-500"
                 />
@@ -144,13 +153,12 @@ export default function BuilderAgent({
                                         duration: 2,
                                         repeat: Infinity,
                                     }}
-                                    className={`w-1.5 h-1.5 rounded-full ${
-                                        isReady
-                                            ? "bg-emerald-400"
-                                            : isProcessing
-                                                ? "bg-amber-400"
-                                                : "bg-violet-400"
-                                    }`}
+                                    className={`w-1.5 h-1.5 rounded-full ${isReady
+                                        ? "bg-emerald-400"
+                                        : isProcessing
+                                            ? "bg-amber-400"
+                                            : "bg-violet-400"
+                                        }`}
                                 />
 
                                 <span
@@ -224,14 +232,30 @@ export default function BuilderAgent({
                     </div>
                 </motion.div>
 
-                {/* Steps Panel */}
+                {/* Steps Panel OR Summary */}
                 {steps.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="border-t border-white/[0.06] pt-3"
                     >
-                        <StepsPanel steps={steps} />
+                        {url ? (
+                            <div className="flex flex-col gap-2">
+                                {buildSummary.map((line, i) => (
+                                    <motion.p
+                                        key={i}
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="text-[15px] text-white/50 leading-relaxed"
+                                    >
+                                        {line}
+                                    </motion.p>
+                                ))}
+                            </div>
+                        ) : (
+                            <StepsPanel steps={steps} />
+                        )}
                     </motion.div>
                 )}
             </div>
