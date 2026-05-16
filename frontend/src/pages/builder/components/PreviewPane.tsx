@@ -14,7 +14,7 @@ export default function PreviewPane({ previewUrl, hasFiles }: any) {
         <div className="w-full h-full flex flex-col gap-2 relative">
           <button
             onClick={() => setIsFullscreen(true)}
-            className="absolute top-2 right-2 z-10 px-3 py-1 bg-black/60 text-xs rounded"
+            className="absolute top-[-48px] right-4 z-10 px-3 py-2 bg-black/60 text-sm rounded"
           >
             Fullscreen
           </button>
@@ -30,11 +30,11 @@ export default function PreviewPane({ previewUrl, hasFiles }: any) {
         </div>
       )}
       {isFullscreen && (
-        <div className="fixed inset-0 z-50 bg-[#141414] p-4">
+        <div className="fixed inset-0 z-50 bg-[#141414] p-2">
 
           <button
             onClick={() => setIsFullscreen(false)}
-            className="absolute top-4 right-4 z-50 px-3 py-1 bg-black/60 text-xs rounded"
+            className="absolute top-4 right-16 z-50 px-3 py-1 bg-black/60 text-lg rounded"
           >
             Exit
           </button>
