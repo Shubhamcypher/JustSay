@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import StepsPanel from "./StepsPanel";
 import { useAppDescription } from "@/hooks/useAppDescription";
+import StepHistory from "./StepHistory";
 
 type Props = {
     isReady: boolean;
@@ -141,7 +142,7 @@ export default function BuilderAgent({
                     <div className="relative z-10">
 
                         {/* Header */}
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="flex flex-col justify-between mb-3">
 
                             <div className="flex items-center gap-2">
                                 <motion.div
@@ -170,15 +171,37 @@ export default function BuilderAgent({
                                 </span>
                             </div>
 
-                            {/* Step counter */}
+                            {/* Steps Panel OR History */}
                             {steps.length > 0 && (
-                                <span
-                                    className="text-[10px]
-                                               text-white/25
-                                               font-mono"
+                                <motion.div
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="border-t border-white/[0.06] pt-3"
                                 >
-                                    {steps.length} steps
-                                </span>
+                                    {url ? (
+                                        <>
+                                            {/* Summary */}
+                                            <div className="flex flex-col gap-2 mb-3">
+                                                {buildSummary.map((line, i) => (
+                                                    <motion.p
+                                                        key={i}
+                                                        initial={{ opacity: 0, y: 6 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.3 }}
+                                                        className="text-[13px] text-white/50 leading-relaxed"
+                                                    >
+                                                        {line}
+                                                    </motion.p>
+                                                ))}
+                                            </div>
+
+                                            {/* Step history accordion */}
+                                            <StepHistory steps={steps} />
+                                        </>
+                                    ) : (
+                                        <StepsPanel steps={steps} />
+                                    )}
+                                </motion.div>
                             )}
                         </div>
 
@@ -231,33 +254,6 @@ export default function BuilderAgent({
                         )}
                     </div>
                 </motion.div>
-
-                {/* Steps Panel OR Summary */}
-                {steps.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="border-t border-white/[0.06] pt-3"
-                    >
-                        {url ? (
-                            <div className="flex flex-col gap-2">
-                                {buildSummary.map((line, i) => (
-                                    <motion.p
-                                        key={i}
-                                        initial={{ opacity: 0, y: 6 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="text-[15px] text-white/50 leading-relaxed"
-                                    >
-                                        {line}
-                                    </motion.p>
-                                ))}
-                            </div>
-                        ) : (
-                            <StepsPanel steps={steps} />
-                        )}
-                    </motion.div>
-                )}
             </div>
         </div>
     );
