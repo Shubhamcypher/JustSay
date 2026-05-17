@@ -14,6 +14,8 @@ import FileSidebar from "./components/FileSidebar";
 import { FollowUpBar } from "./components/FollowUpBar";
 import { TabButton, type RightTab } from "./components/TabButton";
 import BuilderAgent from "./components/BuilderAgent";
+import { useResizable } from "./hooks/useResizable";
+import ResizeHandle from "@/components/resizeHandle";
 
 
 
@@ -29,6 +31,9 @@ export default function Builder() {
     const fileSystem = useFiles(userSelectedRef);
     const { steps, addStep, completeStep } = useSteps();
     const fileTree = useFileTree(fileSystem.filePaths);
+
+    const leftPanel = useResizable(400, 280, 600);       // chat panel
+    const sidebarPanel = useResizable(220, 160, 400);    // file sidebar
 
     const streaming = useFileStreaming({
         prompt,
@@ -80,7 +85,10 @@ export default function Builder() {
         <div className="h-screen flex bg-[#0f1117] text-white overflow-hidden">
 
             {/* ── LEFT: Chat column (40%) ─────────────────────────────────── */}
-            <div className="w-[40%] min-w-[300px] max-w-[500px] flex flex-col border-r border-white/[0.06] bg-[#13151c]">
+            <div
+                style={{ width: leftPanel.size }}
+                className="flex-shrink-0 flex flex-col border-r border-white/[0.06] bg-[#13151c]"
+            >
 
                 {/* Logo header */}
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06] shrink-0">
@@ -120,6 +128,9 @@ export default function Builder() {
                     onFollowUp={sendFollowUp}
                 />
             </div>
+
+            {/* ── Drag handle 1: chat | right panel ───────────────────────── */}
+            <ResizeHandle onMouseDown={leftPanel.onMouseDown} />
 
             {/* ── RIGHT: Tabbed panel (60%) ────────────────────────────────── */}
             <div className="flex-1 flex flex-col min-w-0">
@@ -168,11 +179,18 @@ export default function Builder() {
                             isProcessing={isProcessing}
                             isReady={streaming.isReady}
                         />
-                        <CodeEditor
-                            {...fileSystem}
-                            editorRef={editorRef}
-                            monacoRef={monacoRef}
-                        />
+
+                        {/* Drag handle 2: sidebar | editor */}
+                        <ResizeHandle onMouseDown={sidebarPanel.onMouseDown} />
+
+                        {/* Code editor — takes remaining space */}
+                        <div className="flex-1 min-w-0">
+                            <CodeEditor
+                                {...fileSystem}
+                                editorRef={editorRef}
+                                monacoRef={monacoRef}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
