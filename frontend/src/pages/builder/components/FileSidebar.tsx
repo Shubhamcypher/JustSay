@@ -119,7 +119,7 @@ export default function FileSidebar({
     }, [fileTree]);
 
     return (
-        <div className="w-[35%] border border-white/10 flex flex-col">
+        <div className="w-full h-full border border-white/10 flex flex-col">
 
             {/* File tree — scrollable */}
             <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
