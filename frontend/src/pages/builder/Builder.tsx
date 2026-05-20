@@ -151,40 +151,36 @@ export default function Builder() {
                     />
                 </div>
 
-                {/* Content area — both tabs mounted, toggled via opacity (no remount cost) */}
-                <div className="flex-1 min-h-0 relative">
+
+                {/* Content area */}
+                <div className="flex-1 min-h-0 flex flex-col">
 
                     {/* PREVIEW tab */}
-                    <div
-                        className={`absolute inset-0 transition-opacity duration-200 ${rightTab === "preview"
-                            ? "opacity-100 pointer-events-auto"
-                            : "opacity-0 pointer-events-none"
-                            }`}
-                    >
+                    <div className={`flex-1 min-h-0 ${rightTab === "preview" ? "flex" : "invisible absolute inset-0 -z-10"}`}>
                         <PreviewPane
                             previewUrl={previewUrl}
                             hasFiles={Object.keys(fileSystem.files).length > 0}
                         />
                     </div>
-                    <div
-                        className={`absolute inset-0 flex transition-opacity duration-200 ${rightTab === "code"
-                            ? "opacity-100 pointer-events-auto"
-                            : "opacity-0 pointer-events-none"
-                            }`}
-                    >
-                        <FileSidebar
-                            fileTree={fileTree}
-                            activeFile={fileSystem.activeFile}
-                            setActiveFile={handleSetActiveFile}
-                            isProcessing={isProcessing}
-                            isReady={streaming.isReady}
-                        />
 
-                        {/* Drag handle 2: sidebar | editor */}
+                    {/* CODE tab */}
+                    <div className={`flex-1 min-h-0 flex w-full overflow-hidden ${rightTab === "code" ? "visible" : "invisible absolute inset-0 -z-10"}`}>
+                        <div
+                            style={{ width: sidebarPanel.size }}
+                            className="flex-shrink-0 overflow-hidden h-full"
+                        >
+                            <FileSidebar
+                                fileTree={fileTree}
+                                activeFile={fileSystem.activeFile}
+                                setActiveFile={handleSetActiveFile}
+                                isProcessing={isProcessing}
+                                isReady={streaming.isReady}
+                            />
+                        </div>
+
                         <ResizeHandle onMouseDown={sidebarPanel.onMouseDown} />
 
-                        {/* Code editor — takes remaining space */}
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 h-full overflow-hidden">
                             <CodeEditor
                                 {...fileSystem}
                                 editorRef={editorRef}
