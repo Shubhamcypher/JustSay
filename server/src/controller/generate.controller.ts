@@ -12,6 +12,8 @@ import { expandFeatures } from "../services/featureExpander.service";
 import { enhanceUX } from "../services/enhanceUX.service";
 import { generateSkeletons, SkeletonMap } from "../services/generateSkeletons.service";
 import { getCachedFinalFiles, setCachedFinalFiles } from "../utils/cacheAiResponse";
+import { classifyPrompt } from "../services/classifyPrompt.service";
+import { getCachedCategory, setCachedCategory } from "../utils/categoryCache";
 // import { streamLLM } from "../services/ai.service";
 // import { parseStream } from "../utils/streamParser";
 // import { enhanceFiles } from "../utils/enhanceFiles";
@@ -74,7 +76,7 @@ export const generateProject = async (req: Request, res: Response) => {
 
         const cachedFinal = getCachedFinalFiles(prompt);
         if (cachedFinal) {
-            console.log("⚡ Full cache hit — skipping all LLM calls");
+            console.log("⚡ Exact cache hit — skipping all LLM calls");
 
             for (const [filePath, file] of Object.entries(cachedFinal)) {
                 const content = file?.content || "";
@@ -100,6 +102,29 @@ export const generateProject = async (req: Request, res: Response) => {
             return;
         }
 
+        // ── LAYER 2: Category cache (S3) ────────────────────────────────
+        const category = await classifyPrompt(prompt); // ← NEW
+        console.log(`📂 Category: ${category}`);       // ← NEW
+
+        const cachedCategory = await getCachedCategory(category); // ← NEW
+        if (cachedCategory) {                                      // ← NEW
+            console.log(`⚡ Category cache hit: ${category}`);
+
+            for (const [filePath, file] of Object.entries(cachedCategory)) {
+                const content = file?.content || "";
+                res.write(`data: ${JSON.stringify({ type: "file", path: filePath, content })}\n\n`);
+                await pool.query(
+                    `INSERT INTO project_files (project_id, path, content) VALUES ($1,$2,$3)`,
+                    [projectId, filePath, content]
+                );
+            }
+
+            await pool.query(`UPDATE projects SET status=$1 WHERE id=$2`, ["completed", projectId]);
+            res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+            res.end();
+            return;
+        }
+
         //Generate in chunk
         async function generateInChunks(
             files: string[],
@@ -108,7 +133,7 @@ export const generateProject = async (req: Request, res: Response) => {
             chunkSize: number,
             skeletons: SkeletonMap,
             res: Response,
-            streamedPaths: Set<string>   // 👈 from Fix 4 — pass in to track what's been sent
+            streamedPaths: Set<string> 
         ) {
             const chunks: string[][] = [];
             const NEVER_STREAM_FROM_AI = new Set([
@@ -207,16 +232,6 @@ export const generateProject = async (req: Request, res: Response) => {
 
         files = enforceFileStructure(files, "normalizeFiles initial");
 
-        // files = await runStage("fixGeneratedCode", async () => {
-        //     const fixed = await fixGeneratedCode(files);
-
-        //     if (!fixed.files) throw new Error("Fixer failed");
-
-        //     return fixed.files;
-        // });
-
-        // files = enforceFileStructure(files, "fixGeneratedCode");
-
         files = await runStage("normalizeFiles (after fixer)", () =>
             normalizeFiles(files)
         );
@@ -241,13 +256,6 @@ export const generateProject = async (req: Request, res: Response) => {
         );
 
         files = enforceFileStructure(files, "fixAfterEnhance");
-
-
-        // files = await runStage("enhanceFiles", () =>
-        //     enhanceFiles(files)
-        // );
-
-        // files = enforceFileStructure(files, "enhanceFiles");
 
         for (const [filePath, file] of Object.entries(files)) {
             const fixedContent = typeof file === "string" ? file : (file as any)?.content || "";
@@ -288,6 +296,7 @@ export const generateProject = async (req: Request, res: Response) => {
         files = enforceFileStructure(files, "template merge");
 
         setCachedFinalFiles(prompt, files);
+        await setCachedCategory(category, files); 
 
         // 🔥 LOOP ONLY FOR SAVING + STREAMING
         const allPaths = Object.keys(files);
