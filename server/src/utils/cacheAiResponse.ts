@@ -11,7 +11,7 @@ const s3 = new S3Client({
 
 const BUCKET = process.env.S3_BUCKET_NAME!;
 
-function promptToKey(prompt: string): string {
+function promptToSlug(prompt: string): string {
     const words = prompt
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, "")
@@ -20,48 +20,84 @@ function promptToKey(prompt: string): string {
         .slice(0, 5)
         .join("-");
     const hash = crypto.createHash("md5").update(prompt).digest("hex").slice(0, 6);
-    return `prompts/${words}-${hash}/final-files.json`;
+    return `prompts/${words}-${hash}`;
 }
 
+async function getFromS3(key: string): Promise<any | null> {
+    try {
+        const response = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+        const body = await response.Body?.transformToString();
+        if (!body) return null;
+        return JSON.parse(body);
+    } catch (err: any) {
+        if (err.name === "NoSuchKey") return null;
+        console.error(`S3 read error [${key}]:`, err);
+        return null;
+    }
+}
+
+async function setToS3(key: string, data: any): Promise<void> {
+    try {
+        await s3.send(new PutObjectCommand({
+            Bucket: BUCKET,
+            Key: key,
+            Body: JSON.stringify(data),
+            ContentType: "application/json",
+        }));
+    } catch (err) {
+        console.error(`S3 write error [${key}]:`, err);
+    }
+}
+
+// ─── Planner ──────────────────────────────────────────────────
+export async function getCachedPlan(prompt: string): Promise<any | null> {
+    const result = await getFromS3(`${promptToSlug(prompt)}/plan.json`);
+    if (result) console.log("⚡ Cache hit: planner");
+    return result;
+}
+
+export async function setCachedPlan(prompt: string, data: any): Promise<void> {
+    await setToS3(`${promptToSlug(prompt)}/plan.json`, data);
+    console.log("💾 Cached: planner");
+}
+
+// ─── Features ─────────────────────────────────────────────────
+export async function getCachedFeatures(prompt: string): Promise<any | null> {
+    const result = await getFromS3(`${promptToSlug(prompt)}/features.json`);
+    if (result) console.log("⚡ Cache hit: features");
+    return result;
+}
+
+export async function setCachedFeatures(prompt: string, data: any): Promise<void> {
+    await setToS3(`${promptToSlug(prompt)}/features.json`, data);
+    console.log("💾 Cached: features");
+}
+
+// ─── Skeletons ────────────────────────────────────────────────
+export async function getCachedSkeletons(prompt: string): Promise<any | null> {
+    const result = await getFromS3(`${promptToSlug(prompt)}/skeletons.json`);
+    if (result) console.log("⚡ Cache hit: skeletons");
+    return result;
+}
+
+export async function setCachedSkeletons(prompt: string, data: any): Promise<void> {
+    await setToS3(`${promptToSlug(prompt)}/skeletons.json`, data);
+    console.log("💾 Cached: skeletons");
+}
+
+// ─── Final Files ──────────────────────────────────────────────
 export async function getCachedFinalFiles(
     prompt: string
 ): Promise<Record<string, { content: string }> | null> {
-    try {
-        const command = new GetObjectCommand({
-            Bucket: BUCKET,
-            Key: promptToKey(prompt),
-        });
-
-        const response = await s3.send(command);
-        const body = await response.Body?.transformToString();
-        if (!body) return null;
-
-        console.log(`⚡ Exact cache hit (S3): ${promptToKey(prompt)}`);
-        return JSON.parse(body);
-
-    } catch (err: any) {
-        // NoSuchKey = cache miss, anything else = real error
-        if (err.name === "NoSuchKey") return null;
-        console.error("Exact cache read error:", err);
-        return null;
-    }
+    const result = await getFromS3(`${promptToSlug(prompt)}/final-files.json`);
+    if (result) console.log("⚡ Cache hit: final-files");
+    return result;
 }
 
 export async function setCachedFinalFiles(
     prompt: string,
     files: Record<string, { content: string }>
 ): Promise<void> {
-    try {
-        await s3.send(new PutObjectCommand({
-            Bucket: BUCKET,
-            Key: promptToKey(prompt),
-            Body: JSON.stringify(files),
-            ContentType: "application/json",
-        }));
-
-        console.log(`💾 Exact cache saved (S3): ${promptToKey(prompt)}`);
-
-    } catch (err) {
-        console.error("Exact cache write error:", err);
-    }
+    await setToS3(`${promptToSlug(prompt)}/final-files.json`, files);
+    console.log("💾 Cached: final-files");
 }

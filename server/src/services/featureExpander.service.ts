@@ -6,7 +6,7 @@ const openai = new OpenAI({
 });
 
 export async function expandFeatures(prompt: string) {
-  const cached = getCachedFeatures(prompt);
+  const cached = await getCachedFeatures(prompt);
   if (cached) return cached;
   const res = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -41,7 +41,7 @@ Rules:
   });
 
   const result = JSON.parse(res.choices[0].message.content || "{}");
-  setCachedFeatures(prompt, result);
+  await setCachedFeatures(prompt, result);
   return result;
 
 }

@@ -10,7 +10,7 @@ const openai = new OpenAI({
 
 export async function planProject(prompt: string) {
   console.log("DEV_MODE:", process.env.DEV_MODE);
-  const cached = getCachedPlan(prompt);
+  const cached = await getCachedPlan(prompt);
   if (cached) return cached;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -113,7 +113,7 @@ No explanation. Only JSON.
         throw new Error("Invalid format");
       }
       // ✅ SAVE CACHE
-      setCachedPlan(prompt, json);
+      await setCachedPlan(prompt, json);
       return json;
     } catch (err) {
       console.log("Planning error: ", err);

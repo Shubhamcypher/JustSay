@@ -24,7 +24,7 @@ export async function generateSkeletons(
     prompt: string,
     features: string[]
 ): Promise<SkeletonMap> {
-    const cached = getCachedSkeletons(prompt);
+    const cached = await getCachedSkeletons(prompt);
     if (cached) { console.log("⚡ Cache hit: skeletons"); return cached; }
 
     console.log("🦴 Generating skeletons for", files.length, "files");
@@ -183,6 +183,6 @@ Return the skeleton map for all files above.
     }
 
     console.log("🦴 Skeletons generated:", Object.keys(json.skeletons).length, "files");
-    setCachedSkeletons(prompt, json.skeletons);
+    await setCachedSkeletons(prompt, json.skeletons);
     return json.skeletons as SkeletonMap;
 }

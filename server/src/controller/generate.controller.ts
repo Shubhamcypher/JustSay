@@ -74,7 +74,7 @@ export const generateProject = async (req: Request, res: Response) => {
             })}\n\n`
         );
 
-        const cachedFinal = getCachedFinalFiles(prompt);
+        const cachedFinal = await getCachedFinalFiles(prompt);
         if (cachedFinal) {
             console.log("⚡ Exact cache hit — skipping all LLM calls");
 
@@ -295,7 +295,7 @@ export const generateProject = async (req: Request, res: Response) => {
         files = { ...files, ...safeTemplate };
         files = enforceFileStructure(files, "template merge");
 
-        setCachedFinalFiles(prompt, files);
+        await setCachedFinalFiles(prompt, files);
         await setCachedCategory(category, files); 
 
         // 🔥 LOOP ONLY FOR SAVING + STREAMING
