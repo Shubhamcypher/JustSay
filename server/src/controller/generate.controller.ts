@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { pool } from "../config/db";
-import { planProject } from "../services/planner.service";
 import { generateFilesBatch } from "../services/genrateFilesBatch.service";
 import { injectImages } from "../utils/injectImages";
 import { normalizeFiles } from "../utils/normalizeFiles";
@@ -9,11 +8,14 @@ import { runStage } from "../utils/runStage";
 import { enforceFileStructure } from "../utils/enforceFileStructure";
 import { loadTemplate } from "../utils/loadTemplate";
 import { expandFeatures } from "../services/featureExpander.service";
-import { enhanceUX } from "../services/enhanceUX.service";
-import { generateSkeletons, SkeletonMap } from "../services/generateSkeletons.service";
 import { getCachedFinalFiles, setCachedFinalFiles } from "../utils/cacheAiResponse";
 import { classifyPrompt } from "../services/classifyPrompt.service";
 import { getCachedCategory, setCachedCategory } from "../utils/categoryCache";
+import { planProject } from "../services/planner.service";
+import { planAndSkeleton, SkeletonMap } from "../services/planAndSkeleton.service";
+
+// import { generateSkeletons, SkeletonMap } from "../services/generateSkeletons.service";
+// import { enhanceUX } from "../services/enhanceUX.service";
 // import { streamLLM } from "../services/ai.service";
 // import { parseStream } from "../utils/streamParser";
 // import { enhanceFiles } from "../utils/enhanceFiles";
@@ -133,7 +135,7 @@ export const generateProject = async (req: Request, res: Response) => {
             chunkSize: number,
             skeletons: SkeletonMap,
             res: Response,
-            streamedPaths: Set<string> 
+            streamedPaths: Set<string>
         ) {
             const chunks: string[][] = [];
             const NEVER_STREAM_FROM_AI = new Set([
@@ -188,23 +190,15 @@ export const generateProject = async (req: Request, res: Response) => {
             return { files: allFiles };
         }
 
-        // Planning phase — now parallel (Fix 5 preview)
-        const [plan, featureData] = await Promise.all([
-            planProject(prompt),
-            expandFeatures(prompt)
-        ]);
-
-        plan.files = plan.files.filter((f: string) => !isBinaryFile(f));
-
-        if (!plan.files || !Array.isArray(plan.files)) {
-            throw new Error("Invalid plan from LLM");
-        }
-
-        const textFiles = plan.files.filter((f: string) => !isBinaryFile(f));
+        const featureData = await expandFeatures(prompt);
         const features = featureData.features || [];
 
-        // 🦴 NEW: Generate skeletons ONCE for all files
-        const skeletons = await generateSkeletons(textFiles, prompt, features);
+        const { files: rawFiles, skeletons } = await planAndSkeleton(prompt, features);
+
+        const textFiles = rawFiles.filter((f: string) => !isBinaryFile(f));
+        if (!textFiles.length) {
+            throw new Error("Invalid plan from planAndSkeleton");
+        }
 
         // Track streamed paths to prevent double-streaming (Fix 4)
         const streamedPaths = new Set<string>();
@@ -214,7 +208,7 @@ export const generateProject = async (req: Request, res: Response) => {
             textFiles,
             prompt,
             features,
-            5,            // 👈 was 2, now 5
+            8,            // 👈 was 5, now 8
             skeletons,
             res,
             streamedPaths
@@ -245,17 +239,17 @@ export const generateProject = async (req: Request, res: Response) => {
         files = enforceFileStructure(files, "fixCommonBugs");
 
 
-        files = await runStage("enhanceUX", async () => {
-            const enhanced = await enhanceUX(files);
-            return enhanced.files;
-        });
+        // files = await runStage("enhanceUX", async () => {
+        //     const enhanced = await enhanceUX(files);
+        //     return enhanced.files;
+        // });
 
 
-        files = await runStage("fixAfterEnhance", () =>
-            fixCommonBugs(files)
-        );
+        // files = await runStage("fixAfterEnhance", () =>
+        //     fixCommonBugs(files)
+        // );
 
-        files = enforceFileStructure(files, "fixAfterEnhance");
+        // files = enforceFileStructure(files, "fixAfterEnhance");
 
         for (const [filePath, file] of Object.entries(files)) {
             const fixedContent = typeof file === "string" ? file : (file as any)?.content || "";
@@ -296,7 +290,7 @@ export const generateProject = async (req: Request, res: Response) => {
         files = enforceFileStructure(files, "template merge");
 
         await setCachedFinalFiles(prompt, files);
-        await setCachedCategory(category, files); 
+        await setCachedCategory(category, files);
 
         // 🔥 LOOP ONLY FOR SAVING + STREAMING
         const allPaths = Object.keys(files);
