@@ -17,15 +17,14 @@ export function useFollowUp({
     const activeFileRef = useRef<string | null>(null);
     const isPatchingRef = useRef(false);
 
-    // Keep refs in sync
     filesRef.current = files;
     activeFileRef.current = activeFile;
 
     const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-    // Diff-aware patch animation — reused from useFileStreaming
     const streamPatch = async (path: string, newContent: string) => {
-        isPatchingRef.current = true;  // block WebContainer sync
+        isPatchingRef.current = true;
+
         const oldContent = filesRef.current[path]?.content || "";
         const oldLines = oldContent.split("\n");
         const newLines = newContent.split("\n");
@@ -36,48 +35,50 @@ export function useFollowUp({
             if (oldLines[i] !== newLines[i]) changedIndices.push(i);
         }
 
-        if (changedIndices.length === 0) return;
+        // Always write the final content immediately — animation is best-effort
+        updateFileContent(path, newContent, true);
 
-        const previousFile = activeFileRef.current;
+        if (changedIndices.length === 0) {
+            isPatchingRef.current = false;
+            return;
+        }
 
+        // Only animate if user hasn't manually selected a file
         if (!userSelectedRef.current) {
             setActiveFile(path);
             await sleep(50);
-        }
 
-        const workingLines = [...oldLines];
+            const workingLines = [...oldLines];
 
-        for (const lineIdx of changedIndices) {
-            const targetLine = newLines[lineIdx] ?? "";
+            for (const lineIdx of changedIndices) {
+                const targetLine = newLines[lineIdx] ?? "";
 
-            if (lineIdx >= newLines.length) {
-                workingLines.splice(lineIdx, 1);
-                updateFileContent(path, workingLines.join("\n"), true);
-                await sleep(30);
-                continue;
-            }
-
-            let charBuffer = "";
-            for (let i = 0; i < targetLine.length; i++) {
-                charBuffer += targetLine[i];
-                workingLines[lineIdx] = charBuffer;
-                if (i % 3 === 0 || i === targetLine.length - 1) {
+                if (lineIdx >= newLines.length) {
+                    workingLines.splice(lineIdx, 1);
                     updateFileContent(path, workingLines.join("\n"), true);
-                    await sleep(8);
+                    await sleep(20);
+                    continue;
                 }
+
+                let charBuffer = "";
+                for (let i = 0; i < targetLine.length; i++) {
+                    charBuffer += targetLine[i];
+                    workingLines[lineIdx] = charBuffer;
+                    if (i % 5 === 0 || i === targetLine.length - 1) {
+                        updateFileContent(path, workingLines.join("\n"), true);
+                        await sleep(6);
+                    }
+                }
+
+                workingLines[lineIdx] = targetLine;
+                await sleep(15);
             }
 
-            workingLines[lineIdx] = targetLine;
-            await sleep(20);
+            // Ensure final state is always correct
+            updateFileContent(path, newContent, true);
         }
 
-        updateFileContent(path, newContent, true);
-        isPatchingRef.current = false; // unblock
-
-        if (!userSelectedRef.current && previousFile && previousFile !== path) {
-            await sleep(300);
-            setActiveFile(previousFile);
-        }
+        isPatchingRef.current = false;
     };
 
     const sendFollowUp = async (followUpPrompt: string) => {
@@ -86,12 +87,24 @@ export function useFollowUp({
         setIsProcessing(true);
         setError(null);
 
+        // Safety net — always unlock after 60s regardless of what happens
+        const safetyTimer = setTimeout(() => {
+            setIsProcessing(false);
+            console.warn("⚠️ Follow-up safety timeout fired — unlocking UI");
+        }, 60_000);
+
         const s1 = addStep("🤖 Analyzing your request...", "ai");
 
         try {
-            // Serialize current files to send to backend
+            // Only send file paths + content — skip protected files to reduce payload
+            const SKIP_FILES = new Set([
+                "package.json", "vite.config.ts", "index.html",
+                "src/main.tsx", "tailwind.config.js", "postcss.config.js"
+            ]);
+
             const serializedFiles: Record<string, string> = {};
             for (const [path, file] of Object.entries(filesRef.current)) {
+                if (SKIP_FILES.has(path)) continue;
                 serializedFiles[path] = typeof file === "string"
                     ? file
                     : (file as any)?.content || "";
@@ -111,14 +124,20 @@ export function useFollowUp({
                 }),
             });
 
+            if (!res.ok) {
+                throw new Error(`Server error: ${res.status}`);
+            }
+
             const reader = res.body?.getReader();
+            if (!reader) throw new Error("No response body");
+
             const decoder = new TextDecoder("utf-8");
             let buffer = "";
 
             completeStep(s1);
 
             while (true) {
-                const { value, done } = await reader!.read();
+                const { value, done } = await reader.read();
                 if (done) break;
                 if (!value) continue;
 
@@ -126,14 +145,20 @@ export function useFollowUp({
                 const parts = buffer.split("\n\n");
 
                 for (let i = 0; i < parts.length - 1; i++) {
-                    const line = parts[i].replace("data: ", "").trim();
-                    if (!line) continue;
+                    const raw = parts[i].trim();
+                    if (!raw || !raw.startsWith("data: ")) continue;
 
-                    const data = JSON.parse(line);
+                    // ── Safe parse — never let one bad event kill the stream ──
+                    let data: any;
+                    try {
+                        data = JSON.parse(raw.replace("data: ", "").trim());
+                    } catch (parseErr) {
+                        console.warn("⚠️ SSE parse error, skipping chunk:", raw);
+                        continue;
+                    }
 
                     if (data.type === "plan") {
-                        // Show which files will be updated
-                        data.filesToChange.forEach((filePath: string) => {
+                        (data.filesToChange ?? []).forEach((filePath: string) => {
                             const fileName = filePath.split("/").pop();
                             addStep(`Updating ${fileName}`, "file");
                         });
@@ -147,11 +172,13 @@ export function useFollowUp({
 
                     if (data.type === "done") {
                         addStep("✅ Changes applied!", "ai");
+                        clearTimeout(safetyTimer);
                         setIsProcessing(false);
                     }
 
                     if (data.type === "error") {
                         setError("Something went wrong. Please try again.");
+                        clearTimeout(safetyTimer);
                         setIsProcessing(false);
                     }
                 }
@@ -161,6 +188,9 @@ export function useFollowUp({
         } catch (err) {
             console.error("Follow-up error:", err);
             setError("Failed to apply changes. Please try again.");
+        } finally {
+            // Always clean up — even if something above throws
+            clearTimeout(safetyTimer);
             setIsProcessing(false);
         }
     };
