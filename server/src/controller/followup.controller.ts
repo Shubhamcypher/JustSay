@@ -10,6 +10,11 @@ function cleanJSON(text: string) {
     return text.replace(/```json/g, "").replace(/```/g, "").trim();
 }
 
+const PROTECTED_FILES = new Set([
+    "package.json", "vite.config.ts", "index.html",
+    "src/main.tsx", "tailwind.config.js", "postcss.config.js"
+]);
+
 export const followUpProject = async (req: Request, res: Response) => {
     const { followUpPrompt, originalPrompt, projectId, files } = req.body;
 
@@ -17,16 +22,25 @@ export const followUpProject = async (req: Request, res: Response) => {
     if (!followUpPrompt) return res.status(400).json({ message: "Follow-up prompt required" });
     if (!files || typeof files !== "object") return res.status(400).json({ message: "Files required" });
 
-    // SSE headers
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 
+    // ── Helper to safely end the stream ─────────────────────────────────────
+    const sendEvent = (data: object) => {
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+
+    let keepAlive;
+
     try {
+        // Keeps SSE connection alive during long LLM calls
+        keepAlive = setInterval(() => {
+            res.write(": ping\n\n"); // SSE comment — browsers ignore it, connection stays open
+        }, 15_000);
+        const fileList = Object.keys(files).filter(f => !PROTECTED_FILES.has(f));
 
-        // ─── Step 1 — Identify which files need changing (cheap, mini model) ───
-        const fileList = Object.keys(files);
-
+        // ── Step 1: Identify files to change (gpt-4o-mini, cheap) ───────────
         const identifyRes = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             temperature: 0,
@@ -37,67 +51,85 @@ export const followUpProject = async (req: Request, res: Response) => {
                     content: `
 You are a senior React engineer.
 
-Given a follow-up instruction and a list of project files, identify ONLY the files that need to be changed.
+Given a follow-up instruction and a list of project files, return:
+1. The files that need to be modified
+2. Their direct dependencies that provide context (imports they rely on)
 
 Return JSON:
 {
-  "filesToChange": ["src/pages/CartPage.tsx", "src/context/CartContext.tsx"]
+  "filesToChange": ["src/pages/CartPage.tsx"],
+  "contextFiles": ["src/context/CartContext.tsx", "src/utils/constants.ts"]
 }
 
 Rules:
-- Be minimal — only include files that MUST change
-- If a new file needs to be created, include its path
-- NEVER include package.json, vite.config.ts, index.html, src/main.tsx, tailwind.config.js
-- Maximum 5 files per follow-up to keep costs low
-- If the change is purely visual (colors, spacing), only include the affected component
-- If the change is data/logic, include context + affected pages
-`
+- filesToChange: ONLY files that need actual edits (max 5)
+- contextFiles: files that won't change but are needed as reference (imports, shared types, constants)
+- Never include protected files: package.json, vite.config.ts, index.html, src/main.tsx
+- If purely visual change → only the affected component in filesToChange
+- If logic/data change → include context file + affected pages
+- contextFiles should never overlap with filesToChange
+`,
                 },
                 {
                     role: "user",
                     content: `
 Original app: ${originalPrompt || "A React application"}
-
 Follow-up instruction: ${followUpPrompt}
 
-All project files:
-${fileList.join("\n")}
+Project files (with content preview):
+${fileList.map(f => {
+                        const content = typeof files[f] === "string"
+                            ? files[f]
+                            : files[f]?.content || "";
+                        const preview = content.slice(0, 500).replace(/\n/g, " ");
+                        return `${f}: ${preview}`;
+                    }).join("\n")}
 
-Which files need to change?
-`
-                }
-            ]
+Which files need to change, and which provide needed context?
+`,
+                },
+            ],
         });
 
-        const identifyRaw = identifyRes.choices[0].message.content || "{}";
-        const identifyJson = JSON.parse(identifyRaw);
-        const filesToChange: string[] = identifyJson.filesToChange || [];
+        const identifyJson = JSON.parse(identifyRes.choices[0].message.content || "{}");
+        const filesToChange: string[] = (identifyJson.filesToChange || [])
+            .filter((f: string) => !PROTECTED_FILES.has(f));
+        const contextFiles: string[] = (identifyJson.contextFiles || [])
+            .filter((f: string) => !PROTECTED_FILES.has(f) && !filesToChange.includes(f));
 
         if (filesToChange.length === 0) {
-            res.write(`data: ${JSON.stringify({ type: "error", message: "Could not identify files to change" })}\n\n`);
+            sendEvent({ type: "error", message: "Could not identify files to change" });
             res.end();
             return;
         }
 
-        console.log("📝 Follow-up: files to change:", filesToChange);
+        console.log("📝 filesToChange:", filesToChange);
+        console.log("📚 contextFiles:", contextFiles);
 
-        // Stream which files will be updated so frontend can show them
-        res.write(`data: ${JSON.stringify({
-            type: "plan",
-            filesToChange
-        })}\n\n`);
+        sendEvent({ type: "plan", filesToChange });
 
-        // ─── Step 2 — Generate updated files (only the identified ones) ──────
-        // Build context — only send the files that need changing + their direct imports
-        const relevantFiles: Record<string, string> = {};
-        for (const filePath of filesToChange) {
-            if (files[filePath]) {
-                relevantFiles[filePath] = typeof files[filePath] === "string"
-                    ? files[filePath]
-                    : files[filePath]?.content || "";
-            }
-        }
+        // ── Step 2: Build context-aware prompt ───────────────────────────────
+        // Files being changed — full content
+        const filesToChangeContent = filesToChange
+            .map(f => {
+                const content = typeof files[f] === "string"
+                    ? files[f]
+                    : files[f]?.content || "";
+                return `=== ${f} (MODIFY THIS) ===\n${content}`;
+            })
+            .join("\n\n");
 
+        // Context files — for reference only, don't modify
+        const contextContent = contextFiles
+            .map(f => {
+                const content = typeof files[f] === "string"
+                    ? files[f]
+                    : files[f]?.content || "";
+                return `=== ${f} (CONTEXT ONLY — do not return this file) ===\n${content}`;
+            })
+            .join("\n\n");
+
+        // ── Step 3: Generate updated files (gpt-4o) ──────────────────────────
         const generateRes = await openai.chat.completions.create({
             model: "gpt-4o",
             temperature: 0.2,
@@ -106,12 +138,9 @@ Which files need to change?
                 {
                     role: "system",
                     content: `
-You are a senior React + TypeScript engineer.
+You are a senior React + TypeScript engineer making targeted edits to an existing codebase.
 
-You will receive existing file contents and a follow-up instruction.
-Update ONLY what is necessary to implement the instruction.
-
-Return ONLY valid JSON:
+Return ONLY valid JSON — no markdown, no backticks:
 {
   "files": {
     "filePath": "complete updated file content"
@@ -119,71 +148,83 @@ Return ONLY valid JSON:
 }
 
 Rules:
-- Return the COMPLETE file content — not just the changed parts
-- Keep all existing functionality intact — only add/modify what the instruction asks
-- Keep all existing imports, exports, and component names
-- Use Tailwind CSS for styling — no new CSS files
-- Mock data only — no fetch() or API calls
-- DO NOT add new npm packages
-- Every returned file must be complete and runnable
-- If creating a new file, write it from scratch following the existing code style
+- Return COMPLETE file content — never partial snippets
+- Only return files marked "MODIFY THIS" — never return context-only files
+- Keep all existing imports, exports, and component names intact
+- Only change what the instruction asks — preserve everything else
+- Tailwind CSS only — no new CSS files
+- No fetch() or API calls — mock data only
+- No new npm packages
+- Follow the same code style as the existing files
 
 DEFENSIVE CODING:
-- Arrays must use ?? [] before .map()
-- Numbers must use ?? 0
-- Optional chaining on all object access
-`
+- (array ?? []).map(...)
+- (value ?? 0).toFixed(2)
+- optional chaining: obj?.prop ?? fallback
+`,
                 },
                 {
                     role: "user",
                     content: `
-Original app context: ${originalPrompt || "A React application"}
+Original app: ${originalPrompt || "A React application"}
+Follow-up instruction: "${followUpPrompt}"
 
-Follow-up instruction: ${followUpPrompt}
+${contextContent ? `CONTEXT (reference only — do not return these):\n${contextContent}\n\n` : ""}
+FILES TO MODIFY:
+${filesToChangeContent}
 
-Files to update:
-${Object.entries(relevantFiles).map(([path, content]) => `
-=== ${path} ===
-${content}
-`).join("\n")}
-
-Return updated versions of all files listed above.
-`
-                }
-            ]
+Return updated versions of the "MODIFY THIS" files only.
+`,
+                },
+            ],
         });
 
-        const generateRaw = generateRes.choices[0].message.content || "";
-        const generateCleaned = cleanJSON(generateRaw);
-        const generateJson = JSON.parse(generateCleaned);
+        const raw = generateRes.choices[0].message.content || "";
+        const generateJson = JSON.parse(cleanJSON(raw));
 
         if (!generateJson.files || typeof generateJson.files !== "object") {
             throw new Error("Invalid generation response");
         }
 
-        // Run fixCommonBugs on generated files
-        let fixedFiles = enforceFileStructure(generateJson.files, "followup");
-        fixedFiles = fixCommonBugs(fixedFiles);
-        fixedFiles = enforceFileStructure(fixedFiles, "followup-fixed");
-
-        // Add before the for loop that streams patches
-        console.log("📝 Follow-up generated files:", Object.keys(fixedFiles));
-        for (const [filePath, file] of Object.entries(fixedFiles)) {
-            const content = typeof file === "string" ? file : (file as any)?.content || "";
-            console.log(`📄 ${filePath} (${content.length} chars):\n${content.slice(0, 200)}...`);
+        // Strip any protected or context-only files the model returned anyway
+        for (const key of Object.keys(generateJson.files)) {
+            if (PROTECTED_FILES.has(key) || contextFiles.includes(key)) {
+                console.warn(`⚠️ Stripping unexpected file from follow-up response: ${key}`);
+                delete generateJson.files[key];
+            }
         }
 
-        // Stream each changed file as a patch event
+        // ── Step 4: Fix + stream ─────────────────────────────────────────────
+        // AFTER — merge full project first so fixCommonBugs knows all components exist
+        const fullProjectFiles: Record<string, { content: string }> = {};
+        for (const [path, content] of Object.entries(files)) {
+            fullProjectFiles[path] = {
+                content: typeof content === "string" ? content : (content as any)?.content || ""
+            };
+        }
+
+        // Merge: full project + AI changes (AI changes win)
+        const mergedForFix = enforceFileStructure(
+            { ...fullProjectFiles, ...generateJson.files },
+            "followup-merge"
+        );
+
+        // Fix runs with full context — knows all components exist
+        const allFixed = fixCommonBugs(mergedForFix);
+
+        // Extract ONLY the changed files to stream back — not the whole project
+        const fixedFiles: Record<string, { content: string }> = {};
+        for (const changedPath of Object.keys(generateJson.files)) {
+            if (allFixed[changedPath]) {
+                fixedFiles[changedPath] = allFixed[changedPath];
+            }
+        }
+
         for (const [filePath, file] of Object.entries(fixedFiles)) {
             const content = typeof file === "string" ? file : (file as any)?.content || "";
 
-            res.write(`data: ${JSON.stringify({
-                type: "patch",
-                path: filePath,
-                content
-            })}\n\n`);
+            sendEvent({ type: "patch", path: filePath, content });
 
-            // Save to DB if projectId provided
             if (projectId) {
                 await pool.query(
                     `INSERT INTO project_files (project_id, path, content)
@@ -194,12 +235,14 @@ Return updated versions of all files listed above.
             }
         }
 
-        res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+        sendEvent({ type: "done" });
+        clearInterval(keepAlive);
         res.end();
 
     } catch (err) {
         console.error("FOLLOW-UP ERROR:", err);
-        res.write(`data: ${JSON.stringify({ type: "error" })}\n\n`);
+        clearInterval(keepAlive);
+        sendEvent({ type: "error" });
         res.end();
     }
 };
