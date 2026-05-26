@@ -11,7 +11,7 @@ export function FollowUpBar({
     isProcessing,
     onFollowUp,
 }: {
-    isReady: boolean;
+    isReady: string | null;
     isProcessing: boolean;
     onFollowUp: (text: string) => void;
 }) {
