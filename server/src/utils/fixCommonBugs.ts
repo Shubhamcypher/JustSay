@@ -483,6 +483,11 @@ export const ${exportName} = [
       (fullMatch: string, importName: string, importPath: string) => {
         const fileName = importPath.split("/").pop()?.replace(/\.(tsx|ts)$/, "") || "";
         if (!knownComponents.has(fileName) && !knownComponents.has(importName)) {
+          // ✅ Never strip imports from route files — pages arrive in later chunks
+          // and will appear missing even when they exist
+          if (/routes?\.(tsx|jsx)$/i.test(p) || importPath.includes("/pages/")) {
+            return fullMatch;
+          }
           console.warn(`🔧 Removed missing import: ${importName} from ${importPath} in ${p}`);
           return `// removed: import ${importName} — file not in project`;
         }
@@ -503,15 +508,15 @@ export const ${exportName} = [
         new RegExp(`\\.map\\([^)]*=>\\s*\\(\\s*<${name}[^>]*>[\\s\\S]*?<\\/${name}>\\s*\\)`, "g"),
         `.map(() => null)`
       );
-      // Standalone self-closing tag
+      // Standalone self-closing tag — wrap in div so element={} gets valid JSX
       c = c.replace(
         new RegExp(`<${name}[^>]*\\/\\s*>`, "g"),
-        `{/* ${name} not available */}`
+        `<div />`
       );
       // Standalone open/close tag
       c = c.replace(
         new RegExp(`<${name}[^>]*>[\\s\\S]*?<\\/${name}>`, "g"),
-        `{/* ${name} not available */}`
+        `<div />`
       );
     }
 
