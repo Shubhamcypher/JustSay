@@ -11,9 +11,9 @@ import { expandFeatures } from "../services/featureExpander.service";
 import { getCachedFinalFiles, setCachedFinalFiles } from "../utils/cacheAiResponse";
 import { classifyPrompt } from "../services/classifyPrompt.service";
 import { getCachedCategory, setCachedCategory } from "../utils/categoryCache";
-import { planProject } from "../services/planner.service";
 import { planAndSkeleton, SkeletonMap } from "../services/planAndSkeleton.service";
 
+// import { planProject } from "../services/planner.service";
 // import { generateSkeletons, SkeletonMap } from "../services/generateSkeletons.service";
 // import { enhanceUX } from "../services/enhanceUX.service";
 // import { streamLLM } from "../services/ai.service";
@@ -219,37 +219,10 @@ export const generateProject = async (req: Request, res: Response) => {
             preFixSnapshot[p] = typeof f === "string" ? f : (f as any)?.content || "";
         }
 
-
-        let files = await runStage("normalizeFiles (initial)", () =>
-            normalizeFiles(result.files)
-        );
-
-        files = enforceFileStructure(files, "normalizeFiles initial");
-
-        files = await runStage("normalizeFiles (after fixer)", () =>
-            normalizeFiles(files)
-        );
-
-        files = enforceFileStructure(files, "normalizeFiles after fixer");
-
-        files = await runStage("fixCommonBugs", () =>
-            fixCommonBugs(files)
-        );
-
-        files = enforceFileStructure(files, "fixCommonBugs");
-
-
-        // files = await runStage("enhanceUX", async () => {
-        //     const enhanced = await enhanceUX(files);
-        //     return enhanced.files;
-        // });
-
-
-        // files = await runStage("fixAfterEnhance", () =>
-        //     fixCommonBugs(files)
-        // );
-
-        // files = enforceFileStructure(files, "fixAfterEnhance");
+        let files = normalizeFiles(result.files);
+        files = enforceFileStructure(files, "post-generate");
+        files = fixCommonBugs(files);
+        files = enforceFileStructure(files, "post-fix");
 
         for (const [filePath, file] of Object.entries(files)) {
             const fixedContent = typeof file === "string" ? file : (file as any)?.content || "";
