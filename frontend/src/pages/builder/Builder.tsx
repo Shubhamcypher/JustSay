@@ -123,7 +123,7 @@ export default function Builder() {
 
                 {/* Follow-up bar — same UI as FileSidebar's bottom, calls same sendFollowUp */}
                 <FollowUpBar
-                    isReady={streaming.isReady}
+                    isReady={previewUrl}
                     isProcessing={isProcessing}
                     onFollowUp={sendFollowUp}
                 />
