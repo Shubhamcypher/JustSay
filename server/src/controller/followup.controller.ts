@@ -3,6 +3,7 @@ import { pool } from "../config/db";
 import OpenAI from "openai";
 import { fixCommonBugs } from "../utils/fixCommonBugs";
 import { enforceFileStructure } from "../utils/enforceFileStructure";
+import { injectImages } from "../utils/injectImages";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -210,7 +211,9 @@ Return updated versions of the "MODIFY THIS" files only.
         );
 
         // Fix runs with full context — knows all components exist
-        const allFixed = fixCommonBugs(mergedForFix);
+        let allFixed = fixCommonBugs(mergedForFix);
+        //injecting images
+        allFixed = injectImages(allFixed, originalPrompt || "") as typeof allFixed;
 
         // Extract ONLY the changed files to stream back — not the whole project
         const fixedFiles: Record<string, { content: string }> = {};
