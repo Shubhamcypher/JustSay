@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import {Loader2 , Mic} from "lucide-react";
+import { Mic } from "lucide-react";
 import { useRef, useState } from "react";
 import AddMenu from "@/components/customComponents/home/AddMenu";
 
@@ -71,10 +71,10 @@ export function FollowUpBar({
                                 }}
                                 transition={{ duration: 2, repeat: Infinity }}
                                 className={`w-2 h-2 rounded-full ${isProcessing
-                                        ? "bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,.6)]"
-                                        : isReady
-                                            ? "bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,.5)]"
-                                            : "bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,.5)]"
+                                    ? "bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,.6)]"
+                                    : isReady
+                                        ? "bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,.5)]"
+                                        : "bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,.5)]"
                                     }`}
                             />
                             <span className="text-[11px] text-white/35 font-mono tracking-[0.04em]">
@@ -93,7 +93,7 @@ export function FollowUpBar({
                     </div>
 
                     {/* Textarea */}
-                    <div className="px-4 pt-3 pb-2">
+                    <div className="px-4 py-3">
                         <textarea
                             ref={taRef}
                             value={text}
@@ -107,7 +107,7 @@ export function FollowUpBar({
                             className="w-full bg-transparent text-sm text-white/88 placeholder-white/[0.16]
                                        resize-none outline-none custom-scrollbar leading-relaxed
                                        [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-thumb]:bg-violet-500/30 [&::-webkit-scrollbar-thumb]:rounded"
-                            style={{ minHeight: "56px", maxHeight: "130px" }}
+                            style={{ maxHeight: "130px" }}
                         />
                     </div>
 
@@ -140,62 +140,45 @@ export function FollowUpBar({
                     {/* Footer */}
                     <div className="flex items-center justify-between px-3 pb-3 pt-1">
 
-    {/* Left Side */}
-    <div className="flex items-center gap-2">
-        {/* Add Menu */}
-        <AddMenu/>
-    </div>
+                        {/* Left Side */}
+                        <div className="flex items-center gap-2">
+                            {/* Add Menu */}
+                            <AddMenu />
+                        </div>
 
-    {/* Right Side */}
-    <div className="flex items-center gap-2">
+                        {/* Right Side */}
+                        <div className="flex items-center gap-2">
 
-        {/* Mic */}
-        <button className="p-2 rounded-lg hover:bg-white/5 transition">
-            <Mic size={18} className="text-white/50" />
-        </button>
+                            {/* Mic */}
+                            <button className="p-2 rounded-lg hover:bg-white/5 transition">
+                                <Mic size={18} className="text-white/50" />
+                            </button>
 
-        {/* Send */}
-        <motion.button
-            onClick={handleSubmit}
-            disabled={!canSend}
-            whileHover={canSend ? { y: -1 } : {}}
-            whileTap={canSend ? { scale: 0.96 } : {}}
-            className={`flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-medium border transition-colors duration-150 ${
-                canSend
-                    ? "bg-violet-500/18 text-violet-300 border-violet-500/25 hover:bg-violet-500/30 hover:border-violet-500/50 hover:text-violet-200"
-                    : "bg-white/[0.03] text-white/[0.15] border-white/[0.06] cursor-not-allowed"
-            }`}
-        >
-            {isProcessing ? (
-                <>
-                    <Loader2 size={12} className="animate-spin" />
-                    <span>Applying…</span>
-                </>
-            ) : (
-                <>
-                    <span>Send</span>
-
-                    <motion.svg
-                        animate={canSend ? { x: [0, 1, 0], y: [0, -1, 0] } : {}}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        width="13"
-                        height="13"
-                        viewBox="0 0 13 13"
-                        fill="none"
-                    >
-                        <path
-                            d="M2 11L11 2M11 2H5M11 2V8"
-                            stroke="currentColor"
-                            strokeWidth="1.7"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </motion.svg>
-                </>
-            )}
-        </motion.button>
-    </div>
-</div>
+                            {/* Send */}
+                            <motion.button
+                                onClick={handleSubmit}
+                                disabled={!canSend}
+                                whileHover={canSend ? { y: -1 } : {}}
+                                whileTap={canSend ? { scale: 0.96 } : {}}
+                                className={`p-2.5 rounded-xl border transition-colors duration-150 ${canSend
+                                    ? "bg-violet-500/18 text-violet-300 border-violet-500/25 hover:bg-violet-500/30 hover:border-violet-500/50 hover:text-violet-200"
+                                    : "bg-white/[0.03] text-white/[0.15] border-white/[0.06] cursor-not-allowed opacity-40"
+                                    }`}
+                            >
+                                <motion.svg
+                                    animate={canSend ? { x: [0, 1, 0], y: [0, -1, 0] } : {}}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                    width="15"
+                                    height="15"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    style={{ transform: "rotate(0deg)" }}
+                                >
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                </motion.svg>
+                            </motion.button>
+                        </div>
+                    </div>
 
 
                 </div>
