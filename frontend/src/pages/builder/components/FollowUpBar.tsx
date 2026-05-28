@@ -103,7 +103,7 @@ export function FollowUpBar({
                             onBlur={() => setFocused(false)}
                             disabled={!isReady || isProcessing}
                             placeholder="Describe what to change, add, or fix…"
-                            rows={2}
+                            rows={1}
                             className="w-full bg-transparent text-sm text-white/88 placeholder-white/[0.16]
                                        resize-none outline-none custom-scrollbar leading-relaxed
                                        [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-thumb]:bg-violet-500/30 [&::-webkit-scrollbar-thumb]:rounded"
@@ -112,7 +112,7 @@ export function FollowUpBar({
                     </div>
 
                     {/* Chips */}
-                    <div className="flex gap-1.5 px-3.5 pb-3.5 overflow-x-auto scrollbar-none">
+                    <div className="flex gap-1.5 px-3 py-2 overflow-x-auto scrollbar-none">
                         {CHIPS.map((chip, i) => (
                             <motion.button
                                 key={chip}
