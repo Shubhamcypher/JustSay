@@ -309,3 +309,41 @@ export async function updateFile(req: Request, res: Response) {
     res.status(500).json({ message: "Failed to update file" });
   }
 }
+
+export async function getProjectFiles(req: Request, res: Response) {
+  const { id } = req.params;
+
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    // Verify ownership or membership
+    const projectCheck = await pool.query(
+      `SELECT p.id FROM projects p
+       LEFT JOIN project_members pm ON p.id = pm.project_id
+       WHERE p.id = $1 AND (p.owner_id = $2 OR pm.user_id = $2)`,
+      [id, req.user.userId]
+    );
+
+    if (projectCheck.rows.length === 0) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    const filesRes = await pool.query(
+      `SELECT path, content FROM project_files WHERE project_id = $1`,
+      [id]
+    );
+
+    const files: Record<string, { content: string }> = {};
+    for (const row of filesRes.rows) {
+      files[row.path] = { content: row.content };
+    }
+
+    res.json({ files });
+
+  } catch (error) {
+    console.error("GET PROJECT FILES ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch project files" });
+  }
+}
