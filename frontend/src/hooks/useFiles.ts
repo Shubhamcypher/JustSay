@@ -41,7 +41,15 @@ export function useFiles(userSelectedRef: any) {
         fromStream
       },
     }));
+
+    // Auto-register path in tree if it doesn't exist yet
+    setFilePaths((prev) => {
+      if (prev.includes(path)) return prev;
+      return [...prev, path];
+    });
   };
+
+
 
   return {
     files,
