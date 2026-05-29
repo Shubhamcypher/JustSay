@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/auth.middleware";
-import { createProject, deleteProject, getProjectById, getProjects, startProject, stopProject } from "../controller/project.controller";
+import { createProject, deleteProject, getProjectById, getProjectFiles, getProjects, startProject, stopProject } from "../controller/project.controller";
 
 const router = Router();
 
@@ -13,5 +13,7 @@ router.delete("/:id", authenticate, deleteProject);
 
 router.post("/:id/start", authenticate, startProject);
 router.post("/:id/stop", authenticate, stopProject);
+
+router.get("/:id/files", authenticate, getProjectFiles);
 
 export default router;
