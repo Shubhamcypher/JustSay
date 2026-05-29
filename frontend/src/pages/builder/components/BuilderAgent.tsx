@@ -3,6 +3,7 @@ import { Sparkles } from "lucide-react";
 import StepsPanel from "./StepsPanel";
 import { useAppDescription } from "@/hooks/useAppDescription";
 import StepHistory from "./StepHistory";
+import type { ChatMessage } from "../Builder";
 
 type Props = {
     isReady: boolean;
@@ -11,6 +12,7 @@ type Props = {
     url: string | null;
     prompt: string;
     files: Record<string, any>;
+    chatHistory: ChatMessage[]; 
 };
 
 
