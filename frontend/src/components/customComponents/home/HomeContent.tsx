@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useProjects } from "@/context/ProjectContext";
+import { useNavigate } from "react-router-dom";
 
 type TabType = "projects" | "recent" | "templates";
 type ProjectType = "created" | "shared" | "starred";
 
 export default function HomeContent() {
   const { projects } = useProjects();
+  const navigate = useNavigate();
 
   const [tab, setTab] = useState<TabType>("projects");
   const [projectType, setProjectType] =
@@ -79,7 +81,15 @@ export default function HomeContent() {
             data.map((p) => (
               <div
                 key={p.id}
-                className="h-36 md:h-40 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm md:text-base active:scale-[0.98] transition-transform"
+                onClick={() =>
+                  navigate("/builder", {
+                    state: { projectId: p.id, projectName: p.name, mode: "load" },
+                  })
+                }
+                className="h-36 md:h-40 rounded-xl bg-white/5 border border-white/10
+                           flex items-center justify-center text-sm md:text-base
+                           cursor-pointer active:scale-[0.98] transition-transform
+                           hover:border-white/20 hover:bg-white/10"   // ← added hover styles
               >
                 {p.name}
               </div>
