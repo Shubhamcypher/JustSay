@@ -36,6 +36,9 @@ export function useWebContainer(
   isPatchingRef?: React.RefObject<boolean>
 ) {
   const [url, setUrl] = useState<string | null>(null);
+  
+  // Track when wc is ready so we can re-trigger the main effect
+  const [wcReady, setWcReady] = useState(false);
 
   const wcRef = useRef<any>(null);
   const startedRef = useRef(false);
@@ -59,6 +62,7 @@ export function useWebContainer(
         setUrl(url);
         onLog?.("🌐 Preview ready!");
       });
+      setWcReady(true); // ← trigger the main effect to re-run
     };
 
     init();
@@ -97,6 +101,7 @@ export function useWebContainer(
   useEffect(() => {
     if (!wcRef.current) return;
     if (!isReady) return;
+    if (Object.keys(files).length === 0) return;
 
     const wc = wcRef.current;
 
@@ -322,7 +327,7 @@ export function useWebContainer(
     syncTimeoutRef.current = setTimeout(() => {
       run();
     }, 100);
-  }, [files, isReady]);
+  }, [files, isReady, wcReady]);
 
   return url;
 }
