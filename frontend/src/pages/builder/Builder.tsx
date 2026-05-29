@@ -16,6 +16,7 @@ import BuilderAgent from "./components/BuilderAgent";
 import { useResizable } from "./hooks/useResizable";
 import ResizeHandle from "@/components/resizeHandle";
 import { motion } from "framer-motion";
+import { getProjectFiles } from "@/api/project.api";
 
 export type ChatMessage = {
     id: string;
@@ -28,6 +29,7 @@ export default function Builder() {
     const { state } = useLocation();
     const prompt = state?.prompt;
     const projectId = state?.projectId;
+    const mode = state?.mode;
 
     const userSelectedRef = useRef(false);
     const [rightTab, setRightTab] = useState<RightTab>("preview");
@@ -108,6 +110,22 @@ export default function Builder() {
         chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [chatHistory, isProcessing]);
 
+    // ── Load saved project files when navigating from Home ──────────────
+    useEffect(() => {
+        if (mode !== "load" || !projectId) return;
+
+        getProjectFiles(projectId)           // ← from project.api.ts
+            .then(({ data }) => {
+                for (const [path, file] of Object.entries(
+                    data.files as Record<string, { content: string }>
+                )) {
+                    fileSystem.updateFileContent(path, file.content, false);
+                }
+                streaming.markReady();           // flip isReady so WebContainer boots
+            })
+            .catch((err) => console.error("Failed to load project files:", err));
+    }, [mode, projectId]);
+
     return (
         <div className="h-screen flex bg-[#0f1117] text-white overflow-hidden">
 
@@ -161,11 +179,10 @@ export default function Builder() {
                                     <Sparkles size={12} className="text-white" />
                                 </div>
                             )}
-                            <div className={`text-sm px-4 py-2.5 rounded-2xl max-w-[85%] leading-relaxed ${
-                                msg.role === "user"
+                            <div className={`text-sm px-4 py-2.5 rounded-2xl max-w-[85%] leading-relaxed ${msg.role === "user"
                                     ? "bg-violet-600/80 text-white rounded-br-sm"
                                     : "bg-white/[0.05] border border-white/[0.08] text-white/80 rounded-bl-sm"
-                            }`}>
+                                }`}>
                                 {msg.text}
                             </div>
                         </motion.div>
