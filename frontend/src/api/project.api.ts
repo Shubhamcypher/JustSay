@@ -20,3 +20,6 @@ export const stopProject = (id: string) =>
 
 export const getFiles = (projectId: string) =>
   API.get(`/files/${projectId}`);
+
+export const getProjectFiles = (projectId: string) =>
+  API.get(`/projects/${projectId}/files`);
