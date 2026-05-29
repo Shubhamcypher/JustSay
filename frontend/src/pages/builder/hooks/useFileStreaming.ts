@@ -12,6 +12,7 @@ export function useFileStreaming({
     userSelectedRef
 }: any) {
     const [isReady, setIsReady] = useState(false);        // true once all files are streamed and finalized
+    const markReady = () => setIsReady(true);
     const [finalFiles, setFinalFiles] = useState<any>(null); // snapshot of files when streaming completes
 
     const streamQueueRef = useRef<any[]>([]);       // queue of incoming files waiting to be streamed
@@ -247,5 +248,6 @@ export function useFileStreaming({
     return {
         isReady,    // consumer uses this to know when to show the final result
         finalFiles, // snapshot of all files at completion time
+        markReady
     };
 }
