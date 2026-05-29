@@ -83,30 +83,45 @@ export function useFollowUp({
     };
 
     // Add this helper outside sendFollowUp:
+    // Replace the summarizeChanges signature to accept a diff map
     const summarizeChanges = async (
         followUpPrompt: string,
-        patchedFiles: string[]
+        diffMap: Record<string, { added: number; removed: number }>
     ): Promise<string> => {
+        const diffLines = Object.entries(diffMap)
+            .map(([path, { added, removed }]) => {
+                const name = path.split("/").pop()?.replace(/\.(tsx|ts)$/, "") ?? path;
+                const parts = [];
+                if (added > 0) parts.push(`+${added} lines`);
+                if (removed > 0) parts.push(`-${removed} lines`);
+                return `${name} (${parts.join(", ")})`;
+            })
+            .join("; ");
+
         try {
-            const res = await fetch("https://api.anthropic.com/v1/messages", {
+            const res = await fetch("https://api.openai.com/v1/chat/completions", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+                },
                 body: JSON.stringify({
-                    model: "claude-haiku-4-5-20251001",
-                    max_tokens: 60,
+                    model: "gpt-4o-mini",
+                    max_tokens: 80,
+                    temperature: 0.4,
                     messages: [{
                         role: "user",
                         content: `User asked: "${followUpPrompt}"
-Files changed: ${patchedFiles.map(f => f.split("/").pop()?.replace(/\.(tsx|ts)$/, "")).join(", ")}
-
-Write one short friendly sentence confirming what was done. No technical jargon. Max 15 words.`
+    Changes made: ${diffLines}
+    
+    Write one short friendly sentence describing what was updated and what the main change was. Be specific about the files/features. Max 20 words. No technical jargon.`
                     }]
                 })
             });
             const data = await res.json();
-            return data.content?.[0]?.text?.trim() || "Done!";
+            return data.choices?.[0]?.message?.content?.trim() || "Done! Changes applied.";
         } catch {
-            return "Done!";
+            return "Done! Changes applied.";
         }
     };
 
@@ -164,7 +179,8 @@ Write one short friendly sentence confirming what was done. No technical jargon.
             let buffer = "";
 
             completeStep(s1);
-            const patchedFiles: string[] = [];
+            const beforeSnapshot: Record<string, string> = {};
+            const patchedDiff: Record<string, { added: number; removed: number }> = {};
             while (true) {
                 const { value, done } = await reader.read();
                 if (done) break;
@@ -194,22 +210,33 @@ Write one short friendly sentence confirming what was done. No technical jargon.
                     }
 
                     if (data.type === "patch") {
-                        patchedFiles.push(data.path);
+                        // Capture before-state on first patch for this file
+                        if (!beforeSnapshot[data.path]) {
+                            beforeSnapshot[data.path] = filesRef.current[data.path]?.content ?? "";
+                        }
+
                         await streamPatch(data.path, data.content);
+
+                        // Compute line diff
+                        const oldArr = beforeSnapshot[data.path].split("\n");
+                        const newArr = data.content.split("\n");
+                        const added = Math.max(0, newArr.length - oldArr.length);
+                        const removed = Math.max(0, oldArr.length - newArr.length);
+                        patchedDiff[data.path] = { added, removed };
+
                         const fileName = data.path.split("/").pop();
                         completeStep(addStep(`✅ Updated ${fileName}`, "file"));
                     }
 
                     if (data.type === "done") {
-                        const summary = await summarizeChanges(followUpPrompt, patchedFiles);
-                        addChatMessage("ai", summary); clearTimeout(safetyTimer);
-                        setIsProcessing(false);
+                        const summary = await summarizeChanges(followUpPrompt, patchedDiff);
+                        addChatMessage("ai", summary);
+                        break;
                     }
 
                     if (data.type === "error") {
                         addChatMessage("ai", "Something went wrong. Please try again.");
-                        clearTimeout(safetyTimer);
-                        setIsProcessing(false);
+                        break;
                     }
                 }
 
