@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect } from "react"; // ← add useEffect
 import { Eye, Code2, Sparkles } from "lucide-react";
 import { useFiles } from "@/hooks/useFiles";
@@ -26,6 +26,7 @@ export type ChatMessage = {
 };
 
 export default function Builder() {
+    const navigate = useNavigate();
     const { state } = useLocation();
     const prompt = state?.prompt;
     const projectId = state?.projectId;
@@ -114,17 +115,22 @@ export default function Builder() {
     useEffect(() => {
         if (mode !== "load" || !projectId) return;
 
-        getProjectFiles(projectId)           // ← from project.api.ts
+        getProjectFiles(projectId)
             .then(({ data }) => {
-                for (const [path, file] of Object.entries(
-                    data.files as Record<string, { content: string }>
-                )) {
-                    fileSystem.updateFileContent(path, file.content, false);
+                const fileMap = data.files as Record<string, { content: string }>;
+
+                // Must use addFile (not updateFileContent) so filePaths gets populated
+                for (const [path, file] of Object.entries(fileMap)) {
+                    fileSystem.addFile({ path, content: file.content });
                 }
-                streaming.markReady();           // flip isReady so WebContainer boots
+
+                // Give React a tick to flush all addFile state updates
+                setTimeout(() => {
+                    streaming.markReady();
+                }, 150);
             })
             .catch((err) => console.error("Failed to load project files:", err));
-    }, [mode, projectId]);
+    }, []); // runs once on mount
 
     return (
         <div className="h-screen flex bg-[#0f1117] text-white overflow-hidden">
@@ -135,11 +141,11 @@ export default function Builder() {
                 className="flex-shrink-0 flex flex-col border-r border-white/[0.06] bg-[#13151c]"
             >
                 {/* Logo header */}
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06] shrink-0">
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06] shrink-0 cursor-pointer">
                     <div className="w-5 h-5 rounded bg-violet-500 flex items-center justify-center">
                         <span className="text-[10px] font-bold">J</span>
                     </div>
-                    <span className="text-sm font-semibold text-white/70 tracking-wide">Justsay</span>
+                    <span className="text-sm font-semibold text-white/70 tracking-wide" onClick={()=>navigate('/')}>Justsay</span>
                 </div>
 
                 {/* ── Scrollable chat area ─────────────────────────────────── */}
@@ -180,8 +186,8 @@ export default function Builder() {
                                 </div>
                             )}
                             <div className={`text-sm px-4 py-2.5 rounded-2xl max-w-[85%] leading-relaxed ${msg.role === "user"
-                                    ? "bg-violet-600/80 text-white rounded-br-sm"
-                                    : "bg-white/[0.05] border border-white/[0.08] text-white/80 rounded-bl-sm"
+                                ? "bg-violet-600/80 text-white rounded-br-sm"
+                                : "bg-white/[0.05] border border-white/[0.08] text-white/80 rounded-bl-sm"
                                 }`}>
                                 {msg.text}
                             </div>
