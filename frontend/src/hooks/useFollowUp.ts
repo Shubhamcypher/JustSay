@@ -10,6 +10,7 @@ export function useFollowUp({
     userSelectedRef,
     addStep,
     completeStep,
+    addChatMessage
 }: any) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -81,6 +82,34 @@ export function useFollowUp({
         isPatchingRef.current = false;
     };
 
+    // Add this helper outside sendFollowUp:
+    const summarizeChanges = async (
+        followUpPrompt: string,
+        patchedFiles: string[]
+    ): Promise<string> => {
+        try {
+            const res = await fetch("https://api.anthropic.com/v1/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: "claude-haiku-4-5-20251001",
+                    max_tokens: 60,
+                    messages: [{
+                        role: "user",
+                        content: `User asked: "${followUpPrompt}"
+Files changed: ${patchedFiles.map(f => f.split("/").pop()?.replace(/\.(tsx|ts)$/, "")).join(", ")}
+
+Write one short friendly sentence confirming what was done. No technical jargon. Max 15 words.`
+                    }]
+                })
+            });
+            const data = await res.json();
+            return data.content?.[0]?.text?.trim() || "Done!";
+        } catch {
+            return "Done!";
+        }
+    };
+
     const sendFollowUp = async (followUpPrompt: string) => {
         if (!followUpPrompt.trim() || isProcessing) return;
 
@@ -135,7 +164,7 @@ export function useFollowUp({
             let buffer = "";
 
             completeStep(s1);
-
+            const patchedFiles: string[] = [];
             while (true) {
                 const { value, done } = await reader.read();
                 if (done) break;
@@ -165,19 +194,20 @@ export function useFollowUp({
                     }
 
                     if (data.type === "patch") {
+                        patchedFiles.push(data.path);
                         await streamPatch(data.path, data.content);
                         const fileName = data.path.split("/").pop();
                         completeStep(addStep(`✅ Updated ${fileName}`, "file"));
                     }
 
                     if (data.type === "done") {
-                        addStep("✅ Changes applied!", "ai");
-                        clearTimeout(safetyTimer);
+                        const summary = await summarizeChanges(followUpPrompt, patchedFiles);
+                        addChatMessage("ai", summary); clearTimeout(safetyTimer);
                         setIsProcessing(false);
                     }
 
                     if (data.type === "error") {
-                        setError("Something went wrong. Please try again.");
+                        addChatMessage("ai", "Something went wrong. Please try again.");
                         clearTimeout(safetyTimer);
                         setIsProcessing(false);
                     }
