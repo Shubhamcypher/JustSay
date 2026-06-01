@@ -16,7 +16,7 @@ import BuilderAgent from "./components/BuilderAgent";
 import { useResizable } from "./hooks/useResizable";
 import ResizeHandle from "@/components/resizeHandle";
 import { motion } from "framer-motion";
-import { getProjectFiles } from "@/api/project.api";
+import { getProjectFiles, screenshotProject } from "@/api/project.api";
 
 export type ChatMessage = {
     id: string;
@@ -84,7 +84,7 @@ export default function Builder() {
         fileSystem.setActiveFile(file);
     };
 
-    const previewUrl = useWebContainer(
+    const { url: previewUrl } = useWebContainer(
         fileSystem.files,
         streaming.isReady,
         (msg, type) => {
@@ -132,6 +132,22 @@ export default function Builder() {
             .catch((err) => console.error("Failed to load project files:", err));
     }, []); // runs once on mount
 
+
+    useEffect(() => {
+        if (!previewUrl || !projectId) return;
+      
+        const timer = setTimeout(async () => {
+          try {
+            await screenshotProject(projectId, previewUrl); // ← pass the URL
+            console.log("✅ Snapshot saved via Puppeteer");
+          } catch (e) {
+            console.warn("Screenshot failed:", e);
+          }
+        }, 6000);
+      
+        return () => clearTimeout(timer);
+      }, [previewUrl]);
+
     return (
         <div className="h-screen flex bg-[#0f1117] text-white overflow-hidden">
 
@@ -145,7 +161,7 @@ export default function Builder() {
                     <div className="w-5 h-5 rounded bg-violet-500 flex items-center justify-center">
                         <span className="text-[10px] font-bold">J</span>
                     </div>
-                    <span className="text-sm font-semibold text-white/70 tracking-wide" onClick={()=>navigate('/')}>Justsay</span>
+                    <span className="text-sm font-semibold text-white/70 tracking-wide" onClick={() => navigate('/')}>Justsay</span>
                 </div>
 
                 {/* ── Scrollable chat area ─────────────────────────────────── */}
