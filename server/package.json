@@ -20,7 +20,8 @@
     "openai": "^6.34.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "pg": "^8.17.2"
+    "pg": "^8.17.2",
+    "puppeteer": "^25.1.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
