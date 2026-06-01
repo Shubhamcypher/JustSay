@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 type Project = {
   id: string;
   name: string;
+  snapshot?: string;  
 };
 
 type ProjectState = {
