@@ -36,7 +36,7 @@ export function useWebContainer(
   isPatchingRef?: React.RefObject<boolean>
 ) {
   const [url, setUrl] = useState<string | null>(null);
-  
+
   // Track when wc is ready so we can re-trigger the main effect
   const [wcReady, setWcReady] = useState(false);
 
@@ -61,6 +61,7 @@ export function useWebContainer(
       wc.on("server-ready", (_: any, url: string) => {
         setUrl(url);
         onLog?.("🌐 Preview ready!");
+        (window as any).__wc = wc;  // Expose wc for snapshot access
       });
       setWcReady(true); // ← trigger the main effect to re-run
     };
@@ -329,5 +330,5 @@ export function useWebContainer(
     }, 100);
   }, [files, isReady, wcReady]);
 
-  return url;
+  return { url, wcRef };
 }
