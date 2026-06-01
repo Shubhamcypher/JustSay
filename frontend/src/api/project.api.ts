@@ -23,3 +23,6 @@ export const getFiles = (projectId: string) =>
 
 export const getProjectFiles = (projectId: string) =>
   API.get(`/projects/${projectId}/files`);
+
+export const screenshotProject = (projectId: string, previewUrl: string) =>
+  API.post(`/projects/${projectId}/screenshot`, { previewUrl });
