@@ -352,44 +352,29 @@ export async function getProjectFiles(req: Request, res: Response) {
 
 export async function screenshotProject(req: Request, res: Response) {
   const { id } = req.params;
-  const { previewUrl } = req.body; // ← accept URL from frontend
+  const { previewUrl } = req.body; // now this is a base64 data URL
+
   if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-
-  // Verify ownership
-  const projectCheck = await pool.query(
-    "SELECT id FROM projects WHERE id=$1 AND owner_id=$2",
-    [id, req.user.userId]
-  );
-  if (projectCheck.rows.length === 0) {
-    return res.status(403).json({ message: "Unauthorized" });
-  }
-
-  if (!previewUrl) {
-    return res.status(400).json({ message: "previewUrl required" });
-  }
+  if (!previewUrl) return res.status(400).json({ message: "previewUrl required" });
 
   try {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+    const projectCheck = await pool.query(
+      "SELECT id FROM projects WHERE id=$1 AND owner_id=$2",
+      [id, req.user.userId]
+    );
+    if (projectCheck.rows.length === 0) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
 
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 800 });
-    await page.goto(previewUrl, { waitUntil: "networkidle2", timeout: 15000 });
-
-    const screenshotBuffer = await page.screenshot({ type: "jpeg", quality: 60, encoding: "base64" });
-
-    const snapshot = `data:image/jpeg;base64,${screenshotBuffer}`;
-
+    // previewUrl is now the base64 snapshot from the browser
     await pool.query(
       "UPDATE projects SET snapshot=$1 WHERE id=$2 AND owner_id=$3",
-      [snapshot, id, req.user.userId]
+      [previewUrl, id, req.user.userId]
     );
 
-    res.json({ snapshot });
+    res.json({ snapshot: previewUrl });
   } catch (err) {
     console.error("SCREENSHOT ERROR:", err);
-    res.status(500).json({ message: "Failed to take screenshot" });
+    res.status(500).json({ message: "Failed to save screenshot" });
   }
 }
