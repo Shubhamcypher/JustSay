@@ -17,6 +17,7 @@ import { useResizable } from "./hooks/useResizable";
 import ResizeHandle from "@/components/resizeHandle";
 import { motion } from "framer-motion";
 import { getProjectFiles, screenshotProject } from "@/api/project.api";
+import { useProjects } from "@/context/ProjectContext";
 
 export type ChatMessage = {
     id: string;
@@ -28,9 +29,10 @@ export type ChatMessage = {
 export default function Builder() {
     const navigate = useNavigate();
     const { state } = useLocation();
+    const { refreshProjects } = useProjects();
     const prompt = state?.prompt;
-    const projectId = state?.projectId;
     const mode = state?.mode;
+
 
     const userSelectedRef = useRef(false);
     const [rightTab, setRightTab] = useState<RightTab>("preview");
@@ -51,6 +53,9 @@ export default function Builder() {
         completeStep,
         userSelectedRef,
     });
+
+    const projectId = state?.projectId ?? streaming.projectId;
+
 
     // ── Must be defined BEFORE useFollowUp ──────────────────────────────────
     const addChatMessage = (role: "user" | "ai", text: string) => {
@@ -135,18 +140,46 @@ export default function Builder() {
 
     useEffect(() => {
         if (!previewUrl || !projectId) return;
-      
-        const timer = setTimeout(async () => {
-          try {
-            await screenshotProject(projectId, previewUrl); // ← pass the URL
-            console.log("✅ Snapshot saved via Puppeteer");
-          } catch (e) {
-            console.warn("Screenshot failed:", e);
-          }
-        }, 6000);
-      
+
+        const timer = setTimeout(() => {
+            const iframe = document.querySelector("iframe[data-preview]") as HTMLIFrameElement;
+            if (!iframe) {
+                console.warn("📸 no iframe found");
+                return;
+            }
+
+            const handler = async (e: MessageEvent) => {
+                if (e.data?.type === "SCREENSHOT_RESULT") {
+                    window.removeEventListener("message", handler);
+                    console.log("📸 Got snapshot, length:", e.data.snapshot.length);
+                    try {
+                        await screenshotProject(projectId, e.data.snapshot);
+                        console.log("✅ Snapshot saved!");
+                        refreshProjects();
+                    } catch (err) {
+                        console.warn("📸 Save failed:", err);
+                    }
+                }
+                if (e.data?.type === "SCREENSHOT_ERROR") {
+                    window.removeEventListener("message", handler);
+                    console.warn("📸 iframe screenshot error:", e.data.error);
+                }
+            };
+
+            window.addEventListener("message", handler);
+            iframe.contentWindow?.postMessage({ type: "TAKE_SCREENSHOT" }, "*");
+
+            // Safety cleanup after 15s
+            setTimeout(() => window.removeEventListener("message", handler), 15000);
+        }, 12000);
+
         return () => clearTimeout(timer);
-      }, [previewUrl]);
+    }, [previewUrl, projectId]);
+
+    useEffect(() => {
+        console.log("🔍 previewUrl changed:", previewUrl);
+        console.log("🔍 projectId:", projectId);
+    }, [previewUrl]);
 
     return (
         <div className="h-screen flex bg-[#0f1117] text-white overflow-hidden">
