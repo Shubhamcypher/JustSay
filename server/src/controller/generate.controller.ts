@@ -99,7 +99,7 @@ export const generateProject = async (req: Request, res: Response) => {
                 `UPDATE projects SET status=$1 WHERE id=$2`,
                 ["completed", projectId]
             );
-            res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+            res.write(`data: ${JSON.stringify({ type: "done", projectId: projectId })}\n\n`);
             res.end();
             return;
         }
@@ -122,7 +122,7 @@ export const generateProject = async (req: Request, res: Response) => {
             }
 
             await pool.query(`UPDATE projects SET status=$1 WHERE id=$2`, ["completed", projectId]);
-            res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+            res.write(`data: ${JSON.stringify({ type: "done", projectId })}\n\n`);
             res.end();
             return;
         }
@@ -304,8 +304,7 @@ export const generateProject = async (req: Request, res: Response) => {
             ["completed", projectId]
         );
 
-        res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
-        res.end();
+        res.write(`data: ${JSON.stringify({ type: "done", projectId })}\n\n`); res.end();
 
     } catch (err) {
         console.error("GENERATION ERROR:", err);
