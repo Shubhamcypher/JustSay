@@ -21,6 +21,8 @@ export function useFileStreaming({
     const filesRef = useRef(files);                 // mirror of files state in a ref so waitForQueue can snapshot it without stale closure
     const activeFileRef = useRef<string | null>(null); //for active file tracking
 
+    const [projectId, setProjectId] = useState<string | null>(null);
+
     const sleep = (ms: number) =>
         new Promise((res) => setTimeout(res, ms));
 
@@ -221,7 +223,9 @@ export function useFileStreaming({
                             setFinalFiles(snapshot);
                             setIsReady(true);
                         };
-
+                        if (data.projectId) {
+                            setProjectId(data.projectId);
+                        }
                         waitForQueue();
                     }
                 }
@@ -248,6 +252,7 @@ export function useFileStreaming({
     return {
         isReady,    // consumer uses this to know when to show the final result
         finalFiles, // snapshot of all files at completion time
-        markReady
+        markReady,
+        projectId,
     };
 }
