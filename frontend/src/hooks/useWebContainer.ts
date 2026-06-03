@@ -119,6 +119,21 @@ export function useWebContainer(
           await wc.mount(buildTree(files));
           completeStep?.(s1);
 
+          const indexHtml = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App</title>
+    <script src="/screenshot-helper.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>`;
+          await wc.fs.writeFile("index.html", indexHtml);
+
           console.log("📦 PKG RAW:", files["package.json"]);
 
           // 🔥 FORCE package.json write (CRITICAL)
@@ -200,6 +215,32 @@ export function useWebContainer(
 
           lastPkgRef.current = pkgString;
           startedRef.current = true;
+
+          await wc.fs.mkdir("public", { recursive: true });
+          await wc.fs.writeFile("public/screenshot-helper.js", `
+  window.addEventListener('message', async function(e) {
+      if (e.data?.type !== 'TAKE_SCREENSHOT') return;
+      
+      try {
+          // Dynamically load html2canvas from CDN inside the preview
+          if (!window.__html2canvas) {
+              await new Promise((res, rej) => {
+                  const s = document.createElement('script');
+                  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                  s.onload = res;
+                  s.onerror = rej;
+                  document.head.appendChild(s);
+              });
+              window.__html2canvas = html2canvas;
+          }
+          const canvas = await window.__html2canvas(document.body, { scale: 0.5, useCORS: true });
+          const data = canvas.toDataURL('image/jpeg', 0.6);
+          window.parent.postMessage({ type: 'SCREENSHOT_RESULT', snapshot: data }, '*');
+      } catch(err) {
+          window.parent.postMessage({ type: 'SCREENSHOT_ERROR', error: err.message }, '*');
+      }
+  });
+`);
 
         } catch (err) {
           console.error("❌ INIT ERROR:", err);
