@@ -5,29 +5,26 @@ import SidebarNav from "./SidebarNav";
 import ProjectsSection from "./ProjectsSection";
 import RecentSection from "./RecentSection";
 import SidebarFooter from "./SidebarFooter";
-
-import { useHoverPreview } from "@/hooks/useHoverPreview";
 import SidebarWorkspace from "./SidebarWorkSpace";
 import HoverPreview from "../common/HoverPreview";
+import { useHoverPreview } from "@/hooks/useHoverPreview";
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [active, setActive] = useState("Home");
 
-  const { hovered, position } =
-    useHoverPreview();
+  const { hovered, position, handleEnter, handleLeave } = useHoverPreview();
 
   return (
     <aside
       className={cn(
-        "h-screen flex flex-col justify-between transition-all duration-300",
+        "h-screen flex flex-col justify-between transition-all duration-300 z-[999]",
         "bg-black/40 backdrop-blur-xl border-r border-white/10",
         collapsed ? "w-20" : "w-64"
       )}
     >
       {/* 🔹 TOP */}
       <div className="p-4 flex flex-col gap-6">
-
         <SidebarHeader
           collapsed={collapsed}
           onToggle={() => setCollapsed(!collapsed)}
@@ -44,6 +41,8 @@ export default function Sidebar() {
         <ProjectsSection
           collapsed={collapsed}
           variant="desktop"
+          onHover={handleEnter}
+          onLeave={handleLeave}
         />
 
         <RecentSection collapsed={collapsed} />
@@ -52,12 +51,12 @@ export default function Sidebar() {
       {/* 🔹 FOOTER */}
       <SidebarFooter collapsed={collapsed} />
 
-      {/* 🔹 PREVIEW SYSTEM */}
+      {/* 🔹 PREVIEW */}
       <HoverPreview
         visible={!!hovered}
         top={position.top}
         left={position.left}
-        content={<div className="flex items-center justify-center h-full">{hovered}</div>}
+        project={hovered}
       />
     </aside>
   );
