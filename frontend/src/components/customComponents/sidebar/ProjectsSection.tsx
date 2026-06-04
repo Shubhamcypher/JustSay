@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ProjectItem from "./ProjectItem";
-import { useHoverPreview } from "@/hooks/useHoverPreview";
+import type { HoveredProject } from "@/hooks/useHoverPreview";
 import { useProjects } from "@/context/ProjectContext";
 
 type SectionKey = "created" | "shared" | "starred";
@@ -22,14 +22,17 @@ const sections = [
 type Props = {
   collapsed?: boolean;
   variant?: "desktop" | "mobile";
+  onHover?: (e: React.MouseEvent, project: HoveredProject) => void;
+  onLeave?: () => void;
 };
 
 export default function ProjectsSection({
   collapsed = false,
   variant = "desktop",
+  onHover,
+  onLeave,
 }: Props) {
   const isMobile = variant === "mobile";
-
   const { projects } = useProjects();
 
   const [projectsOpen, setProjectsOpen] = useState(true);
@@ -39,22 +42,17 @@ export default function ProjectsSection({
     starred: false,
   });
 
-  const { hovered, position, handleEnter, handleLeave } =
-    useHoverPreview();
-
   // ================= COLLAPSED (DESKTOP ONLY) =================
   if (!isMobile && collapsed) {
     return (
       <div className="flex flex-col items-center gap-3 mt-2">
         {sections.map((section) => {
           const Icon = section.icon;
-
           return (
             <div key={section.key} className="relative group">
               <button className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition">
                 <Icon size={16} />
               </button>
-
               <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs bg-zinc-900 text-white rounded-md opacity-0 group-hover:opacity-100 transition">
                 {section.label}
               </div>
@@ -82,13 +80,9 @@ export default function ProjectsSection({
           <Folder size={16} />
           <span>Projects</span>
         </div>
-
         <ChevronRight
           size={16}
-          className={cn(
-            "transition-transform",
-            projectsOpen && "rotate-90"
-          )}
+          className={cn("transition-transform", projectsOpen && "rotate-90")}
         />
       </button>
 
@@ -112,7 +106,6 @@ export default function ProjectsSection({
         >
           {sections.map((section) => {
             const Icon = section.icon;
-
             return (
               <div key={section.key}>
                 {/* Section Header */}
@@ -134,7 +127,6 @@ export default function ProjectsSection({
                     <Icon size={isMobile ? 16 : 14} />
                     {section.label}
                   </div>
-
                   <ChevronRight
                     size={14}
                     className={cn(
@@ -158,9 +150,9 @@ export default function ProjectsSection({
                   {projects[section.key].map((p: any) => (
                     <ProjectItem
                       key={p.id}
-                      name={p.name}
-                      onHover={!isMobile ? handleEnter : undefined}
-                      onLeave={!isMobile ? handleLeave : undefined}
+                      project={{ id: p.id, name: p.name, snapshot: p.snapshot }}
+                      onHover={!isMobile ? onHover : undefined}
+                      onLeave={!isMobile ? onLeave : undefined}
                     />
                   ))}
                 </div>
@@ -169,21 +161,6 @@ export default function ProjectsSection({
           })}
         </div>
       </div>
-
-      {/* Hover Preview (DESKTOP ONLY) */}
-      {!isMobile && hovered && (
-        <div
-          className="fixed z-50"
-          style={{
-            top: position.top,
-            left: position.left,
-          }}
-        >
-          <div className="w-80 h-40 flex items-center justify-center px-4 rounded-lg bg-zinc-900 border border-white/10 shadow-xl">
-            {hovered}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
