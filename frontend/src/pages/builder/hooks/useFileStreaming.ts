@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+const CURSOR_CHAR = "█";
+
 export function useFileStreaming({
     prompt,
     addFile,
@@ -11,48 +13,47 @@ export function useFileStreaming({
     files,
     userSelectedRef
 }: any) {
-    const [isReady, setIsReady] = useState(false);        // true once all files are streamed and finalized
+    const [isReady, setIsReady] = useState(false);
     const markReady = () => setIsReady(true);
-    const [finalFiles, setFinalFiles] = useState<any>(null); // snapshot of files when streaming completes
+    const [finalFiles, setFinalFiles] = useState<any>(null);
 
-    const streamQueueRef = useRef<any[]>([]);       // queue of incoming files waiting to be streamed
-    const isStreamingRef = useRef(false);           // prevents processQueue from running concurrently
-    const hasStreamStartedRef = useRef(false);      // tracks if first file has arrived, used to trigger step completions
-    const filesRef = useRef(files);                 // mirror of files state in a ref so waitForQueue can snapshot it without stale closure
-    const activeFileRef = useRef<string | null>(null); //for active file tracking
+    const streamQueueRef = useRef<any[]>([]);
+    const isStreamingRef = useRef(false);
+    const hasStreamStartedRef = useRef(false);
+    const filesRef = useRef(files);
+    const activeFileRef = useRef<string | null>(null);
 
     const [projectId, setProjectId] = useState<string | null>(null);
 
     const sleep = (ms: number) =>
         new Promise((res) => setTimeout(res, ms));
 
-    // Streams file content character by character for a typing effect
-    // Batches every 5 chars to avoid thousands of re-renders
+    const stripCursor = (content: string) =>
+        content.endsWith(CURSOR_CHAR) ? content.slice(0, -1) : content;
+
     const streamFile = async (path: string, fullContent: string) => {
-        addFile({ path, content: "" }); // register file immediately with empty content
+        addFile({ path, content: "" });
 
         let buffer = "";
 
         for (let i = 0; i < fullContent.length; i++) {
             buffer += fullContent[i];
 
-            // Flush to state every 5 chars or on the last character
-            if (i % 5 === 0 || i === fullContent.length - 1) {
-                updateFileContent(path, buffer, true);
-                await sleep(5);
+            if (i % 3 === 0 || i === fullContent.length - 1) {
+                updateFileContent(path, buffer + CURSOR_CHAR, true);
+                await sleep(2);
             }
         }
 
-        updateFileContent(path, fullContent, true); // ensure final content is exactly correct
+        // Final write — exact content, no cursor
+        updateFileContent(path, fullContent, true);
     };
 
-    // Diff-aware animated patch — only animates changed lines
     const streamPatch = async (path: string, newContent: string) => {
         const oldContent = filesRef.current[path]?.content || "";
         const oldLines = oldContent.split("\n");
         const newLines = newContent.split("\n");
 
-        // Find which line indices changed
         const changedIndices: number[] = [];
         const maxLen = Math.max(oldLines.length, newLines.length);
         for (let i = 0; i < maxLen; i++) {
@@ -61,71 +62,59 @@ export function useFileStreaming({
             }
         }
 
-        // Nothing changed — skip entirely
         if (changedIndices.length === 0) return;
 
-        // Remember what file user was viewing
         const previousFile = activeFileRef.current;
 
-        // Switch editor to patched file so user sees the animation
         if (!userSelectedRef.current) {
             setActiveFile(path);
-            await sleep(50); // let editor switch before animating
+            await sleep(50);
         }
 
-        // Work on a copy of old lines
         const workingLines = [...oldLines];
 
         for (const lineIdx of changedIndices) {
             const targetLine = newLines[lineIdx] ?? "";
 
-            // Line was deleted
             if (lineIdx >= newLines.length) {
                 workingLines.splice(lineIdx, 1);
                 updateFileContent(path, workingLines.join("\n"), true);
-                await sleep(30);
+                await sleep(20);
                 continue;
             }
 
-            // Animate the new line character by character
             let charBuffer = "";
             for (let i = 0; i < targetLine.length; i++) {
                 charBuffer += targetLine[i];
-                workingLines[lineIdx] = charBuffer;
+                workingLines[lineIdx] = charBuffer + CURSOR_CHAR;
 
-                if (i % 3 === 0 || i === targetLine.length - 1) {
+                if (i % 2 === 0 || i === targetLine.length - 1) {
                     updateFileContent(path, workingLines.join("\n"), true);
-                    await sleep(8);
+                    await sleep(4);
                 }
             }
 
-            // Ensure line is exactly correct
             workingLines[lineIdx] = targetLine;
-            await sleep(20); // brief pause between changed lines
+            await sleep(10);
         }
 
-        // Final write — guarantee exact content
+        // Final write — exact content, no cursor
         updateFileContent(path, newContent, true);
 
-        // Switch back to what user was viewing
         if (!userSelectedRef.current && previousFile && previousFile !== path) {
-            await sleep(300); // let user see the completed patch
+            await sleep(300);
             setActiveFile(previousFile);
         }
     };
 
-    // Extracts filename from path for display in steps e.g. "src/Button.tsx" → "Button.tsx"
     const getFileName = (path: string) =>
         path.split("/").pop();
 
-    // Queue is done when it's empty and no file is currently being streamed
-    const isQueueDone = () => {
-        return streamQueueRef.current.length === 0 && !isStreamingRef.current;
-    };
+    const isQueueDone = () =>
+        streamQueueRef.current.length === 0 && !isStreamingRef.current;
 
-    // Drains the queue one file at a time — sequential so files don't stream simultaneously
     const processQueue = async () => {
-        if (isStreamingRef.current) return; // already running, the active loop will pick up new items
+        if (isStreamingRef.current) return;
 
         isStreamingRef.current = true;
 
@@ -134,7 +123,6 @@ export function useFileStreaming({
 
             const step = addStep(`Generating ${getFileName(file.path)}`, "file");
 
-            // Auto-focus incoming file unless user has manually selected one
             if (!userSelectedRef.current) {
                 setActiveFile(file.path);
             }
@@ -147,14 +135,12 @@ export function useFileStreaming({
         isStreamingRef.current = false;
     };
 
-    // Main effect — fires when prompt changes, opens an SSE stream and processes events
     useEffect(() => {
         if (!prompt) return;
 
         const s1 = addStep("🤖 Understanding your idea...", "ai");
-        // const s2 = addStep("🧠 Planning project structure...", "ai");
 
-        const controller = new AbortController(); // used to cancel the fetch if component unmounts
+        const controller = new AbortController();
 
         const start = async () => {
             const res = await fetch("http://localhost:5000/api/generate", {
@@ -170,7 +156,7 @@ export function useFileStreaming({
             const reader = res.body?.getReader();
             const decoder = new TextDecoder("utf-8");
 
-            let buffer = ""; // accumulates raw chunks until we have complete SSE messages
+            let buffer = "";
 
             while (true) {
                 const { value, done } = await reader!.read();
@@ -179,10 +165,8 @@ export function useFileStreaming({
 
                 buffer += decoder.decode(value, { stream: true });
 
-                // SSE messages are separated by double newlines
                 const parts = buffer.split("\n\n");
 
-                // All parts except the last are complete messages — last may be a partial chunk
                 for (let i = 0; i < parts.length - 1; i++) {
                     const line = parts[i].replace("data: ", "").trim();
                     if (!line) continue;
@@ -190,15 +174,11 @@ export function useFileStreaming({
                     const data = JSON.parse(line);
 
                     if (data.type === "file") {
-                        // Mark initial steps complete on first file received
                         if (!hasStreamStartedRef.current) {
                             hasStreamStartedRef.current = true;
-
                             completeStep(s1);
-                            // completeStep(s2);
                         }
 
-                        // Push to queue and kick off processor (no-op if already running)
                         streamQueueRef.current.push(data);
                         processQueue().catch(console.error);
                     }
@@ -208,18 +188,20 @@ export function useFileStreaming({
                     }
 
                     if (data.type === "done") {
-                        // Server says all files sent — wait for queue to fully drain before finalizing
                         const waitForQueue = async () => {
                             while (!isQueueDone()) {
-                                await sleep(50); // poll every 50ms
+                                await sleep(50);
                             }
 
                             const step = addStep("Finalizing project...");
-                            // await sleep(400); // brief pause so user sees the step
                             completeStep(step);
 
-                            // Snapshot files via ref to avoid stale closure issue
                             const snapshot = JSON.parse(JSON.stringify(filesRef.current));
+                            Object.keys(snapshot).forEach((path) => {
+                                if (snapshot[path]?.content) {
+                                    snapshot[path].content = stripCursor(snapshot[path].content);
+                                }
+                            });
                             setFinalFiles(snapshot);
                             setIsReady(true);
                         };
@@ -230,28 +212,26 @@ export function useFileStreaming({
                     }
                 }
 
-                buffer = parts[parts.length - 1]; // hold incomplete trailing chunk for next iteration
+                buffer = parts[parts.length - 1];
             }
         };
 
         start();
 
-        return () => controller.abort(); // cleanup — cancels in-flight request on unmount or prompt change
+        return () => controller.abort();
     }, [prompt]);
 
-    // Keep filesRef in sync with files state so waitForQueue snapshot is always fresh
     useEffect(() => {
         filesRef.current = files;
     }, [files]);
 
-    // Keep activeFileRef in sync
     useEffect(() => {
         activeFileRef.current = activeFile;
     }, [activeFile]);
 
     return {
-        isReady,    // consumer uses this to know when to show the final result
-        finalFiles, // snapshot of all files at completion time
+        isReady,
+        finalFiles,
         markReady,
         projectId,
     };
