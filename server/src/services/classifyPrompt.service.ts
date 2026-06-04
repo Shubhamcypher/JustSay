@@ -28,7 +28,7 @@
 //             messages: [{
 //                 role: "user",
 //                 content: `Classify this website build request into exactly one category.
-                
+
 // Categories: ${CATEGORIES.join(", ")}
 
 // Request: "${prompt}"
@@ -45,6 +45,7 @@
 //     return CATEGORIES.includes(category) ? category : "other";
 // }
 
+import Groq from "groq-sdk";
 
 //For free classify prompt
 const CATEGORIES = [
@@ -59,40 +60,58 @@ const CATEGORIES = [
     "food_delivery",
     "real_estate",
     "education",
-    "other"
+    "other",
+    undefined
 ];
+
+
+
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY,
+});
+
+
+
+
 
 export async function classifyPrompt(prompt: string): Promise<string> {
     try {
-        const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: `Classify this website build request into exactly one category.
+        const completion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            temperature: 0,
+            max_tokens: 10,
+            messages: [
+                {
+                    role: "system",
+                    content: `You are a website classifier.
 
-Categories: ${CATEGORIES.join(", ")}
+Valid categories:
+${CATEGORIES.join(", ")}
 
-Request: "${prompt}"
+Return ONLY one category from the list.
+No explanations.
+No punctuation.
+No extra text.`
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ]
+        });
 
-Reply with only the category name, nothing else.`
-                        }]
-                    }],
-                    generationConfig: { maxOutputTokens: 20, temperature: 0 }
-                })
-            }
-        );
+        const raw = completion.choices[0]?.message?.content
+            ?.trim()
+            .toLowerCase();
 
-        const data = await res.json();
-        const category = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
+        console.log("Groq response:", raw);
 
-        return CATEGORIES.includes(category) ? category : "other";
+        return raw && CATEGORIES.includes(raw)
+            ? raw
+            : "other";
 
-    } catch (err) {
-        console.error("classifyPrompt error:", err);
-        return "other"; // safe fallback — never breaks generation
+    } catch (error) {
+        console.error("classifyPrompt error:", error);
+        return "other";
     }
 }
