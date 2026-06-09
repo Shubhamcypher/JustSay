@@ -12,7 +12,7 @@ import passport from "./config/passport"
 import generateRoutes from "./routes/generate.routes";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
 
 app.use(cors({
@@ -57,6 +57,6 @@ pool.query("SELECT 1")
   .catch(err => console.error("DB ERROR:", err));
 
 // Start server
-app.listen(5000,'0.0.0.0', () => {
+app.listen(PORT,'0.0.0.0', () => {
   console.log(`Server started at http://localhost:${PORT}`);
 });
