@@ -162,15 +162,12 @@ export function useWebContainer(
           const s3 = addStep?.("Installing dependencies", "build");
           const install = await wc.spawn("npm", ["install"]);
 
-          // install.output.pipeTo(
-          //   new WritableStream({
-          //     write(data) {
-          //       console.log("📦 npm install:", data.toString());
-          //     },
-          //   })
-          // );
+          const exitCode = await install.exit;
+          console.log("npm install exit:", exitCode);
 
-          await install.exit;
+          if (exitCode !== 0) {
+            throw new Error("npm install failed");
+          }
           console.log("📦 INSTALL DONE");
           completeStep?.(s3);
 
@@ -284,13 +281,13 @@ export function useWebContainer(
           const s6 = addStep?.("Reinstalling dependencies", "build");
           const install = await wc.spawn("npm", ["install"]);
 
-          // install.output.pipeTo(
-          //   new WritableStream({
-          //     write(data) {
-          //       console.log("🔁 npm install:", data.toString());
-          //     },
-          //   })
-          // );
+          install.output.pipeTo(
+            new WritableStream({
+              write(data) {
+                console.log("🔁 npm install:", data.toString());
+              },
+            })
+          );
 
           await install.exit;
           console.log("🔁 INSTALL DONE");

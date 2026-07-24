@@ -13,15 +13,6 @@ import { classifyPrompt } from "../services/classifyPrompt.service";
 import { getCachedCategory, setCachedCategory } from "../utils/categoryCache";
 import { planAndSkeleton, SkeletonMap } from "../services/planAndSkeleton.service";
 
-// import { planProject } from "../services/planner.service";
-// import { generateSkeletons, SkeletonMap } from "../services/generateSkeletons.service";
-// import { enhanceUX } from "../services/enhanceUX.service";
-// import { streamLLM } from "../services/ai.service";
-// import { parseStream } from "../utils/streamParser";
-// import { enhanceFiles } from "../utils/enhanceFiles";
-// import { fixTailwind } from "../utils/fixTailwind";
-// import { fixGeneratedCode } from "../services/fixGeneratedCode.service";
-// import { generateFile } from "../services/generator.service";
 
 type ProjectPlan = {
     files: string[];
