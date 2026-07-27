@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Mic } from "lucide-react";
 import { useRef, useState } from "react";
-import AddMenu from "@/components/customComponents/home/AddMenu";
+import AddMenu from "../../../components/customComponent/home/AddMenu";
 
 
 
