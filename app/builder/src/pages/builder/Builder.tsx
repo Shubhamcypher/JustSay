@@ -1,4 +1,4 @@
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import { Eye, Code2, Sparkles } from "lucide-react";
 import { useFiles } from "@/hooks/useFiles";
@@ -18,6 +18,8 @@ import ResizeHandle from "@/components/resizeHandle";
 import { motion } from "framer-motion";
 import { getProjectFiles, screenshotProject } from "@/api/project.api";
 import { useProjects } from "@/context/ProjectContext";
+import SplashScreen from "../../components/SplashScreen";
+
 
 export type ChatMessage = {
     id: string;
@@ -27,7 +29,6 @@ export type ChatMessage = {
 };
 
 export default function Builder() {
-    const navigate = useNavigate();
     const { refreshProjects } = useProjects();
     const { projectId } = useParams();
     const [searchParams] = useSearchParams();
@@ -41,6 +42,9 @@ export default function Builder() {
     const userSelectedRef = useRef(false);
     const [rightTab, setRightTab] = useState<RightTab>("preview");
     const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+
+    const [booting, setBooting] = useState(true);
+
     const chatBottomRef = useRef<HTMLDivElement>(null); // ← auto-scroll ref
 
     const fileSystem = useFiles(userSelectedRef);
@@ -181,9 +185,18 @@ export default function Builder() {
     }, [previewUrl, projectId]);
 
     useEffect(() => {
-        console.log("🔍 previewUrl changed:", previewUrl);
-        console.log("🔍 projectId:", projectId);
-    }, [previewUrl]);
+        const timer = setTimeout(() => {
+            setBooting(false);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (booting) {
+        return (
+            <SplashScreen message="Preparing Builder..." />
+        );
+    }
 
     return (
         <div className="h-screen flex bg-[#0f1117] text-white overflow-hidden">
