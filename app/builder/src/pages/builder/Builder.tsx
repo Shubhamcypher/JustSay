@@ -1,5 +1,5 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import { useRef, useState, useEffect } from "react"; 
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useRef, useState, useEffect } from "react";
 import { Eye, Code2, Sparkles } from "lucide-react";
 import { useFiles } from "@/hooks/useFiles";
 import { useSteps } from "./hooks/useSteps";
@@ -28,10 +28,14 @@ export type ChatMessage = {
 
 export default function Builder() {
     const navigate = useNavigate();
-    const { state } = useLocation();
     const { refreshProjects } = useProjects();
-    const prompt = state?.prompt;
-    const mode = state?.mode;
+    const { projectId } = useParams();
+    const [searchParams] = useSearchParams();
+    const prompt = searchParams.get("prompt");
+    const mode = projectId ? "load" : "new";
+    // const { state } = useLocation();
+    // const prompt = state?.prompt;
+    // const mode = state?.mode;
 
 
     const userSelectedRef = useRef(false);
@@ -54,7 +58,7 @@ export default function Builder() {
         userSelectedRef,
     });
 
-    const projectId = state?.projectId ?? streaming.projectId;
+    // const projectId = state?.projectId ?? streaming.projectId;
 
 
     // ── Must be defined BEFORE useFollowUp ──────────────────────────────────
@@ -194,7 +198,8 @@ export default function Builder() {
                     <div className="w-5 h-5 rounded bg-violet-500 flex items-center justify-center">
                         <span className="text-[10px] font-bold">J</span>
                     </div>
-                    <span className="text-sm font-semibold text-white/70 tracking-wide" onClick={() => navigate('/')}>Justsay</span>
+                    <span className="text-sm font-semibold text-white/70 tracking-wide" onClick={() => window.location.href =
+                        `http://localhost:5173/`}>Justsay</span>
                 </div>
 
                 {/* ── Scrollable chat area ─────────────────────────────────── */}

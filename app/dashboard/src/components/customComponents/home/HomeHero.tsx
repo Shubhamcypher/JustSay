@@ -20,9 +20,8 @@ export default function HomeHero() {
 
     const handleSubmit = () => {
         if (!prompt.trim()) return;
-        navigate("/builder", {
-            state: { prompt },
-        });
+        window.location.href =
+            `http://localhost:5174/new?prompt=${encodeURIComponent(prompt)}`;
     };
 
     return (

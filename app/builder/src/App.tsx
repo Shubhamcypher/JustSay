@@ -1,5 +1,6 @@
-import Builder from "./pages/builder/Builder";
+import AppRoutes from "./routes/AppRoutes";
+
 
 export default function App() {
-  return <Builder />;
+  return <AppRoutes />;
 }

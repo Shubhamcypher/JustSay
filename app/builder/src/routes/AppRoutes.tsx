@@ -1,9 +1,13 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Builder from "../pages/builder/Builder";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Builder from "@/pages/builder/Builder";
 
-
-<BrowserRouter>
-    <Routes>
-        <Route path="*" element={<Builder />} />
-    </Routes>
-</BrowserRouter>
+export default function AppRoutes() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/new" element={<Builder />} />
+        <Route path="/project/:projectId" element={<Builder />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
