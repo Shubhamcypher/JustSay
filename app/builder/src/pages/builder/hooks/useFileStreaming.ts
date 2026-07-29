@@ -23,7 +23,7 @@ export function useFileStreaming({
     const filesRef = useRef(files);
     const activeFileRef = useRef<string | null>(null);
 
-    const [projectId, setProjectId] = useState<string | null>(null);
+
 
     const sleep = (ms: number) =>
         new Promise((res) => setTimeout(res, ms));
@@ -205,9 +205,7 @@ export function useFileStreaming({
                             setFinalFiles(snapshot);
                             setIsReady(true);
                         };
-                        if (data.projectId) {
-                            setProjectId(data.projectId);
-                        }
+                        
                         waitForQueue();
                     }
                 }
@@ -233,6 +231,5 @@ export function useFileStreaming({
         isReady,
         finalFiles,
         markReady,
-        projectId,
     };
 }

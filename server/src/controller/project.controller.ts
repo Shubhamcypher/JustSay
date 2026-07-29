@@ -378,3 +378,117 @@ export async function screenshotProject(req: Request, res: Response) {
     res.status(500).json({ message: "Failed to save screenshot" });
   }
 }
+
+export async function saveProject(req: Request, res: Response) {
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const {
+    name,
+    prompt,
+    stack,
+    snapshot,
+    files,
+  } = req.body;
+
+  if (!name || !stack || !files) {
+    return res.status(400).json({
+      message: "Missing required fields",
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    // 1️⃣ Create Project
+    const projectRes = await client.query(
+      `
+      INSERT INTO projects
+      (
+        name,
+        stack,
+        status,
+        owner_id,
+        prompt,
+        snapshot
+      )
+      VALUES ($1,$2,$3,$4,$5,$6)
+      RETURNING id
+      `,
+      [
+        name,
+        stack,
+        "ready",
+        req.user.userId,
+        prompt,
+        snapshot ?? null,
+      ]
+    );
+
+    const projectId = projectRes.rows[0].id;
+
+    // 2️⃣ Owner entry
+    await client.query(
+      `
+      INSERT INTO project_members
+      (
+        project_id,
+        user_id,
+        role
+      )
+      VALUES ($1,$2,'owner')
+      `,
+      [
+        projectId,
+        req.user.userId,
+      ]
+    );
+
+    // 3️⃣ Save every file
+    for (const [path, file] of Object.entries(files)) {
+      const content =
+        typeof file === "string"
+          ? file
+          : (file as any).content ?? "";
+
+      await client.query(
+        `
+        INSERT INTO project_files
+        (
+          project_id,
+          path,
+          content
+        )
+        VALUES ($1,$2,$3)
+        `,
+        [
+          projectId,
+          path,
+          content,
+        ]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    return res.status(201).json({
+      projectId,
+    });
+
+  } catch (err) {
+
+    await client.query("ROLLBACK");
+
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed to save project",
+    });
+
+  } finally {
+    client.release();
+  }
+}

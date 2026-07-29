@@ -38,34 +38,9 @@ export const generateProject = async (req: Request, res: Response) => {
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 
-    let projectId = "";
 
     try {
         console.log(prompt);
-
-        //Create project
-        const projectRes = await pool.query(
-            `INSERT INTO projects (name, stack, status, owner_id, prompt)
-       VALUES ($1,$2,$3,$4,$5)
-       RETURNING id`,
-            [
-                prompt.slice(0, 30), // template name
-                "vite-react",
-                "generating",
-                req.user.userId,
-                prompt
-            ]
-        );
-
-        projectId = projectRes.rows[0].id;
-
-        // Send projectId to frontend
-        res.write(
-            `data: ${JSON.stringify({
-                type: "project",
-                projectId
-            })}\n\n`
-        );
 
         const cachedFinal = await getCachedFinalFiles(prompt);
         if (cachedFinal) {
@@ -79,18 +54,9 @@ export const generateProject = async (req: Request, res: Response) => {
                     path: filePath,
                     content
                 })}\n\n`);
-
-                await pool.query(
-                    `INSERT INTO project_files (project_id, path, content) VALUES ($1,$2,$3)`,
-                    [projectId, filePath, content]
-                );
             }
 
-            await pool.query(
-                `UPDATE projects SET status=$1 WHERE id=$2`,
-                ["completed", projectId]
-            );
-            res.write(`data: ${JSON.stringify({ type: "done", projectId: projectId })}\n\n`);
+            res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
             res.end();
             return;
         }
@@ -106,14 +72,9 @@ export const generateProject = async (req: Request, res: Response) => {
             for (const [filePath, file] of Object.entries(cachedCategory)) {
                 const content = file?.content || "";
                 res.write(`data: ${JSON.stringify({ type: "file", path: filePath, content })}\n\n`);
-                await pool.query(
-                    `INSERT INTO project_files (project_id, path, content) VALUES ($1,$2,$3)`,
-                    [projectId, filePath, content]
-                );
             }
 
-            await pool.query(`UPDATE projects SET status=$1 WHERE id=$2`, ["completed", projectId]);
-            res.write(`data: ${JSON.stringify({ type: "done", projectId })}\n\n`);
+            res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
             res.end();
             return;
         }
@@ -268,12 +229,6 @@ export const generateProject = async (req: Request, res: Response) => {
                 content = files?.[filePath]?.content || "";
             }
 
-            // Always save to DB
-            await pool.query(
-                `INSERT INTO project_files (project_id, path, content)
-         VALUES ($1,$2,$3)`,
-                [projectId, filePath, content]
-            );
 
             if (!streamedPaths.has(filePath)) {
                 // Decide event type:
@@ -289,23 +244,11 @@ export const generateProject = async (req: Request, res: Response) => {
         }
 
 
-        // Mark project completed
-        await pool.query(
-            `UPDATE projects SET status=$1 WHERE id=$2`,
-            ["completed", projectId]
-        );
-
-        res.write(`data: ${JSON.stringify({ type: "done", projectId })}\n\n`); res.end();
+        res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+        res.end();
 
     } catch (err) {
         console.error("GENERATION ERROR:", err);
-
-        if (projectId) {
-            await pool.query(
-                `UPDATE projects SET status=$1 WHERE id=$2`,
-                ["failed", projectId]
-            );
-        }
 
         res.write(`data: ${JSON.stringify({ type: "error" })}\n\n`);
         res.end();

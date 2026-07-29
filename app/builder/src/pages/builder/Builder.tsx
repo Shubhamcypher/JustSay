@@ -16,7 +16,7 @@ import BuilderAgent from "./components/BuilderAgent";
 import { useResizable } from "./hooks/useResizable";
 import ResizeHandle from "@/components/resizeHandle";
 import { motion } from "framer-motion";
-import { getProjectFiles, screenshotProject } from "@/api/project.api";
+import { getProjectFiles, screenshotProject, saveProject, } from "@/api/project.api";
 import { useProjects } from "@/context/ProjectContext";
 import SplashScreen from "../../components/SplashScreen";
 
@@ -41,11 +41,16 @@ export default function Builder() {
 
     const userSelectedRef = useRef(false);
     const [rightTab, setRightTab] = useState<RightTab>("preview");
+    const chatBottomRef = useRef<HTMLDivElement>(null); // ← auto-scroll ref
+    const hasSavedProjectRef = useRef(false);
+
     const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
     const [booting, setBooting] = useState(true);
 
-    const chatBottomRef = useRef<HTMLDivElement>(null); // ← auto-scroll ref
+    const [savedProjectId, setSavedProjectId] = useState<string | null>(projectId ?? null);
+
+
 
     const fileSystem = useFiles(userSelectedRef);
     const { steps, addStep, completeStep } = useSteps();
@@ -147,42 +152,85 @@ export default function Builder() {
 
 
     useEffect(() => {
-        if (!previewUrl || !projectId) return;
+        if (!previewUrl) return;
 
         const timer = setTimeout(() => {
-            const iframe = document.querySelector("iframe[data-preview]") as HTMLIFrameElement;
+            const iframe = document.querySelector(
+                "iframe[data-preview]"
+            ) as HTMLIFrameElement;
+
             if (!iframe) {
-                console.warn("📸 no iframe found");
+                console.warn("📸 No iframe found");
                 return;
             }
 
             const handler = async (e: MessageEvent) => {
-                if (e.data?.type === "SCREENSHOT_RESULT") {
-                    window.removeEventListener("message", handler);
-                    console.log("📸 Got snapshot, length:", e.data.snapshot.length);
-                    try {
-                        await screenshotProject(projectId, e.data.snapshot);
-                        console.log("✅ Snapshot saved!");
-                        refreshProjects();
-                    } catch (err) {
-                        console.warn("📸 Save failed:", err);
-                    }
-                }
                 if (e.data?.type === "SCREENSHOT_ERROR") {
                     window.removeEventListener("message", handler);
-                    console.warn("📸 iframe screenshot error:", e.data.error);
+                    console.warn("📸 Screenshot failed:", e.data.error);
+                    return;
+                }
+
+                if (e.data?.type !== "SCREENSHOT_RESULT") return;
+
+                window.removeEventListener("message", handler);
+
+                try {
+                    const snapshot = e.data.snapshot;
+
+                    // Existing project → just update screenshot
+                    if (savedProjectId) {
+                        await screenshotProject(savedProjectId, snapshot);
+                        refreshProjects();
+                        return;
+                    }
+
+                    // Prevent duplicate saves
+                    if (hasSavedProjectRef.current) return;
+
+                    hasSavedProjectRef.current = true;
+
+                    if (!streaming.finalFiles) {
+                        console.warn("No files available to save.");
+                        return;
+                    }
+
+                    const response = await saveProject({
+                        name: prompt || "Untitled Project",
+                        prompt: prompt || "",
+                        stack: "vite-react",
+                        snapshot,
+                        files: streaming.finalFiles,
+                    });
+
+                    const newProjectId = response.data.projectId;
+
+                    setSavedProjectId(newProjectId);
+
+                    console.log("✅ Project saved:", newProjectId);
+
+                    refreshProjects();
+                } catch (err) {
+                    console.error("Failed saving project:", err);
                 }
             };
 
             window.addEventListener("message", handler);
-            iframe.contentWindow?.postMessage({ type: "TAKE_SCREENSHOT" }, "*");
 
-            // Safety cleanup after 15s
-            setTimeout(() => window.removeEventListener("message", handler), 15000);
+            iframe.contentWindow?.postMessage(
+                { type: "TAKE_SCREENSHOT" },
+                "*"
+            );
+
+            setTimeout(() => {
+                window.removeEventListener("message", handler);
+            }, 15000);
+
         }, 12000);
 
         return () => clearTimeout(timer);
-    }, [previewUrl, projectId]);
+
+    }, [previewUrl]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -211,8 +259,8 @@ export default function Builder() {
                     <div className="w-5 h-5 rounded bg-violet-500 flex items-center justify-center">
                         <span className="text-[10px] font-bold">J</span>
                     </div>
-                    <span className="text-sm font-semibold text-white/70 tracking-wide" onClick={() => window.location.href =
-                        `http://localhost:5173/`}>Justsay</span>
+                    <span className="text-sm font-semibold text-white/70 tracking-wide"
+                        onClick={() => window.location.href = `http://localhost:5173/`}>Justsay</span>
                 </div>
 
                 {/* ── Scrollable chat area ─────────────────────────────────── */}

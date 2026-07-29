@@ -9,6 +9,7 @@ import {
     clearTokens,
 } from "@/utils/auth";
 import { authStore } from "@/authStore";
+import { hideBootScreen } from "@/utils/boot";
 
 type User = {
     id: string;
@@ -53,6 +54,7 @@ export function AuthProvider({ children }: any) {
             if (!access) {
                 setSessionStatus("failed");
                 setLoading(false);
+                hideBootScreen()
                 return;
             }
 
@@ -71,6 +73,7 @@ export function AuthProvider({ children }: any) {
 
             } finally {
                 setLoading(false);
+                hideBootScreen()
             }
         };
 
