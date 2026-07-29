@@ -26,3 +26,13 @@ export const getProjectFiles = (projectId: string) =>
 
 export const screenshotProject = (projectId: string, previewUrl: string) =>
   API.post(`/projects/${projectId}/screenshot`, { previewUrl });
+
+export async function saveProject(data: {
+    name: string;
+    prompt: string;
+    stack: string;
+    snapshot?: string;
+    files: Record<string, { content: string }>;
+}) {
+    return API.post("/projects/save", data);
+}

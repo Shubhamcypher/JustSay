@@ -4,6 +4,7 @@ import './index.css'
 import App from "@/App"
 import { AuthProvider } from './context/AuthContext'
 import { ProjectProvider } from './context/ProjectContext'
+// import { hideBootScreen } from './utils/boot'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -14,3 +15,5 @@ createRoot(document.getElementById('root')!).render(
     </AuthProvider>
   </StrictMode>,
 )
+
+// window.addEventListener("load", hideBootScreen);
