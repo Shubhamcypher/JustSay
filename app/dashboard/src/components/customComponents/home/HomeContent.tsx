@@ -82,7 +82,7 @@ export default function HomeContent() {
                 key={p.id}
                 project={p}
                 onClick={() =>
-                  navigate(`/project/${p.id}`)
+                  window.location.href = `http://localhost:5174/project/${p.id}`
                 }
               />
             ))

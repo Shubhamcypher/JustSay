@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Builder from "@/pages/builder/Builder";
+import Builder from "../pages/builder/Builder";
+import ProjectPreview from "../pages/project/ProjectPreview";
 
 export default function AppRoutes() {
   return (
@@ -10,6 +11,9 @@ export default function AppRoutes() {
 
         {/* Edit existing project */}
         <Route path="/builder/:projectId" element={<Builder />} />
+
+        {/* View existing project  */}
+        <Route path="/project/:projectId" element={<ProjectPreview />} />
 
         <Route path="*" element={<Navigate to="/builder" replace />} />
       </Routes>
