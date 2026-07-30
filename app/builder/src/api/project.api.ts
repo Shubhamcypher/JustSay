@@ -3,6 +3,9 @@ import API from "./axios";
 export const getProjects = (type: "created" | "shared" | "starred") =>
   API.get(`/projects?type=${type}`);
 
+export const getProject = (projectId: string) =>
+  API.get(`/projects/${projectId}`);
+
 export const createProject = (data: { name: string; stack: string }) =>
   API.post("/projects", data);
 

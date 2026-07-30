@@ -21,7 +21,7 @@ export default function HomeHero() {
     const handleSubmit = () => {
         if (!prompt.trim()) return;
         window.location.href =
-            `http://localhost:5174/new?prompt=${encodeURIComponent(prompt)}`;
+            `http://localhost:5174/builder?prompt=${encodeURIComponent(prompt)}`;
     };
 
     return (

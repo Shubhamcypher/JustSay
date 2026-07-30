@@ -1,45 +1,47 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import Home from "../pages/Home";
-import Project from "../pages/Project";
-import ProjectPreview from "../pages/ProjectPreview";
+import ProjectPage from "@/pages/project/ProjectPage";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import OAuthSuccess from "@/pages/OAuthSuccess";
+import Builder from "@/pages/builder/Builder";
+
 import { useAuth } from "@/context/AuthContext";
 import SessionHandler from "@/components/customComponents/SessionHandler";
-import Builder from "@/pages/builder/Builder";
-// import Builder from "@/pages/Builder";
 
 function PrivateRoute({ children }: any) {
   const { user, loading } = useAuth();
 
-  // 🧠 wait for auth to resolve
+  // Wait until auth state is resolved
   if (loading) {
-    return null; // or loader
+    return null; // TODO: Replace with SplashScreen
   }
 
-  // 🧠 not logged in
+  // Redirect unauthenticated users
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // 🧠 logged in
   return children;
 }
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
-    <SessionHandler />
+      <SessionHandler />
+
       <Routes>
 
-        {/* AUTH ROUTES */}
+        {/* ───────────── Public Routes ───────────── */}
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/oauth-success" element={<OAuthSuccess />} />
-        <Route path="/builder" element={<Builder />} />
 
-        {/* PROTECTED ROUTES */}
+        {/* ───────────── Protected Routes ───────────── */}
+
+        {/* Dashboard */}
         <Route
           path="/"
           element={
@@ -49,23 +51,38 @@ export default function AppRoutes() {
           }
         />
 
+        {/* Project Details */}
         <Route
           path="/project/:id"
           element={
             <PrivateRoute>
-              <Project />
+              <ProjectPage />
             </PrivateRoute>
           }
         />
 
+        {/* Builder - New Project */}
         <Route
-          path="/project/:id/preview"
+          path="/builder"
           element={
             <PrivateRoute>
-              <ProjectPreview />
+              <Builder />
             </PrivateRoute>
           }
         />
+
+        {/* Builder - Edit Existing Project */}
+        <Route
+          path="/builder/:id"
+          element={
+            <PrivateRoute>
+              <Builder />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
     </BrowserRouter>

@@ -16,7 +16,7 @@ import BuilderAgent from "./components/BuilderAgent";
 import { useResizable } from "./hooks/useResizable";
 import ResizeHandle from "@/components/resizeHandle";
 import { motion } from "framer-motion";
-import { getProjectFiles, screenshotProject, saveProject, } from "@/api/project.api";
+import { getProject, getProjectFiles, screenshotProject, saveProject, } from "@/api/project.api";
 import { useProjects } from "@/context/ProjectContext";
 import SplashScreen from "../../components/SplashScreen";
 
@@ -28,15 +28,22 @@ export type ChatMessage = {
     timestamp: Date;
 };
 
+type ProjectMeta = {
+    id: string;
+    name: string;
+    prompt: string;
+    stack: string;
+    snapshot?: string;
+};
+
 export default function Builder() {
     const { refreshProjects } = useProjects();
     const { projectId } = useParams();
     const [searchParams] = useSearchParams();
-    const prompt = searchParams.get("prompt");
+    const initialPrompt = searchParams.get("prompt");
     const mode = projectId ? "load" : "new";
-    // const { state } = useLocation();
-    // const prompt = state?.prompt;
-    // const mode = state?.mode;
+
+
 
 
     const userSelectedRef = useRef(false);
@@ -52,6 +59,15 @@ export default function Builder() {
 
 
 
+    const [projectMeta, setProjectMeta] = useState<ProjectMeta | null>(null);
+
+    const prompt =
+        mode === "load"
+            ? projectMeta?.prompt ?? ""
+            : initialPrompt;
+
+
+
     const fileSystem = useFiles(userSelectedRef);
     const { steps, addStep, completeStep } = useSteps();
     const fileTree = useFileTree(fileSystem.filePaths);
@@ -60,6 +76,7 @@ export default function Builder() {
     const sidebarPanel = useResizable(220, 160, 400);
 
     const streaming = useFileStreaming({
+        mode,
         prompt,
         ...fileSystem,
         addStep,
@@ -129,6 +146,19 @@ export default function Builder() {
         chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [chatHistory, isProcessing]);
 
+    useEffect(() => {
+        if (mode !== "load" || !projectId) return;
+
+        getProject(projectId)
+            .then(({ data }) => {
+                setProjectMeta(data);
+            })
+            .catch((err) => {
+                console.error("Failed to load project:", err);
+            });
+
+    }, [mode, projectId]);
+
     // ── Load saved project files when navigating from Home ──────────────
     useEffect(() => {
         if (mode !== "load" || !projectId) return;
@@ -196,7 +226,7 @@ export default function Builder() {
                     }
 
                     const response = await saveProject({
-                        name: prompt || "Untitled Project",
+                        name: projectMeta?.name || prompt || "Untitled Project",
                         prompt: prompt || "",
                         stack: "vite-react",
                         snapshot,
@@ -282,7 +312,7 @@ export default function Builder() {
                         steps={steps}
                         url={previewUrl}
                         prompt={prompt}
-                        files={streaming.finalFiles}
+                        files={fileSystem.files}
                         chatHistory={[]}
                     />
 

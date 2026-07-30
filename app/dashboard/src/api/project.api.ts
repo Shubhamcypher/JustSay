@@ -3,6 +3,9 @@ import API from "./axios";
 export const getProjects = (type: "created" | "shared" | "starred") =>
   API.get(`/projects?type=${type}`);
 
+export const getProject = (projectId: string) =>
+  API.get(`/projects/${projectId}`);
+
 export const createProject = (data: { name: string; stack: string }) =>
   API.post("/projects", data);
 
@@ -28,11 +31,11 @@ export const screenshotProject = (projectId: string, previewUrl: string) =>
   API.post(`/projects/${projectId}/screenshot`, { previewUrl });
 
 export async function saveProject(data: {
-    name: string;
-    prompt: string;
-    stack: string;
-    snapshot?: string;
-    files: Record<string, { content: string }>;
+  name: string;
+  prompt: string;
+  stack: string;
+  snapshot?: string;
+  files: Record<string, { content: string }>;
 }) {
-    return API.post("/projects/save", data);
+  return API.post("/projects/save", data);
 }

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 const CURSOR_CHAR = "█";
 
 export function useFileStreaming({
+    mode,
     prompt,
     addFile,
     updateFileContent,
@@ -136,6 +137,7 @@ export function useFileStreaming({
     };
 
     useEffect(() => {
+        if (mode !== "new") return;
         if (!prompt) return;
 
         const s1 = addStep("🤖 Understanding your idea...", "ai");

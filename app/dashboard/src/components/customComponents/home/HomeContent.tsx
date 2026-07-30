@@ -20,7 +20,7 @@ export default function HomeContent() {
 
   useEffect(() => {
     refreshProjects(); // always fetch fresh on Home visit
-  }, []);
+  });
 
   return (
     <div className="px-4 md:px-6 py-4 md:py-6">
@@ -82,9 +82,7 @@ export default function HomeContent() {
                 key={p.id}
                 project={p}
                 onClick={() =>
-                  navigate("/builder", {
-                    state: { projectId: p.id, projectName: p.name, mode: "load" },
-                  })
+                  navigate(`/project/${p.id}`)
                 }
               />
             ))

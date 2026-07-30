@@ -11,7 +11,7 @@ export function useAppDescription(
     useEffect(() => {
         if (!url || !prompt) return;
 
-        const fileList = Object.keys(files);
+        const fileList = Object.keys(files ?? {});
 
         describeApp(prompt, fileList, (chunk:string) => {
             setLines(prev => {
