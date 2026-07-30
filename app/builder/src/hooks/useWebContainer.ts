@@ -230,23 +230,8 @@ export function useWebContainer(
               });
               window.__html2canvas = html2canvas;
           }
-          const canvas = await window.__html2canvas(document.documentElement, {
-    backgroundColor: "#0f1117",
-    useCORS: true,
-    allowTaint: true,
-
-    scale: Math.max(window.devicePixelRatio, 2),
-
-    logging: false,
-
-    width: document.documentElement.scrollWidth,
-    height: document.documentElement.scrollHeight,
-
-    windowWidth: document.documentElement.scrollWidth,
-    windowHeight: document.documentElement.scrollHeight
-});
-
-const data = canvas.toDataURL("image/png");
+          const canvas = await window.__html2canvas(document.body, { scale: 0.5, useCORS: true });
+          const data = canvas.toDataURL('image/jpeg', 0.6);
           window.parent.postMessage({ type: 'SCREENSHOT_RESULT', snapshot: data }, '*');
       } catch(err) {
           window.parent.postMessage({ type: 'SCREENSHOT_ERROR', error: err.message }, '*');
