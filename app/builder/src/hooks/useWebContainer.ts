@@ -40,6 +40,10 @@ export function useWebContainer(
   // Track when wc is ready so we can re-trigger the main effect
   const [wcReady, setWcReady] = useState(false);
 
+  //State for laoder to show progress and status
+  const [status, setStatus] = useState("Preparing project...");
+  const [progress, setProgress] = useState(0);
+
   const wcRef = useRef<any>(null);
   const startedRef = useRef(false);
 
@@ -53,13 +57,20 @@ export function useWebContainer(
     let mounted = true;
 
     const init = async () => {
+      setStatus("Starting WebContainer...");
+      setProgress(10);
       const wc = await getWebContainer();
       if (!mounted) return;
 
       wcRef.current = wc;
 
+
       wc.on("server-ready", (_: any, url: string) => {
+        setStatus("Launching application...");
+        setProgress(95);
         setUrl(url);
+        setStatus("Ready");
+        setProgress(100);
         onLog?.("🌐 Preview ready!");
         (window as any).__wc = wc;  // Expose wc for snapshot access
       });
@@ -116,6 +127,8 @@ export function useWebContainer(
           console.log("🚀 Initializing WebContainer");
 
           const s1 = addStep?.("Building file tree", "build");
+          setStatus("Preparing project files...");
+          setProgress(25);
           await wc.mount(buildTree(files));
           completeStep?.(s1);
 
@@ -160,6 +173,28 @@ export function useWebContainer(
 
 
           const s3 = addStep?.("Installing dependencies", "build");
+          setStatus("Installing dependencies...");
+          setProgress(55);
+
+          //progress increser of loading project
+          let progressTimer: ReturnType<typeof setTimeout>;
+
+          const increaseProgress = () => {
+            setProgress((prev) => {
+              if (prev >= 79) return prev;
+
+              progressTimer = setTimeout(
+                increaseProgress,
+                Math.random() * 14000 + 1000 // 1–5 seconds
+              );
+
+              return prev + 1;
+            });
+          };
+
+          increaseProgress();
+
+
           const install = await wc.spawn("npm", ["install"]);
 
           const exitCode = await install.exit;
@@ -199,6 +234,9 @@ export function useWebContainer(
           );
 
           const s6 = addStep?.("Running dev server", "build");
+          setStatus("Starting development server...");
+          clearTimeout(progressTimer);
+          setProgress(80);
           const dev = await wc.spawn("npm", ["run", "dev"]);
           completeStep?.(s6);
 
@@ -368,5 +406,5 @@ export function useWebContainer(
     }, 100);
   }, [files, isReady, wcReady]);
 
-  return { url, wcRef };
+  return { url, wcRef, status, progress };
 }
