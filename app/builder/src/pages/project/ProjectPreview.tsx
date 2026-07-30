@@ -1,22 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-
-import SplashScreen from "@/components/SplashScreen";
+import { useParams } from "react-router-dom";
 
 import { useFiles } from "@/hooks/useFiles";
 import { useSteps } from "@/pages/builder/hooks/useSteps";
 import { useWebContainer } from "@/hooks/useWebContainer";
 
-import PreviewPane from "@/pages/builder/components/PreviewPane";
 
 import { getProject, getProjectFiles, } from "@/api/project.api";
+import ProjectHeader from "./components/ProjectHeader";
+import ProjectFrame from "./components/ProjectFrame";
+import ProjectLoader from "./components/ProjectLoader";
 
 
 
 
 export default function ProjectPreview() {
     const { projectId } = useParams();
-    const navigate = useNavigate();
+
 
     const userSelectedRef = useRef(false);
 
@@ -58,7 +58,7 @@ export default function ProjectPreview() {
             .catch(console.error);
     }, [projectId]);
 
-    const { url: previewUrl } = useWebContainer(
+    const { url: previewUrl, status, progress } = useWebContainer(
         fileSystem.files,
         isReady,
         (msg, type) => {
@@ -71,35 +71,24 @@ export default function ProjectPreview() {
     );
     if (!previewUrl) {
         return (
-            <SplashScreen message="Preparing your project..." />
+            <ProjectLoader
+                projectName={projectMeta?.name}
+                status={status}
+                progress={progress}
+            />
         );
     }
     return (
-        <div className="h-screen flex flex-col bg-[#0f1117]">
+        <div className="h-screen flex flex-col bg-[#0b0b0b]">
 
-            <div className="h-14 border-b border-white/10 flex items-center justify-between px-6">
+            <ProjectHeader
+                projectId={projectId!}
+                projectName={projectMeta?.name}
+            />
 
-                <div className="text-white font-medium">
-                    {projectMeta?.name}
-                </div>
-
-                <div className="px-28">
-                    <button
-                        onClick={() => navigate(`/builder/${projectId}`)}
-                        className="px-4 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-500"
-                    >
-                        Edit in Builder
-                    </button>
-                </div>
-
-            </div>
-
-            <div className="flex-1">
-                <PreviewPane
-                    previewUrl={previewUrl}
-                    hasFiles={Object.keys(fileSystem.files).length > 0}
-                />
-            </div>
+            <ProjectFrame
+                previewUrl={previewUrl}
+            />
 
         </div>
     );

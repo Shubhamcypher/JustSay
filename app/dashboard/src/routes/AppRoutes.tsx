@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "../pages/Home";
-import ProjectPage from "@/pages/project/ProjectPage";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import OAuthSuccess from "@/pages/OAuthSuccess";
@@ -51,15 +50,7 @@ export default function AppRoutes() {
           }
         />
 
-        {/* Project Details */}
-        <Route
-          path="/project/:id"
-          element={
-            <PrivateRoute>
-              <ProjectPage />
-            </PrivateRoute>
-          }
-        />
+
 
         {/* Builder - New Project */}
         <Route
