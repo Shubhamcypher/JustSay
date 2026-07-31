@@ -10,6 +10,7 @@ import fileRoutes from "./routes/file.routes";
 import { pool } from "./config/db";
 import passport from "./config/passport"
 import generateRoutes from "./routes/generate.routes";
+import aiRoutes from "./routes/ai.routes";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
@@ -50,7 +51,8 @@ app.use("/api/projects", projectRoutes)
 //file routes
 app.use("/api/files", fileRoutes);
 
-
+//ai routes
+app.use("/api/ai", aiRoutes);
 
 pool.query("SELECT 1")
   .then(() => console.log("DB Connected"))

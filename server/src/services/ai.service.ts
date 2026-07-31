@@ -1,233 +1,77 @@
-import { Groq } from "groq-sdk";
+// import OpenAI from "openai";
+
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
+
+import Groq from "groq-sdk";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-export async function streamLLM(prompt: string) {
+export async function describeApp(
+  prompt: string,
+  fileList: string[]
+) {
   const stream = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
+    // model: "gpt-4o-mini",
+    model: "llama-3.3-70b-versatile",
     stream: true,
-    temperature: 0.2,
-    max_completion_tokens: 4096,
-
+    max_tokens: 120,
     messages: [
       {
-        role: "system",
-        content: `
-You are a deterministic code generator.
-
-You MUST follow the format EXACTLY. No exceptions.
-
-=====================
-STRICT OUTPUT RULES
-=====================
-
-- ONLY output files
-- NO explanations
-- NO markdown
-- NO backticks
-- NO headings
-- NO extra text
-- NO comments outside files
-- NEVER output anything before the first START_FILE
-- NEVER output anything after the last END_FILE
-
-=====================
-FORMAT (STRICT)
-=====================
-
-START_FILE: <file_path>
-<file_content>
-END_FILE
-
-- Every file MUST start with START_FILE
-- Every file MUST end with END_FILE
-- END_FILE is mandatory and cannot be skipped
-- Do NOT merge multiple files
-- Do NOT nest files
-
-=====================
-STACK REQUIREMENTS
-=====================
-
-- Vite
-- React 18 (TypeScript)
-- Tailwind CSS
-
-=====================
-PROJECT STRUCTURE
-=====================
-
-You MUST include ALL of these:
-
-- package.json
-- index.html
-- src/main.tsx
-- src/App.tsx
-- src/components/*
-- tailwind.config.js
-- postcss.config.js
-- tsconfig.json
-
-ALWAYS include a valid package.json with:
-
-- react, react-dom in dependencies
-- vite, typescript, tailwindcss, postcss, autoprefixer in devDependencies
-
-Example:
-
-{
-  "name": "app",
-  "scripts": {
-    "dev": "vite"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "vite": "^4.0.0",
-    "typescript": "^4.0.0",
-    "tailwindcss": "^3.0.0",
-    "postcss": "^8.0.0",
-    "autoprefixer": "^10.0.0"
-  }
-}
-
-=====================
-TAILWIND REQUIREMENTS (MANDATORY)
-=====================
-
-You MUST include proper Tailwind CSS setup:
-
-Create file: src/index.css
-src/index.css MUST contain:
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-src/main.tsx MUST import the CSS file:
-
-import "./index.css";
-
-tailwind.config.js MUST include:
-
-content: [
-"./index.html",
-"./src/**/*.{js,ts,jsx,tsx}"
-]
-
-postcss.config.js MUST include:
-
-plugins: {
-tailwindcss: {},
-autoprefixer: {}
-}
-- NEVER use @apply with Tailwind utility classes that have the same name
-- NEVER redefine Tailwind built-in classes (e.g., max-w-md, flex, text-center)
-- @apply MUST only be used inside custom classes (e.g., .btn, .card)
-- DO NOT create classes like .max-w-md, .flex, etc.
-
-VALID example:
-.btn {
-  @apply px-4 py-2 bg-blue-500 text-white rounded;
-}
-
-INVALID example:
-.max-w-md {
-  @apply max-w-md;
-}
-
-=====================
-DEPENDENCY RULES (CRITICAL)
-=====================
-
-- DO NOT use external libraries unless explicitly required
-- DO NOT import packages not listed in package.json
-- Prefer native browser APIs (e.g., crypto.randomUUID instead of uuid)
-
-
-=====================
-HTML RULES (CRITICAL):
-=====================
-
-- index.html MUST contain ONLY valid HTML
-- NEVER include React code or JSX inside index.html
-- NEVER use {} expressions inside index.html
-- NEVER use onClick, onChange, or any JS logic in index.html
-- React code MUST ONLY be inside .tsx or .jsx files
-
-index.html MUST ONLY include:
-
-- a root div with id="root"
-- a script tag pointing to /src/main.tsx
-
-=====================
-IMPORT RULES:
-=====================
-
-- All component imports MUST use correct relative paths
-- If a component is inside src/components/, imports MUST be:
-
-  import X from "./components/X"
-
-- NEVER import from "./X" if file is not in same folder
-
-- All imports must match actual file structure EXACTLY
-
-=====================
-REACT IMPORT RULE (CRITICAL):
-=====================
-
-- ALWAYS include:
-  import React from "react";
-
-- EVEN if using React 18
-- DO NOT rely on automatic JSX runtime
-
-
-
-=====================
-REACT ROUTER RULES:
-=====================
-- If using react-router-dom:
-  - MUST import like:
-    import { Link } from "react-router-dom"
-  - NEVER use default import
-
-- MUST include react-router-dom in dependencies
-
-
-
-=====================
-QUALITY RULES
-=====================
-
-- All files must be COMPLETE and VALID
-- No syntax errors
-- No placeholders
-- No TODO comments
-- No missing imports
-
-=====================
-CRITICAL
-=====================
-
-If you fail to follow format EXACTLY, the output is invalid.
-
-DO NOT explain anything.
-DO NOT skip END_FILE.
-DO NOT output partial files.
-`,
-      },
-      {
         role: "user",
-        content: prompt,
+        content: `The user asked: "${prompt}".
+                  You just built a React app with these files: ${fileList.join(", ")}.
+                  Write 2–3 sentences describing what you built, what key features it has, and the design style.
+                  Be specific, natural, first-person. No fluff.`,
       },
     ],
   });
 
   return stream;
+}
+
+
+export async function summarizeChanges(
+  followUpPrompt: string,
+  diffMap: Record<string, { added: number; removed: number }>
+) {
+  const diffLines = Object.entries(diffMap)
+    .map(([path, { added, removed }]) => {
+      const name =
+        path.split("/").pop()?.replace(/\.(tsx|ts)$/, "") ?? path;
+
+      const parts = [];
+
+      if (added > 0) parts.push(`+${added} lines`);
+      if (removed > 0) parts.push(`-${removed} lines`);
+
+      return `${name} (${parts.join(", ")})`;
+    })
+    .join("; ");
+
+  const response = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.4,
+    max_tokens: 80,
+    messages: [
+      {
+        role: "user",
+        content: `User asked: "${followUpPrompt}"
+
+Changes made:
+${diffLines}
+
+Write one short friendly sentence describing what was updated and what the main change was.
+
+Max 20 words.
+No technical jargon.`,
+      },
+    ],
+  });
+
+  return response.choices[0]?.message?.content?.trim()
+    ?? "Done! Changes applied.";
 }
