@@ -1,4 +1,7 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+import { summarizeChanges } from "@/api/ai.api";
+import { followUpProject } from "@/api/followup.api";
 
 export function useFollowUp({
     files,
@@ -6,7 +9,6 @@ export function useFollowUp({
     projectId,
     updateFileContent,
     setActiveFile,
-    activeFile,
     userSelectedRef,
     addStep,
     completeStep,
@@ -15,11 +17,14 @@ export function useFollowUp({
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const filesRef = useRef(files);
-    const activeFileRef = useRef<string | null>(null);
     const isPatchingRef = useRef(false);
 
-    filesRef.current = files;
-    activeFileRef.current = activeFile;
+    //This effect helps mutating refs but ref changes only then
+    useEffect(() => {
+        filesRef.current = files;
+    }, [files]);
+    
+
 
     const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -82,48 +87,7 @@ export function useFollowUp({
         isPatchingRef.current = false;
     };
 
-    // Add this helper outside sendFollowUp:
-    // Replace the summarizeChanges signature to accept a diff map
-    const summarizeChanges = async (
-        followUpPrompt: string,
-        diffMap: Record<string, { added: number; removed: number }>
-    ): Promise<string> => {
-        const diffLines = Object.entries(diffMap)
-            .map(([path, { added, removed }]) => {
-                const name = path.split("/").pop()?.replace(/\.(tsx|ts)$/, "") ?? path;
-                const parts = [];
-                if (added > 0) parts.push(`+${added} lines`);
-                if (removed > 0) parts.push(`-${removed} lines`);
-                return `${name} (${parts.join(", ")})`;
-            })
-            .join("; ");
 
-        try {
-            const res = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-                },
-                body: JSON.stringify({
-                    model: "gpt-4o-mini",
-                    max_tokens: 80,
-                    temperature: 0.4,
-                    messages: [{
-                        role: "user",
-                        content: `User asked: "${followUpPrompt}"
-    Changes made: ${diffLines}
-    
-    Write one short friendly sentence describing what was updated and what the main change was. Be specific about the files/features. Max 20 words. No technical jargon.`
-                    }]
-                })
-            });
-            const data = await res.json();
-            return data.choices?.[0]?.message?.content?.trim() || "Done! Changes applied.";
-        } catch {
-            return "Done! Changes applied.";
-        }
-    };
 
     const sendFollowUp = async (followUpPrompt: string) => {
         if (!followUpPrompt.trim() || isProcessing) return;
@@ -154,33 +118,22 @@ export function useFollowUp({
                     : (file as any)?.content || "";
             }
 
-            const res = await fetch("http://localhost:5000/api/followup", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                },
-                body: JSON.stringify({
-                    followUpPrompt,
-                    originalPrompt,
-                    projectId,
-                    files: serializedFiles,
-                }),
+            const reader = await followUpProject({
+                followUpPrompt,
+                originalPrompt,
+                projectId,
+                files: serializedFiles,
             });
 
-            if (!res.ok) {
-                throw new Error(`Server error: ${res.status}`);
-            }
-
-            const reader = res.body?.getReader();
-            if (!reader) throw new Error("No response body");
+            completeStep(s1);
 
             const decoder = new TextDecoder("utf-8");
             let buffer = "";
 
-            completeStep(s1);
+
             const beforeSnapshot: Record<string, string> = {};
             const patchedDiff: Record<string, { added: number; removed: number }> = {};
+            const fileSteps: Record<string, string> = {};
             while (true) {
                 const { value, done } = await reader.read();
                 if (done) break;
@@ -199,13 +152,16 @@ export function useFollowUp({
                         data = JSON.parse(raw.replace("data: ", "").trim());
                     } catch (parseErr) {
                         console.warn("⚠️ SSE parse error, skipping chunk:", raw);
+                        console.log('Parse error is: ', parseErr);
+
                         continue;
                     }
 
                     if (data.type === "plan") {
                         (data.filesToChange ?? []).forEach((filePath: string) => {
                             const fileName = filePath.split("/").pop();
-                            addStep(`Updating ${fileName}`, "file");
+                            fileSteps[filePath] =
+                                addStep(`Updating ${fileName}`, "file");
                         });
                     }
 
@@ -214,6 +170,8 @@ export function useFollowUp({
                         if (!beforeSnapshot[data.path]) {
                             beforeSnapshot[data.path] = filesRef.current[data.path]?.content ?? "";
                         }
+
+                        completeStep(fileSteps[data.path]);
 
                         await streamPatch(data.path, data.content);
 
@@ -224,13 +182,22 @@ export function useFollowUp({
                         const removed = Math.max(0, oldArr.length - newArr.length);
                         patchedDiff[data.path] = { added, removed };
 
-                        const fileName = data.path.split("/").pop();
-                        completeStep(addStep(`✅ Updated ${fileName}`, "file"));
                     }
 
                     if (data.type === "done") {
-                        const summary = await summarizeChanges(followUpPrompt, patchedDiff);
-                        addChatMessage("ai", summary);
+                        try {
+                            const summary = await summarizeChanges(
+                                followUpPrompt,
+                                patchedDiff
+                            );
+
+                            addChatMessage("ai", summary);
+                        } catch {
+                            addChatMessage(
+                                "ai",
+                                "Your changes have been applied successfully."
+                            );
+                        }
                         break;
                     }
 

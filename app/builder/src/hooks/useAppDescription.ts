@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { describeApp } from "../services/describApp.service";
+import { describeApp } from "../api/ai.api";
+
 
 export function useAppDescription(
     url: string | null,
@@ -10,6 +11,8 @@ export function useAppDescription(
 
     useEffect(() => {
         if (!url || !prompt) return;
+
+        // setLines([]);
 
         const fileList = Object.keys(files ?? {});
 
@@ -35,7 +38,7 @@ export function useAppDescription(
             });
         }).catch(() => setLines(["Your app is ready to explore!"]));
 
-    }, [url]);
+    }, [url, prompt]);
 
     return lines;
 }
