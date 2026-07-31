@@ -10,6 +10,7 @@ type Props = {
 export default function ProjectItem({ project, onHover, onLeave }: Props) {
   return (
     <div
+      onClick={() => window.location.href = `http://localhost:5174/project/${project.id}`}
       onMouseEnter={(e) => onHover?.(e, project)}
       onMouseLeave={onLeave}
       className="flex items-center gap-2 text-sm text-white/70 px-4 py-1 rounded-md hover:bg-white/10 cursor-pointer transition"
