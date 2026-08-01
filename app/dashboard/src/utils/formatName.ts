@@ -1,4 +1,4 @@
-// Capitalize full name (shubham kumar → Shubham Kumar)
+// Capitalize initial (shubham kumar → Shubham Kumar)
 export const formatName = (name?: string | null): string => {
     if (!name) return "";
   
