@@ -58,7 +58,7 @@ export function useWebContainer(
 
     const init = async () => {
       setStatus("Starting WebContainer...");
-      setProgress(10);
+      setProgress(0);
       const wc = await getWebContainer();
       if (!mounted) return;
 
@@ -67,7 +67,7 @@ export function useWebContainer(
 
       wc.on("server-ready", (_: any, url: string) => {
         setStatus("Launching application...");
-        setProgress(95);
+        setProgress(99);
         setUrl(url);
         setStatus("Ready");
         setProgress(100);
@@ -128,7 +128,7 @@ export function useWebContainer(
 
           const s1 = addStep?.("Building file tree", "build");
           setStatus("Preparing project files...");
-          setProgress(25);
+          setProgress(1);
           await wc.mount(buildTree(files));
           completeStep?.(s1);
 
@@ -174,18 +174,18 @@ export function useWebContainer(
 
           const s3 = addStep?.("Installing dependencies", "build");
           setStatus("Installing dependencies...");
-          setProgress(35);
+          setProgress(2);
 
           //progress increser of loading project
           let progressTimer: ReturnType<typeof setTimeout>;
 
           const increaseProgress = () => {
             setProgress((prev) => {
-              if (prev >= 79) return prev;
+              if (prev >= 97) return prev;
 
               progressTimer = setTimeout(
                 increaseProgress,
-                Math.random() * 14000 + 1000 // 1–5 seconds
+                Math.random() * 10000 + 1000 // 1–10 seconds
               );
 
               return prev + 1;
@@ -236,7 +236,7 @@ export function useWebContainer(
           const s6 = addStep?.("Running dev server", "build");
           setStatus("Starting development server...");
           clearTimeout(progressTimer);
-          setProgress(80);
+          setProgress(90);
           const dev = await wc.spawn("npm", ["run", "dev"]);
           completeStep?.(s6);
 
