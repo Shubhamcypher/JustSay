@@ -3,21 +3,8 @@ import { authStore } from "@/authStore";
 
 const API = axios.create({
   baseURL: `http://${window.location.hostname}:5000/api`,
+  withCredentials: true,
 });
-
-
-//  Attach access token
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
-
-
 
 
 // Refresh Queue System
@@ -82,26 +69,19 @@ API.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = localStorage.getItem("refreshToken");
-
-        // No refresh token → fail immediately
-        if (!refreshToken) {
-          authStore.setSessionStatus("failed");
-          return Promise.reject(error);
-        }
-
         authStore.setSessionStatus("refreshing");
 
         const res = await axios.post(
           `http://${window.location.hostname}:5000/api/auth/refresh`,
-          { refreshToken }
+          {},
+          {
+            withCredentials: true,
+          }
         );
 
         const { accessToken, refreshToken: newRefreshToken } = res.data;
 
-        // Save new tokens
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", newRefreshToken);
+
 
         // Resolve all queued requests
         onRefreshed(accessToken);
@@ -115,10 +95,6 @@ API.interceptors.response.use(
         onRefreshFailed(err);
 
         authStore.setSessionStatus("failed");
-
-        //Clear tokens
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
 
         // Prevent infinite OAuth loop
         const alreadyTried = sessionStorage.getItem("oauth_retry");

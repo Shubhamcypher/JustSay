@@ -4,7 +4,7 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import OAuthSuccess from "@/pages/OAuthSuccess";
-import Builder from "@/pages/builder/Builder";
+
 
 import { useAuth } from "@/context/AuthContext";
 import SessionHandler from "@/components/customComponents/SessionHandler";
@@ -51,26 +51,6 @@ export default function AppRoutes() {
         />
 
 
-
-        {/* Builder - New Project */}
-        <Route
-          path="/builder"
-          element={
-            <PrivateRoute>
-              <Builder />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Builder - Edit Existing Project */}
-        <Route
-          path="/builder/:id"
-          element={
-            <PrivateRoute>
-              <Builder />
-            </PrivateRoute>
-          }
-        />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

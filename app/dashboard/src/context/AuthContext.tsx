@@ -3,11 +3,6 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { login, register, getMe } from "@/api/auth.api";
-import {
-    setTokens,
-    getAccessToken,
-    clearTokens,
-} from "@/utils/auth";
 import { authStore } from "@/authStore";
 import { hideBootScreen } from "@/utils/boot";
 
@@ -49,25 +44,15 @@ export function AuthProvider({ children }: any) {
 
     useEffect(() => {
         const init = async () => {
-            const access = getAccessToken();
-
-            if (!access) {
-                setSessionStatus("failed");
-                setLoading(false);
-                hideBootScreen()
-                return;
-            }
-
             try {
                 setSessionStatus("checking");
 
                 const res = await getMe(); // interceptor handles refresh
+
                 setUser(res.data.data);
 
                 setSessionStatus("authenticated");
-            } catch (err: any) {
-
-                clearTokens();
+            } catch {
                 setUser(null);
                 setSessionStatus("failed");
 
@@ -86,11 +71,7 @@ export function AuthProvider({ children }: any) {
         email: string;
         password: string;
     }) => {
-        const res = await register(data);
-
-        const { accessToken, refreshToken } = res.data;
-
-        setTokens(accessToken, refreshToken);
+        await register(data);
 
         await setUserFromToken();
     };
@@ -98,18 +79,12 @@ export function AuthProvider({ children }: any) {
     // 🔐 login
     const loginUser = async (data: { email: string; password: string }) => {
 
-        const res = await login(data);
-
-        const { accessToken, refreshToken } = res.data;
-
-        setTokens(accessToken, refreshToken);
-
+        await login(data);
         await setUserFromToken();
     };
 
     // 🚪 logout
     const logoutUser = () => {
-        clearTokens();
         setUser(null);
     };
 
@@ -118,7 +93,6 @@ export function AuthProvider({ children }: any) {
             const res = await getMe();
             setUser(res.data.data);
         } catch {
-            clearTokens();
             setUser(null);
         }
     };

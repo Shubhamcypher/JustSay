@@ -3,18 +3,7 @@ import { authStore } from "@/authStore";
 
 const API = axios.create({
   baseURL: `http://${window.location.hostname}:5000/api`,
-});
-
-
-//  Attach access token
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
+  withCredentials: true,
 });
 
 
@@ -94,7 +83,10 @@ API.interceptors.response.use(
 
         const res = await axios.post(
           `http://${window.location.hostname}:5000/api/auth/refresh`,
-          { refreshToken }
+          {},
+          {
+            withCredentials: true,
+          }
         );
 
         const { accessToken, refreshToken: newRefreshToken } = res.data;
@@ -144,3 +136,8 @@ API.interceptors.response.use(
 );
 
 export default API;
+
+
+// 0751ee9a-e151-4f1d-961a-07364eaf560f
+// f35194b3-4338-4660-84d1-be5a3fdc5d97
+// e3aaf3d3-3917-4a25-97f1-c92c30aaed81

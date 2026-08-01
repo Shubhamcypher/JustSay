@@ -174,7 +174,7 @@ export function useWebContainer(
 
           const s3 = addStep?.("Installing dependencies", "build");
           setStatus("Installing dependencies...");
-          setProgress(55);
+          setProgress(35);
 
           //progress increser of loading project
           let progressTimer: ReturnType<typeof setTimeout>;

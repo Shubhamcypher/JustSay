@@ -7,10 +7,10 @@ import {
   generateRefreshToken,
   verifyRefreshToken
 } from "../utils/auth";
+
+import { clearAuthCookies, setAuthCookies } from "../utils/cookies";
+
 import bcrypt from "bcrypt";
-
-
-
 
 
 export async function register(req: Request, res: Response) {
@@ -46,7 +46,7 @@ export async function register(req: Request, res: Response) {
     }
 
     const hashed = await hashPassword(password);
-    const username = email.split("@")[0]; 
+    const username = email.split("@")[0];
 
     let user;
     try {
@@ -133,9 +133,10 @@ export async function login(req: Request, res: Response) {
       [hashedRefresh, user.id]
     );
 
+    setAuthCookies(res, accessToken, refreshToken);
+
     return res.json({
-      accessToken,
-      refreshToken,
+      success: true,
     });
 
   } catch (error) {
@@ -145,22 +146,22 @@ export async function login(req: Request, res: Response) {
 }
 
 export async function refresh(req: Request, res: Response) {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies?.refreshToken;
 
-  
+
   if (!refreshToken) {
     return res.status(401).json({ message: "No token provided" });
   }
-  
+
 
   try {
     const decoded = verifyRefreshToken(refreshToken) as any;
-    
+
     const tokens = await pool.query(
       "SELECT token FROM refresh_tokens WHERE user_id = $1",
       [decoded.userId]
     );
-    
+
 
     let matchedTokenHash: string | null = null;
 
@@ -171,7 +172,7 @@ export async function refresh(req: Request, res: Response) {
         break;
       }
     }
-    
+
 
     if (!matchedTokenHash) {
       return res.status(403).json({ message: "Invalid refresh token" });
@@ -183,7 +184,7 @@ export async function refresh(req: Request, res: Response) {
       [matchedTokenHash]
     );
 
-    
+
 
     // 🔥 Generate new tokens
     const newAccessToken = generateAccessToken({ userId: decoded.userId });
@@ -197,9 +198,10 @@ export async function refresh(req: Request, res: Response) {
       [hashed, decoded.userId]
     );
 
+    setAuthCookies(res, newAccessToken, newRefreshToken);
+
     return res.json({
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
+      success: true,
     });
 
   } catch {
@@ -209,7 +211,7 @@ export async function refresh(req: Request, res: Response) {
 
 //logout needs refreshToken in body
 export async function logout(req: Request, res: Response) {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies?.refreshToken;
 
   if (!refreshToken) return res.sendStatus(204);
 
@@ -220,5 +222,6 @@ export async function logout(req: Request, res: Response) {
     [decoded.userId]
   );
 
+  clearAuthCookies(res);
   return res.json({ message: "Logged out" });
 }
