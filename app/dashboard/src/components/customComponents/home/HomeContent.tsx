@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useProjects } from "@/context/ProjectContext";
-import { useNavigate } from "react-router-dom";
 
 type TabType = "projects" | "recent" | "templates";
 type ProjectType = "created" | "shared" | "starred";
 
 export default function HomeContent() {
-  const navigate = useNavigate();
-  const { projects, refreshProjects } = useProjects();
+  const { projects } = useProjects();
 
   const [tab, setTab] = useState<TabType>("projects");
   const [projectType, setProjectType] = useState<ProjectType>("created");
@@ -18,9 +16,7 @@ export default function HomeContent() {
 
   const data = projects[projectType];
 
-  useEffect(() => {
-    refreshProjects(); // always fetch fresh on Home visit
-  });
+
 
   return (
     <div className="px-4 md:px-6 py-4 md:py-6">
