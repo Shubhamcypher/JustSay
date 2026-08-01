@@ -14,9 +14,21 @@ import { useProjects } from "@/context/ProjectContext";
 type SectionKey = "created" | "shared" | "starred";
 
 const sections = [
-  { key: "created", label: "Created by me", icon: FolderOpen },
-  { key: "shared", label: "Shared with me", icon: Users },
-  { key: "starred", label: "Starred", icon: Star },
+  {
+    key: "created",
+    label: "Created by me",
+    icon: FolderOpen,
+  },
+  {
+    key: "shared",
+    label: "Shared with me",
+    icon: Users,
+  },
+  {
+    key: "starred",
+    label: "Starred",
+    icon: Star,
+  },
 ] as const;
 
 type Props = {
@@ -26,6 +38,8 @@ type Props = {
   onLeave?: () => void;
 };
 
+const INITIAL_COUNT = 3;
+
 export default function ProjectsSection({
   collapsed = false,
   variant = "desktop",
@@ -33,82 +47,107 @@ export default function ProjectsSection({
   onLeave,
 }: Props) {
   const isMobile = variant === "mobile";
+
   const { projects } = useProjects();
 
   const [projectsOpen, setProjectsOpen] = useState(true);
-  const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
+
+  const [openSections, setOpenSections] = useState<
+    Record<SectionKey, boolean>
+  >({
     created: true,
     shared: false,
     starred: false,
   });
 
-  // ================= COLLAPSED (DESKTOP ONLY) =================
+  const [expandedSections, setExpandedSections] = useState<
+    Record<SectionKey, boolean>
+  >({
+    created: false,
+    shared: false,
+    starred: false,
+  });
+
   if (!isMobile && collapsed) {
     return (
-      <div className="flex flex-col items-center gap-3 mt-2">
+      <div className="flex flex-col items-center gap-3 mt-3">
         {sections.map((section) => {
           const Icon = section.icon;
+
           return (
-            <div key={section.key} className="relative group">
-              <button className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition">
-                <Icon size={16} />
-              </button>
-              <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs bg-zinc-900 text-white rounded-md opacity-0 group-hover:opacity-100 transition">
-                {section.label}
-              </div>
-            </div>
+            <button
+              key={section.key}
+              className="p-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition"
+            >
+              <Icon size={16} />
+            </button>
           );
         })}
       </div>
     );
   }
 
-  // ================= MAIN =================
   return (
-    <div className="flex flex-col">
+    <div className="mt-5">
+
       {/* Header */}
+
       <button
         onClick={() => setProjectsOpen(!projectsOpen)}
-        className={cn(
-          "flex items-center justify-between rounded-lg transition",
-          isMobile
-            ? "px-4 py-3 text-white text-lg"
-            : "px-3 py-2 text-sm text-white/70 hover:bg-white/10"
-        )}
+        className="
+          flex
+          w-full
+          items-center
+          justify-between
+          rounded-lg
+          px-2
+          py-2
+          text-sm
+          text-white/75
+          hover:bg-white/10
+          transition
+        "
       >
         <div className="flex items-center gap-2">
           <Folder size={16} />
-          <span>Projects</span>
+          <span className="font-medium">Projects</span>
         </div>
+
         <ChevronRight
-          size={16}
-          className={cn("transition-transform", projectsOpen && "rotate-90")}
+          size={15}
+          className={cn(
+            "transition-transform duration-200",
+            projectsOpen && "rotate-90"
+          )}
         />
       </button>
 
-      {/* Container */}
+      {/* Sections */}
+
       <div
         className={cn(
-          "transition-all duration-300",
-          projectsOpen
-            ? isMobile
-              ? "max-h-[490px] overflow-y-auto pb-6 mt-2"
-              : "max-h-[170px] mt-2 ml-2"
-            : "h-0"
+          "overflow-hidden transition-all duration-300",
+          projectsOpen ? "max-h-[1200px] mt-2" : "max-h-0"
         )}
       >
-        <div
-          className={cn(
-            isMobile
-              ? "flex flex-col gap-2 max-h-[65vh] overflow-y-auto pb-6"
-              : "h-full overflow-y-auto custom-scrollbar pr-1"
-          )}
-        >
+        <div className="flex flex-col gap-2">
+
           {sections.map((section) => {
             const Icon = section.icon;
+
+            const list = projects[section.key];
+
+            const expanded = expandedSections[section.key];
+
+            const visibleProjects = expanded
+              ? list
+              : list.slice(0, INITIAL_COUNT);
+
             return (
               <div key={section.key}>
+
                 {/* Section Header */}
+
                 <button
                   onClick={() =>
                     setOpenSections((prev) => ({
@@ -116,17 +155,27 @@ export default function ProjectsSection({
                       [section.key]: !prev[section.key],
                     }))
                   }
-                  className={cn(
-                    "w-full flex items-center justify-between transition",
-                    isMobile
-                      ? "px-4 py-2 text-sm text-white"
-                      : "px-2 py-1 text-xs text-white/50 hover:text-white"
-                  )}
+                  className="
+                    flex
+                    w-full
+                    items-center
+                    justify-between
+                    rounded-md
+                    px-2
+                    py-1.5
+                    text-xs
+                    uppercase
+                    tracking-wide
+                    text-white/45
+                    hover:text-white
+                    transition
+                  "
                 >
-                  <div className="flex gap-2 items-center">
-                    <Icon size={isMobile ? 16 : 14} />
+                  <div className="flex items-center gap-2">
+                    <Icon size={14} />
                     {section.label}
                   </div>
+
                   <ChevronRight
                     size={14}
                     className={cn(
@@ -136,31 +185,63 @@ export default function ProjectsSection({
                   />
                 </button>
 
-                {/* Projects */}
                 <div
                   className={cn(
                     "overflow-hidden transition-all duration-300",
                     openSections[section.key]
-                      ? isMobile
-                        ? "max-h-[500px] mt-1 ml-6"
-                        : "max-h-[200px] mt-1 ml-3"
+                      ? "max-h-[1000px] mt-1"
                       : "max-h-0"
                   )}
                 >
-                  {projects[section.key].map((p: any) => (
-                    <ProjectItem
-                      key={p.id}
-                      project={{ id: p.id, name: p.name, snapshot: p.snapshot }}
-                      onHover={!isMobile ? onHover : undefined}
-                      onLeave={!isMobile ? onLeave : undefined}
-                    />
-                  ))}
+                  <div className="flex flex-col gap-0.5 ml-3">
+
+                    {visibleProjects.map((project: any) => (
+                      <ProjectItem
+                        key={project.id}
+                        project={{
+                          id: project.id,
+                          name: project.name,
+                          snapshot: project.snapshot,
+                        }}
+                        onHover={!isMobile ? onHover : undefined}
+                        onLeave={!isMobile ? onLeave : undefined}
+                      />
+                    ))}
+
+                    {list.length > INITIAL_COUNT && (
+                      <button
+                        onClick={() =>
+                          setExpandedSections((prev) => ({
+                            ...prev,
+                            [section.key]: !prev[section.key],
+                          }))
+                        }
+                        className="
+                          ml-2
+                          mt-1
+                          text-xs
+                          text-violet-400
+                          hover:text-violet-300
+                          transition
+                          text-left
+                        "
+                      >
+                        {expanded
+                          ? "Show less"
+                          : `View all (${list.length})`}
+                      </button>
+                    )}
+
+                  </div>
                 </div>
+
               </div>
             );
           })}
+
         </div>
       </div>
+
     </div>
   );
 }

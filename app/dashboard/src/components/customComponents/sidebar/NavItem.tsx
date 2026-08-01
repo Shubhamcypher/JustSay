@@ -4,16 +4,18 @@ type Props = {
   icon: React.ElementType;
   label: string;
   collapsed: boolean;
-  active: boolean;
+  active?: boolean;
   onClick: () => void;
+  rightIcon?: React.ElementType;
 };
 
 export default function NavItem({
   icon: Icon,
   label,
   collapsed,
-  active,
+  active = false,
   onClick,
+  rightIcon: RightIcon,
 }: Props) {
   return (
     <button
@@ -27,7 +29,18 @@ export default function NavItem({
       <Icon size={18} className="opacity-80 shrink-0" />
 
       {!collapsed && (
-        <span className="text-sm truncate">{label}</span>
+        <>
+          <span className="text-sm truncate flex-1 text-left">
+            {label}
+          </span>
+
+          {RightIcon && (
+            <RightIcon
+              size={15}
+              className="opacity-50"
+            />
+          )}
+        </>
       )}
     </button>
   );

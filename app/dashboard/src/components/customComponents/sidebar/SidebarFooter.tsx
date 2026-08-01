@@ -8,13 +8,7 @@ export default function SidebarFooter({ collapsed }: { collapsed: boolean }) {
 
 
   return (
-    <div className="p-4 flex flex-col gap-4">
-
-      {!collapsed && (
-        <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-3 rounded-xl text-sm border border-white/10 cursor-pointer">
-          Upgrade to Pro 🚀
-        </div>
-      )}
+    <div className="px-4 py-2 flex flex-col gap-4">
 
       <div className="flex items-center gap-3 border-t border-white/10 pt-4">
         <Avatar src={user?.img} name={user?.username} />

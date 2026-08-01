@@ -1,20 +1,54 @@
 import { Clock } from "lucide-react";
 
-export default function RecentSection({ collapsed }: { collapsed: boolean }) {
+const recent = [
+  "Project A",
+  "Landing Page",
+];
+
+export default function RecentSection({
+  collapsed,
+}: {
+  collapsed: boolean;
+}) {
   if (collapsed) return null;
 
   return (
-    <div>
-      <p className="text-xs text-white/40 mb-2 px-2">RECENT</p>
-      {["Project A", "Landing Page"].map((item) => (
-        <div
-          key={item}
-          className="flex items-center gap-2 px-3 py-1 text-sm text-white/70 hover:bg-white/10 rounded-md"
-        >
-          <Clock size={14} />
-          {item}
-        </div>
-      ))}
+    <div className="mt-5">
+      <div className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wider text-white/35">
+        Recent
+      </div>
+
+      <div className="flex flex-col gap-1">
+        {recent.map((item) => (
+          <button
+            key={item}
+            className="
+              group
+              flex
+              w-full
+              items-center
+              gap-2
+              rounded-lg
+              px-2
+              py-1.5
+              text-sm
+              text-white/65
+              transition-all
+              hover:bg-white/8
+              hover:text-white
+            "
+          >
+            <Clock
+              size={14}
+              className="shrink-0 text-white/40 group-hover:text-violet-300"
+            />
+
+            <span className="truncate text-left">
+              {item}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
