@@ -78,9 +78,10 @@ export async function register(req: Request, res: Response) {
       [hashedRefresh, user.id]
     );
 
+    setAuthCookies(res, accessToken, refreshToken);
+
     return res.status(201).json({
-      accessToken,
-      refreshToken,
+      success: true,
     });
 
   } catch (error) {

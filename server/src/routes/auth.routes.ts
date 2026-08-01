@@ -2,6 +2,7 @@ import { Router } from "express";
 import { register, login, refresh, logout } from "../controller/auth.controller";
 import passport from "../config/passport"
 import { generateAccessToken, generateRefreshToken } from "../utils/auth";
+import { setAuthCookies } from "../utils/cookies";
 
 
 const router = Router();
@@ -33,14 +34,11 @@ router.get(
         const accessToken = generateAccessToken({ userId });
         const refreshToken = generateRefreshToken({ userId });
 
-        const clientUrl = req.query.state as string;
-        console.log(clientUrl);
+        setAuthCookies(res, accessToken, refreshToken);
 
-        res.redirect(
-            `${clientUrl}/oauth-success?accessToken=${encodeURIComponent(
-                accessToken
-            )}&refreshToken=${encodeURIComponent(refreshToken)}`
-        );
+        const clientUrl = req.query.state as string;
+
+        res.redirect(`${clientUrl}/oauth-success`);
     }
 );
 

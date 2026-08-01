@@ -2,7 +2,7 @@
 
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { login, register, getMe } from "@/api/auth.api";
+import { login, register, getMe, logout } from "@/api/auth.api";
 import { authStore } from "@/authStore";
 import { hideBootScreen } from "@/utils/boot";
 
@@ -84,8 +84,13 @@ export function AuthProvider({ children }: any) {
     };
 
     // 🚪 logout
-    const logoutUser = () => {
-        setUser(null);
+    const logoutUser = async () => {
+        try {
+            await logout();
+        } finally {
+            setUser(null);
+            setSessionStatus("failed");
+        }
     };
 
     const setUserFromToken = async () => {
