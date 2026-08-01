@@ -1,6 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { setTokens } from "@/utils/auth";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -15,16 +14,9 @@ export default function OAuthSuccess() {
     if (hasRun.current) return;
     hasRun.current = true;
 
-    const params = new URLSearchParams(window.location.search);
-
-    const accessToken = params.get("accessToken");
-    const refreshToken = params.get("refreshToken");
-
-    if (accessToken && refreshToken) {
-      setTokens(accessToken, refreshToken);
-      
-      (async () => {
-        await setUserFromToken(); // 🔥 THIS IS THE MISSING PIECE
+    (async () => {
+      try {
+        await setUserFromToken();
 
         toast({
           title: "Success",
@@ -33,11 +25,45 @@ export default function OAuthSuccess() {
         });
 
         navigate("/");
-      })();
-    } else {
-      navigate("/login");
-    }
+      } catch {
+        navigate("/login");
+      }
+    })();
   }, []);
 
-  return <div>Logging you in...</div>;
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#0f1117]">
+      <div className="text-center">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600">
+          <svg
+            className="h-7 w-7 animate-pulse text-white"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M13 10V3L4 14h7v7l9-11h-7z"
+            />
+          </svg>
+        </div>
+  
+        <h2 className="text-2xl font-semibold text-white">
+          Welcome to JustSay
+        </h2>
+  
+        <p className="mt-2 text-sm text-white/60">
+          Authenticating your account...
+        </p>
+  
+        <div className="mt-6 flex justify-center">
+          <div className="h-1 w-40 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full w-1/3 animate-pulse rounded-full bg-violet-500" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
