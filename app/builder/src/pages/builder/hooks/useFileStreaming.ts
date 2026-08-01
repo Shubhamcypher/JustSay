@@ -149,8 +149,8 @@ export function useFileStreaming({
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                 },
+                credentials:"include",
                 body: JSON.stringify({ prompt }),
                 signal: controller.signal,
             });

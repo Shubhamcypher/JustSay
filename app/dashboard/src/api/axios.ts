@@ -11,12 +11,12 @@ const API = axios.create({
 let isRefreshing = false;
 
 let refreshSubscribers: {
-  resolve: (token: string) => void;
+  resolve: () => void;
   reject: (err: any) => void;
 }[] = [];
 
-function onRefreshed(token: string) {
-  refreshSubscribers.forEach(({ resolve }) => resolve(token));
+function onRefreshed() {
+  refreshSubscribers.forEach(({ resolve }) => resolve());
   refreshSubscribers = [];
 }
 
@@ -25,7 +25,7 @@ function onRefreshFailed(err: any) {
   refreshSubscribers = [];
 }
 
-function addSubscriber(resolve: (token: string) => void, reject: (err: any) => void) {
+function addSubscriber(resolve: () => void, reject: (err: any) => void) {
   refreshSubscribers.push({ resolve, reject });
 }
 
@@ -52,15 +52,7 @@ API.interceptors.response.use(
       // If already refreshing → queue request
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
-          addSubscriber(
-            (token: string) => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-              resolve(API(originalRequest));
-            },
-            (err) => {
-              reject(err);
-            }
-          );
+          addSubscriber(() => { resolve(API(originalRequest)) }, reject);
         });
       }
 
@@ -71,7 +63,7 @@ API.interceptors.response.use(
       try {
         authStore.setSessionStatus("refreshing");
 
-        const res = await axios.post(
+         await axios.post(
           `http://${window.location.hostname}:5000/api/auth/refresh`,
           {},
           {
@@ -79,15 +71,13 @@ API.interceptors.response.use(
           }
         );
 
-        const { accessToken, refreshToken: newRefreshToken } = res.data;
 
 
 
         // Resolve all queued requests
-        onRefreshed(accessToken);
+        onRefreshed();
 
         // Retry original request
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return API(originalRequest);
 
       } catch (err) {
