@@ -86,7 +86,7 @@ export default function Register() {
       });
       setEmail("")
       setPassword("")
-      navigate('/login');
+      navigate('/');
     } catch (err: any) {
       toast({
         title: "Registration Failed",
