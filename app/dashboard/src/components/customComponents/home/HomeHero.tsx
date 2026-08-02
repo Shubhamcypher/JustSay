@@ -2,12 +2,10 @@ import { useState } from "react";
 import AddMenu from "./AddMenu";
 import { useTypingEffect } from "@/hooks/useTypingEffect";
 import PromptInput from "../InputField/PromptField";
-import { useNavigate } from "react-router-dom";
 
 
 export default function HomeHero() {
     const [prompt, setPrompt] = useState("");
-    const navigate = useNavigate();
 
     const dynamicParts = [
         "create a SaaS landing page...",

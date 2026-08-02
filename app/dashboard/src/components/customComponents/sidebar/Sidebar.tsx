@@ -56,7 +56,7 @@ export default function Sidebar() {
           onLeave={handleLeave}
         />
 
-        {/* <RecentSection collapsed={collapsed} /> */}
+        <RecentSection collapsed={collapsed} />
 
         <AccountSection collapsed={collapsed} />
 

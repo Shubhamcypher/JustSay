@@ -4,8 +4,6 @@ import { useRef, useState } from "react";
 import AddMenu from "../../../components/customComponent/home/AddMenu";
 
 
-
-
 export function FollowUpBar({
     isReady,
     isProcessing,
