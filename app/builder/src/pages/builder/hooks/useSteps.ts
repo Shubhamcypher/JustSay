@@ -13,8 +13,6 @@ export function useSteps() {
   ) => {
     const id = stepIdRef.current++;
 
-    
-
     setSteps((prev) => [
       ...prev,
       {

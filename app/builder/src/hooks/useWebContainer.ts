@@ -35,7 +35,7 @@ export function useWebContainer(
   files: ProjectFiles,
   isReady: boolean,
   onLog?: (msg: string, type?: string) => void,
-  addStep: (
+  addStep?: (
     loadingText: string,
     completedText: string,
     group?: string
@@ -75,6 +75,7 @@ export function useWebContainer(
 
 
       wc.on("server-ready", (_port: number, url: string) => {
+        console.log("SERVER READY");
         setStatus("Launching application...");
         setProgress(99);
         setUrl(url);
@@ -141,6 +142,7 @@ export function useWebContainer(
             "Built file tree.",
             "build"
           );
+          console.log("BUILD STEP START");
           setStatus("Preparing project files...");
           setProgress(1);
           await wc.mount(buildTree(files));
@@ -161,7 +163,7 @@ export function useWebContainer(
 </html>`;
           await wc.fs.writeFile("index.html", indexHtml);
 
-          console.log("📦 PKG RAW:", files["package.json"]);
+          // console.log("📦 PKG RAW:", files["package.json"]);
 
           // 🔥 FORCE package.json write (CRITICAL)
           // const pkgContent =
@@ -183,11 +185,12 @@ export function useWebContainer(
           );
           await wc.fs.writeFile("package.json", TEMPLATE_PACKAGE_JSON);
           console.log("📦 package.json written from hardcoded template");
+
           completeStep?.(s2);
 
           // 🔍 VERIFY WRITE
-          const readPkg = await wc.fs.readFile("package.json", "utf-8");
-          console.log("📦 PKG ON DISK:", readPkg);
+          // const readPkg = await wc.fs.readFile("package.json", "utf-8");
+          // // console.log("📦 PKG ON DISK:", readPkg);
 
 
           const s3 = addStep(
@@ -345,7 +348,7 @@ export function useWebContainer(
           await wc.mount(buildTree(files));
           completeStep?.(s3);
 
-          console.log("🔁 PKG RAW:", files["package.json"]);
+          // console.log("🔁 PKG RAW:", files["package.json"]);
 
           // 🔥 FORCE package.json write again
           const s4 = addStep(

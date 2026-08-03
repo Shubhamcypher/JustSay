@@ -41,7 +41,7 @@ export default function Builder() {
     const { projectId } = useParams();
     const [searchParams] = useSearchParams();
     const initialPrompt = searchParams.get("prompt");
-    const mode = projectId ? "load" : "new";
+    const mode = projectId ? "followup" : "new";
 
 
 
@@ -62,7 +62,7 @@ export default function Builder() {
     const [projectMeta, setProjectMeta] = useState<ProjectMeta | null>(null);
 
     const prompt =
-        mode === "load"
+        mode === "followup"
             ? projectMeta?.prompt ?? ""
             : initialPrompt;
 
@@ -70,6 +70,7 @@ export default function Builder() {
 
     const fileSystem = useFiles(userSelectedRef);
     const { steps, addStep, completeStep } = useSteps();
+    
     const fileTree = useFileTree(fileSystem.filePaths);
 
     const leftPanel = useResizable(400, 280, 600);
@@ -146,7 +147,7 @@ export default function Builder() {
     }, [chatHistory, isProcessing]);
 
     useEffect(() => {
-        if (mode !== "load" || !projectId) return;
+        if (mode !== "followup" || !projectId) return;
 
         getProject(projectId)
             .then(({ data }) => {
@@ -160,7 +161,7 @@ export default function Builder() {
 
     // ── Load saved project files when navigating from Home ──────────────
     useEffect(() => {
-        if (mode !== "load" || !projectId) return;
+        if (mode !== "followup" || !projectId) return;
 
         getProjectFiles(projectId)
             .then(({ data }) => {

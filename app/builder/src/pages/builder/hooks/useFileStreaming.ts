@@ -52,6 +52,8 @@ export function useFileStreaming({
     const filesRef = useRef(files);
     const activeFileRef = useRef<string | null>(null);
 
+    
+
 
 
     const sleep = (ms: number) =>
@@ -247,7 +249,7 @@ export function useFileStreaming({
                                 }
                             });
                             setFinalFiles(snapshot);
-                            setIsReady(true);
+                            markReady();
                         };
 
                         waitForQueue();

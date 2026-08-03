@@ -40,6 +40,7 @@ export default function BuilderAgent({
 
     // Last completed step
     const completedStep =
+    
         [...steps]
             .reverse()
             .find((step) => step.status === "done");

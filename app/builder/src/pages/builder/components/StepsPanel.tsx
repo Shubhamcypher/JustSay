@@ -12,6 +12,9 @@ export default function StepsPanel({ steps }: { steps: Step[] }) {
     (steps.filter((s) => s.status === "done").length / (steps.length || 1)) * 100
   );
 
+  
+
+
   return (
     <div className="w-full max-w-[320px] flex flex-col gap-3.5">
 

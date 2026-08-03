@@ -23,6 +23,8 @@ export default function ProjectPreview() {
     const fileSystem = useFiles(userSelectedRef);
     const { addStep, completeStep } = useSteps();
 
+    
+
     const [projectMeta, setProjectMeta] = useState<any>(null);
     const [isReady, setIsReady] = useState(false);
 
@@ -61,11 +63,7 @@ export default function ProjectPreview() {
     const { url: previewUrl, status, progress } = useWebContainer(
         fileSystem.files,
         isReady,
-        (msg, type) => {
-            if (type === "start") {
-                addStep(msg);
-            }
-        },
+        undefined, //need to remove
         addStep,
         completeStep
     );
