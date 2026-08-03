@@ -9,7 +9,12 @@ import {
 
 import PreviewLoading from "./PreviewLoading";
 
-export default function PreviewPane({ previewUrl, hasFiles }: any) {
+interface PreviewPaneProps {
+  previewUrl: string | null;
+  hasFiles: boolean;
+}
+
+export default function PreviewPane({ previewUrl, hasFiles }: PreviewPaneProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const previewContainerRef = useRef<HTMLDivElement>(null);
@@ -70,6 +75,8 @@ export default function PreviewPane({ previewUrl, hasFiles }: any) {
       doc.head?.appendChild(script);
     } catch (err) {
       // cross-origin — silently skip
+      console.debug(err);
+      
     }
   };
 

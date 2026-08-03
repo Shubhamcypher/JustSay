@@ -5,7 +5,7 @@ import { useAppDescription } from "@/hooks/useAppDescription";
 import StepHistory from "./StepHistory";
 import type { ChatMessage } from "../Builder";
 
-import type {Step, ProjectFiles} from '@shared/types'
+import type { Step, ProjectFiles } from '@shared/types'
 
 type Props = {
     isReady: boolean;
@@ -14,7 +14,7 @@ type Props = {
     url: string | null;
     prompt: string;
     files: ProjectFiles;
-    chatHistory: ChatMessage[]; 
+    chatHistory: ChatMessage[];
 };
 
 
@@ -40,7 +40,7 @@ export default function BuilderAgent({
 
     // Last completed step
     const completedStep =
-    
+
         [...steps]
             .reverse()
             .find((step) => step.status === "done");
@@ -51,9 +51,6 @@ export default function BuilderAgent({
             ? (activeStep.loadingText)
             : "Preparing your workspace...";
 
-
-    // console.log(completedStep);
-    
 
     return (
         <div className="flex items-start gap-3">
@@ -197,7 +194,7 @@ export default function BuilderAgent({
                         </AnimatePresence>
 
                         {/* Last completed step */}
-                        {!isReady && completedStep && (
+                        {!url && completedStep && (
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -208,7 +205,7 @@ export default function BuilderAgent({
                         )}
 
                         {/* Typing dots */}
-                        {!isReady && (
+                        {!url && (
                             <div className="flex gap-1 mt-4">
                                 {[0, 1, 2].map((i) => (
                                     <motion.div

@@ -52,7 +52,7 @@ export function useFileStreaming({
     const filesRef = useRef(files);
     const activeFileRef = useRef<string | null>(null);
 
-    
+
 
 
 
@@ -262,7 +262,10 @@ export function useFileStreaming({
 
         start();
 
-        return () => controller.abort();
+        return () => {
+            controller.abort();
+            completeStep(s1);
+        };
     }, [prompt]);
 
     useEffect(() => {

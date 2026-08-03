@@ -73,6 +73,7 @@ export default function CodeEditor({
     if (isAtBottom) {
       editor.revealLine(lastLine);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fixedContent]);
 
   if (!activeFile || !files[activeFile]) {

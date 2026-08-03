@@ -1,5 +1,25 @@
 import React, { useEffect } from "react";
 import { Icon } from "@iconify/react";
+import type { FileTree, TreeNode } from "@shared/types";
+
+
+interface FileTreeProps {
+    tree: FileTree;
+    activeFile: string | null;
+    setActiveFile: (path: string) => void;
+    openFolders: Record<string, boolean>;
+    setOpenFolders: React.Dispatch<
+        React.SetStateAction<Record<string, boolean>>
+    >;
+    parentPath?: string;
+    level?: number;
+}
+
+interface FileSidebarProps {
+    fileTree: FileTree;
+    activeFile: string | null;
+    setActiveFile: (path: string) => void;
+}
 
 function getFileIcon(name: string) {
     if (name.endsWith(".tsx")) return "logos:react";
@@ -19,8 +39,8 @@ const FileTree = React.memo(function FileTree({
     setOpenFolders,
     parentPath = "",
     level = 0,
-}: any) {
-    const sortEntries = (entries: [string, any][]) => {
+}: FileTreeProps) {
+    const sortEntries = (entries: [string, TreeNode][]) => {
         return entries.sort(([a, nodeA], [b, nodeB]) => {
             if (nodeA.type === "folder" && nodeB.type !== "folder") return -1;
             if (nodeA.type !== "folder" && nodeB.type === "folder") return 1;
@@ -30,7 +50,7 @@ const FileTree = React.memo(function FileTree({
 
     return (
         <div>
-            {sortEntries(Object.entries(tree)).map(([name, node]: any) => {
+            {sortEntries(Object.entries(tree)).map(([name, node]) => {
                 const fullPath = parentPath ? `${parentPath}/${name}` : name;
                 const isOpen = openFolders[fullPath];
 
@@ -53,7 +73,7 @@ const FileTree = React.memo(function FileTree({
                     <div key={fullPath}>
                         <div
                             onClick={() =>
-                                setOpenFolders((prev: any) => ({
+                                setOpenFolders((prev) => ({
                                     ...prev,
                                     [fullPath]: !prev[fullPath],
                                 }))
@@ -89,16 +109,14 @@ export default function FileSidebar({
     fileTree,
     activeFile,
     setActiveFile,
-    // onFollowUp,
-
-}: any) {
+}: FileSidebarProps) {
     const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({});
     // const [followUpText, setFollowUpText] = useState("");
 
     useEffect(() => {
-        function collectFolders(tree: any, parent = ""): string[] {
+        function collectFolders(tree: FileTree, parent = ""): string[] {
             let folders: string[] = [];
-            Object.entries(tree).forEach(([name, node]: any) => {
+            Object.entries(tree).forEach(([name, node]) => {
                 const fullPath = parent ? `${parent}/${name}` : name;
                 if (node.type === "folder") {
                     folders.push(fullPath);
@@ -109,6 +127,8 @@ export default function FileSidebar({
         }
 
         const allFolders = collectFolders(fileTree);
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setOpenFolders((prev) => {
             const updated = { ...prev };
             for (const folder of allFolders) {
@@ -131,7 +151,7 @@ export default function FileSidebar({
                     openFolders={openFolders}
                     setOpenFolders={setOpenFolders}
                 />
-            </div>            
+            </div>
         </div>
     );
 }

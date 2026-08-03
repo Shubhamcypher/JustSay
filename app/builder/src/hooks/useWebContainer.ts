@@ -34,7 +34,6 @@ const TEMPLATE_PACKAGE_JSON = JSON.stringify({
 export function useWebContainer(
   files: ProjectFiles,
   isReady: boolean,
-  onLog?: (msg: string, type?: string) => void,
   addStep?: (
     loadingText: string,
     completedText: string,
@@ -60,7 +59,7 @@ export function useWebContainer(
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 
-  // 🚀 Boot WebContainer ONCE
+  //Boot WebContainer ONCE
 
   useEffect(() => {
     let mounted = true;
@@ -81,7 +80,6 @@ export function useWebContainer(
         setUrl(url);
         setStatus("Ready");
         setProgress(100);
-        onLog?.("🌐 Preview ready!");
         window.__wc = wc;  // Expose wc for snapshot access
       });
       setWcReady(true); // ← trigger the main effect to re-run
@@ -92,10 +90,9 @@ export function useWebContainer(
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🧱 Build file tree
+  //Build file tree
   function buildTree(files: ProjectFiles) {
     const root: any = {};
 
@@ -132,17 +129,14 @@ export function useWebContainer(
       const pkgString = JSON.stringify(files["package.json"] || {});
       const pkgChanged = pkgString !== lastPkgRef.current;
 
-      // 🚀 FIRST RUN
+      //FIRST RUN
       if (!startedRef.current) {
         try {
-          console.log("🚀 Initializing WebContainer");
-
           const s1 = addStep(
             "Building file tree...",
             "Built file tree.",
             "build"
           );
-          console.log("BUILD STEP START");
           setStatus("Preparing project files...");
           setProgress(1);
           await wc.mount(buildTree(files));
@@ -163,34 +157,14 @@ export function useWebContainer(
 </html>`;
           await wc.fs.writeFile("index.html", indexHtml);
 
-          // console.log("📦 PKG RAW:", files["package.json"]);
-
-          // 🔥 FORCE package.json write (CRITICAL)
-          // const pkgContent =
-          //   typeof files["package.json"] === "string"
-          //     ? files["package.json"]
-          //     : files["package.json"]?.content;
-
-
-          // console.log("📦 PKG CONTENT STRING:", pkgContent);
-
-          // const s2 = addStep?.("Writing package.json", "build");
-          // await wc.fs.writeFile("package.json", pkgContent);
-          // console.log("📦 package.json written");
-          // completeStep?.(s2);
           const s2 = addStep(
             "Writing package.json...",
             "Wrote package.json.",
             "build"
           );
           await wc.fs.writeFile("package.json", TEMPLATE_PACKAGE_JSON);
-          console.log("📦 package.json written from hardcoded template");
 
           completeStep?.(s2);
-
-          // 🔍 VERIFY WRITE
-          // const readPkg = await wc.fs.readFile("package.json", "utf-8");
-          // // console.log("📦 PKG ON DISK:", readPkg);
 
 
           const s3 = addStep(
@@ -223,12 +197,10 @@ export function useWebContainer(
           const install = await wc.spawn("npm", ["install"]);
 
           const exitCode = await install.exit;
-          console.log("npm install exit:", exitCode);
 
           if (exitCode !== 0) {
             throw new Error("npm install failed");
           }
-          console.log("📦 INSTALL DONE");
           completeStep?.(s3);
 
 
@@ -241,13 +213,7 @@ export function useWebContainer(
           await check.exit;
           completeStep?.(s4);
 
-          check.output.pipeTo(
-            new WritableStream({
-              write(data) {
-                console.log("📦 CHECK RRD:", data.toString());
-              },
-            })
-          );
+
 
           const s5 = addStep(
             "Checking node modules...",
@@ -258,13 +224,6 @@ export function useWebContainer(
           await lsNodeModules.exit;
           completeStep?.(s5);
 
-          lsNodeModules.output.pipeTo(
-            new WritableStream({
-              write(data) {
-                console.log("📦 node_modules:", data.toString());
-              },
-            })
-          );
 
           const s6 = addStep(
             "Starting development server...",
@@ -274,16 +233,9 @@ export function useWebContainer(
           setStatus("Starting development server...");
           clearTimeout(progressTimer);
           setProgress(90);
-          const dev = await wc.spawn("npm", ["run", "dev"]);
+          await wc.spawn("npm", ["run", "dev"]);
           completeStep?.(s6);
 
-          dev.output.pipeTo(
-            new WritableStream({
-              write(data) {
-                console.log(data.toString());
-              },
-            })
-          );
 
           lastPkgRef.current = pkgString;
           startedRef.current = true;
@@ -329,7 +281,6 @@ export function useWebContainer(
             "Package changes detected.",
             "build"
           );
-          console.log("🔁 package.json changed → reinstall");
           completeStep?.(s1);
 
           const s2 = addStep(
@@ -348,21 +299,18 @@ export function useWebContainer(
           await wc.mount(buildTree(files));
           completeStep?.(s3);
 
-          // console.log("🔁 PKG RAW:", files["package.json"]);
 
-          // 🔥 FORCE package.json write again
+          //FORCE package.json write again
           const s4 = addStep(
             "Rewriting package.json...",
             "Rewrote package.json.",
             "build"
           );
           await wc.fs.writeFile("package.json", TEMPLATE_PACKAGE_JSON);
-          console.log("🔁 package.json rewritten from hardcoded template");
           completeStep?.(s4);
 
           // verify disk
-          const readPkg = await wc.fs.readFile("package.json", "utf-8");
-          console.log("🔁 PKG ON DISK:", readPkg);
+          await wc.fs.readFile("package.json", "utf-8");
 
           const s5 = addStep(
             "Removing old dependencies...",
@@ -380,14 +328,6 @@ export function useWebContainer(
           );
           const install = await wc.spawn("npm", ["install"]);
 
-          install.output.pipeTo(
-            new WritableStream({
-              write(data) {
-                console.log("🔁 npm install:", data.toString());
-              },
-            })
-          );
-
           await install.exit;
           console.log("🔁 INSTALL DONE");
           completeStep?.(s6);
@@ -402,13 +342,6 @@ export function useWebContainer(
           await check.exit;
           completeStep?.(s7);
 
-          check.output.pipeTo(
-            new WritableStream({
-              write(data) {
-                console.log("🔁 CHECK RRD:", data.toString());
-              },
-            })
-          );
 
           const s8 = addStep(
             "Checking node modules...",
@@ -419,30 +352,15 @@ export function useWebContainer(
           await ls.exit;
           completeStep?.(s8);
 
-          ls.output.pipeTo(
-            new WritableStream({
-              write(data) {
-                console.log("🔁 node_modules:", data.toString());
-              },
-            })
-          );
+
 
           const s9 = addStep(
             "Starting development server...",
             "Development server started.",
             "build"
           );
-          const dev = await wc.spawn("npm", ["run", "dev"]);
+          await wc.spawn("npm", ["run", "dev"]);
           completeStep?.(s9);
-
-          dev.output.pipeTo(
-            new WritableStream({
-              write(data) {
-                console.log(data.toString());
-              },
-            })
-          );
-
           lastPkgRef.current = pkgString;
 
         } catch (err) {
@@ -473,7 +391,8 @@ export function useWebContainer(
     syncTimeoutRef.current = setTimeout(() => {
       run();
     }, 100);
-
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files, isReady, wcReady]);
 
   return { url, wcRef, status, progress };

@@ -24,7 +24,7 @@ export async function describeApp(
         role: "user",
         content: `The user asked: "${prompt}".
                   You just built a React app with these files: ${fileList.join(", ")}.
-                  Write 2–3 sentences describing what you built, what key features it has, and the design style.
+                  Write 1-2 sentences describing what you built, what key features it has, and the design style.
                   Be specific, natural, first-person. No fluff.`,
       },
     ],

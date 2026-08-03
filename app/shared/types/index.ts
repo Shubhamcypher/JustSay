@@ -36,3 +36,19 @@ export interface Step {
   status: "loading" | "done";
   group: string;
 }
+
+
+// File tree interface
+export interface FileNode {
+  type: "file";
+  path: string;
+}
+
+export interface FolderNode {
+  type: "folder";
+  children: FileTree;
+}
+
+export type TreeNode = FileNode | FolderNode;
+
+export type FileTree = Record<string, TreeNode>;

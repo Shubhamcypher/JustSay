@@ -1,8 +1,11 @@
+import type { FileTree, FolderNode, ProjectFiles } from "@shared/types";
 import { useMemo } from "react";
 
+
+
 // Converts flat path map into a nested folder/file tree
-function buildFileTree(files: Record<string, any>) {
-  const tree: any = {};
+function buildFileTree(files: ProjectFiles): FileTree {
+  const tree: FileTree = {};
 
   Object.keys(files).forEach((path) => {
     const parts = path.split("/"); // "src/components/Button.tsx" → ["src", "components", "Button.tsx"]
@@ -17,7 +20,7 @@ function buildFileTree(files: Record<string, any>) {
         if (!current[part]) {
           current[part] = { type: "folder", children: {} };
         }
-        current = current[part].children; // step into the folder
+        current = (current[part] as FolderNode).children; // step into the folder
       }
     });
   });
@@ -29,9 +32,9 @@ function buildFileTree(files: Record<string, any>) {
 export function useFileTree(filePaths: string[]) {
   return useMemo(() => {
     // buildFileTree expects a map, so convert array → Record first
-    const obj: any = {};
+    const obj: ProjectFiles = {};
     filePaths.forEach((path) => {
-      obj[path] = { path };
+      obj[path] = { path, content: "" };
     });
     return buildFileTree(obj);
   }, [filePaths]);

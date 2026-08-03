@@ -21,6 +21,8 @@ import { useProjects } from "@/context/ProjectContext";
 import SplashScreen from "../../components/SplashScreen";
 
 
+
+
 export type ChatMessage = {
     id: string;
     role: "user" | "ai";
