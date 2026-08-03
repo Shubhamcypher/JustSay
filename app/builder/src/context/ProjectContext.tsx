@@ -1,17 +1,15 @@
 import { getProjects } from "@/api/project.api";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-type Project = {
-  id: string;
-  name: string;
-  snapshot?: string;  
+import type { ProjectState } from "@shared/types";
+
+
+
+type ProjectProviderProps = {
+  children: ReactNode;
 };
 
-type ProjectState = {
-  created: Project[];
-  shared: Project[];
-  starred: Project[];
-};
+
 
 type ProjectContextType = {
   projects: ProjectState;
@@ -20,7 +18,7 @@ type ProjectContextType = {
 
 const ProjectContext = createContext<ProjectContextType | null>(null);
 
-export const ProjectProvider = ({ children }: any) => {
+export const ProjectProvider = ({ children }: ProjectProviderProps) => {
   const [projects, setProjects] = useState<ProjectState>({
     created: [],
     shared: [],

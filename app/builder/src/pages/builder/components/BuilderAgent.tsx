@@ -5,50 +5,72 @@ import { useAppDescription } from "@/hooks/useAppDescription";
 import StepHistory from "./StepHistory";
 import type { ChatMessage } from "../Builder";
 
+import type {Step, ProjectFiles} from '@shared/types'
+
 type Props = {
     isReady: boolean;
     isProcessing: boolean;
-    steps: any[];
+    steps: Step[];
     url: string | null;
     prompt: string;
-    files: Record<string, any>;
+    files: ProjectFiles;
     chatHistory: ChatMessage[]; 
 };
 
 
 
-function humanizeStep(step: string) {
+function humanizeStep(step: string, completed = false) {
     const s = step.toLowerCase();
 
     if (s.includes("install"))
-        return "Installing required dependencies...";
+        return completed
+            ? "Dependencies installed."
+            : "Installing required dependencies...";
 
     if (s.includes("component"))
-        return "Building UI components...";
+        return completed
+            ? "UI components built."
+            : "Building UI components...";
 
     if (s.includes("preview"))
-        return "Starting live preview environment...";
+        return completed
+            ? "Preview environment started."
+            : "Starting live preview environment...";
 
     if (s.includes("route"))
-        return "Configuring application routing...";
+        return completed
+            ? "Application routing configured."
+            : "Configuring application routing...";
 
     if (s.includes("tailwind"))
-        return "Styling the interface...";
+        return completed
+            ? "Interface styled."
+            : "Styling the interface...";
 
     if (s.includes("file"))
-        return "Generating project files...";
+        return completed
+            ? "Project files generated."
+            : "Generating project files...";
 
     if (s.includes("webcontainer"))
-        return "Booting development environment...";
+        return completed
+            ? "Development environment ready."
+            : "Booting development environment...";
 
     if (s.includes("editor"))
-        return "Preparing code editor...";
+        return completed
+            ? "Editor ready."
+            : "Preparing code editor...";
 
     if (s.includes("patch"))
-        return "Applying requested changes...";
+        return completed
+            ? "Requested changes applied."
+            : "Applying requested changes...";
 
     if (s.includes("dependency"))
-        return "Resolving package dependencies...";
+        return completed
+            ? "Dependencies resolved."
+            : "Resolving package dependencies...";
 
     return step;
 }
@@ -68,13 +90,13 @@ export default function BuilderAgent({
     const activeStep =
         [...steps]
             .reverse()
-            .find((step) => !step.completed);
+            .find((step) => step.status === "loading");
 
     // Last completed step
     const completedStep =
         [...steps]
             .reverse()
-            .find((step) => step.completed);
+            .find((step) => step.status === "done");
 
     const currentMessage = url
         ? "Preview is ready. You can now explore and iterate on your app."
@@ -230,7 +252,7 @@ export default function BuilderAgent({
                                 animate={{ opacity: 1 }}
                                 className="mt-3 text-xs text-emerald-400/70"
                             >
-                                ✓ {humanizeStep(completedStep.text)}
+                                ✓ {humanizeStep(completedStep.text, true)}
                             </motion.div>
                         )}
 

@@ -1,10 +1,13 @@
+
+interface FollowUpPayload {
+    followUpPrompt: string;
+    originalPrompt: string;
+    projectId: string;
+    files: Record<string, string>;
+}
+
 export async function followUpProject(
-    payload: {
-        followUpPrompt: string;
-        originalPrompt: string;
-        projectId: string;
-        files: Record<string, any>;
-    }
+    payload: FollowUpPayload
 ) {
     const response = await fetch(
         `http://${window.location.hostname}:5000/api/followup`,
@@ -13,7 +16,7 @@ export async function followUpProject(
             headers: {
                 "Content-Type": "application/json",
             },
-            credentials:"include",
+            credentials: "include",
             body: JSON.stringify(payload),
         }
     );

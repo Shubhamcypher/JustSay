@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { describeApp } from "../api/ai.api";
+import type { ProjectFiles } from "@shared/types";
 
 
 export function useAppDescription(
     url: string | null,
     prompt: string,
-    files: Record<string, any>
+    files: ProjectFiles
 ): string[] {
     const [lines, setLines] = useState<string[]>([]);
+
 
     useEffect(() => {
         if (!url || !prompt) return;
@@ -16,7 +18,7 @@ export function useAppDescription(
 
         const fileList = Object.keys(files ?? {});
 
-        describeApp(prompt, fileList, (chunk:string) => {
+        describeApp(prompt, fileList, (chunk: string) => {
             setLines(prev => {
                 const updated = [...prev];
                 const last = updated[updated.length - 1] ?? "";
@@ -37,7 +39,7 @@ export function useAppDescription(
                 return updated;
             });
         }).catch(() => setLines(["Your app is ready to explore!"]));
-
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [url, prompt]);
 
     return lines;

@@ -1,5 +1,10 @@
 import API from "./axios";
 
+interface UpdateFilePayload {
+  path: string;
+  content: string;
+}
+
 export const getProjects = (type: "created" | "shared" | "starred") =>
   API.get(`/projects?type=${type}`);
 
@@ -15,7 +20,7 @@ export const startProject = async (projectId: string) => {
   return res.data;
 };
 
-export const updateFile = (projectId: string, data: any) =>
+export const updateFile = (projectId: string, data: UpdateFilePayload) =>
   API.put(`/files/${projectId}`, data);
 
 export const stopProject = (id: string) =>

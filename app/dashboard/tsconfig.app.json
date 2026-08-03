@@ -21,9 +21,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    // "baseUrl": ".",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@shared/*": ["../shared/*"]
     }
   },
   "include": ["src", "src/hooks/useWebContainer.ts", "src/lib/webContainer.ts"]

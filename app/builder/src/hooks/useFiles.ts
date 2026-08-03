@@ -1,17 +1,13 @@
-import { useState } from "react";
+import { useState, type RefObject } from "react";
+import type { ProjectFile,ProjectFiles } from "@shared/types";
 
-type File = {
-  path: string;
-  content: string;
-  fromStream?: boolean;
-};
 
-export function useFiles(userSelectedRef: any) {
-  const [files, setFiles] = useState<Record<string, File>>({});
+export function useFiles(userSelectedRef:  RefObject<boolean>) {
+  const [files, setFiles] = useState<ProjectFiles>({});
   const [filePaths, setFilePaths] = useState<string[]>([]);
   const [activeFile, setActiveFile] = useState<string | null>(null);
 
-  const addFile = (file: File) => {
+  const addFile = (file: ProjectFile) => {
     //update with the incoming files
     setFiles((prev) => ({
       ...prev,

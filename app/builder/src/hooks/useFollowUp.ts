@@ -3,6 +3,47 @@ import { useEffect, useRef, useState } from "react";
 import { summarizeChanges } from "@/api/ai.api";
 import { followUpProject } from "@/api/followup.api";
 
+import type { ProjectFiles } from "@shared/types";
+import type { RefObject } from "react";
+
+interface UseFollowUpProps {
+    files: ProjectFiles;
+    originalPrompt: string;
+    projectId: string;
+    updateFileContent: (
+        path: string,
+        content: string,
+        fromStream?: boolean
+    ) => void;
+    setActiveFile: (path: string) => void;
+    userSelectedRef: RefObject<boolean>;
+    addStep: (text: string, type?: string) => number;
+    completeStep: (id: number) => void;
+    addChatMessage: (
+        role: "ai" | "user",
+        message: string
+    ) => void;
+}
+
+
+type FollowUpEvent =
+    | {
+        type: "plan";
+        filesToChange: string[];
+    }
+    | {
+        type: "patch";
+        path: string;
+        content: string;
+    }
+    | {
+        type: "done";
+    }
+    | {
+        type: "error";
+        message?: string;
+    };
+
 export function useFollowUp({
     files,
     originalPrompt,
@@ -13,7 +54,7 @@ export function useFollowUp({
     addStep,
     completeStep,
     addChatMessage
-}: any) {
+}: UseFollowUpProps) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const filesRef = useRef(files);
@@ -23,7 +64,7 @@ export function useFollowUp({
     useEffect(() => {
         filesRef.current = files;
     }, [files]);
-    
+
 
 
     const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -113,9 +154,7 @@ export function useFollowUp({
             const serializedFiles: Record<string, string> = {};
             for (const [path, file] of Object.entries(filesRef.current)) {
                 if (SKIP_FILES.has(path)) continue;
-                serializedFiles[path] = typeof file === "string"
-                    ? file
-                    : (file as any)?.content || "";
+                serializedFiles[path] = file.content;
             }
 
             const reader = await followUpProject({
@@ -133,7 +172,7 @@ export function useFollowUp({
 
             const beforeSnapshot: Record<string, string> = {};
             const patchedDiff: Record<string, { added: number; removed: number }> = {};
-            const fileSteps: Record<string, string> = {};
+            const fileSteps: Record<string, number> = {};
             while (true) {
                 const { value, done } = await reader.read();
                 if (done) break;
@@ -147,7 +186,7 @@ export function useFollowUp({
                     if (!raw || !raw.startsWith("data: ")) continue;
 
                     // ── Safe parse — never let one bad event kill the stream ──
-                    let data: any;
+                    let data: FollowUpEvent;
                     try {
                         data = JSON.parse(raw.replace("data: ", "").trim());
                     } catch (parseErr) {

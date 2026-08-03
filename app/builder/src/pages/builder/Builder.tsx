@@ -103,7 +103,6 @@ export default function Builder() {
         projectId,
         updateFileContent: fileSystem.updateFileContent,
         setActiveFile: fileSystem.setActiveFile,
-        activeFile: fileSystem.activeFile,
         userSelectedRef,
         addStep,
         completeStep,

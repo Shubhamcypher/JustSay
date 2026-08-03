@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { getWebContainer } from "@/lib/webContainer";
+import type { WebContainer } from "@webcontainer/api";
+
+import type { ProjectFiles, ProjectFile } from "@shared/types";
+
 
 
 const TEMPLATE_PACKAGE_JSON = JSON.stringify({
@@ -28,11 +32,11 @@ const TEMPLATE_PACKAGE_JSON = JSON.stringify({
 }, null, 2);
 
 export function useWebContainer(
-  files: Record<string, any>,
+  files: ProjectFiles,
   isReady: boolean,
   onLog?: (msg: string, type?: string) => void,
-  addStep?: (text: string, type?: string) => any,
-  completeStep?: (step: any) => void,
+  addStep?: (text: string, type?: string) => number,
+  completeStep?: (id: number) => void,
   isPatchingRef?: React.RefObject<boolean>
 ) {
   const [url, setUrl] = useState<string | null>(null);
@@ -44,7 +48,7 @@ export function useWebContainer(
   const [status, setStatus] = useState("Preparing project...");
   const [progress, setProgress] = useState(0);
 
-  const wcRef = useRef<any>(null);
+  const wcRef = useRef<WebContainer | null>(null);
   const startedRef = useRef(false);
 
   const lastPkgRef = useRef<string | null>(null);
@@ -53,6 +57,7 @@ export function useWebContainer(
 
 
   // 🚀 Boot WebContainer ONCE
+
   useEffect(() => {
     let mounted = true;
 
@@ -65,14 +70,14 @@ export function useWebContainer(
       wcRef.current = wc;
 
 
-      wc.on("server-ready", (_: any, url: string) => {
+      wc.on("server-ready", (_port: number, url: string) => {
         setStatus("Launching application...");
         setProgress(99);
         setUrl(url);
         setStatus("Ready");
         setProgress(100);
         onLog?.("🌐 Preview ready!");
-        (window as any).__wc = wc;  // Expose wc for snapshot access
+        window.__wc = wc;  // Expose wc for snapshot access
       });
       setWcReady(true); // ← trigger the main effect to re-run
     };
@@ -82,10 +87,11 @@ export function useWebContainer(
     return () => {
       mounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 🧱 Build file tree
-  function buildTree(files: Record<string, any>) {
+  function buildTree(files: ProjectFiles) {
     const root: any = {};
 
     for (const [path, file] of Object.entries(files)) {
@@ -222,7 +228,7 @@ export function useWebContainer(
 
           const s5 = addStep?.("Checking node modules", "build");
           const lsNodeModules = await wc.spawn("ls", ["node_modules"]);
-          lsNodeModules.exit;
+          await lsNodeModules.exit;
           completeStep?.(s5);
 
           lsNodeModules.output.pipeTo(
@@ -313,7 +319,7 @@ export function useWebContainer(
 
           const s5 = addStep?.("Removing deprecated files from node modules", "build");
           const rm = await wc.spawn("rm", ["-rf", "node_modules"]);
-          rm.exit;
+          await rm.exit;
           completeStep?.(s5);
 
           const s6 = addStep?.("Reinstalling dependencies", "build");
@@ -334,7 +340,7 @@ export function useWebContainer(
 
           const s7 = addStep?.("Checking package.json with new file updates", "build");
           const check = await wc.spawn("npm", ["ls", "react-router-dom"]);
-          check.exit;
+          await check.exit;
           completeStep?.(s7);
 
           check.output.pipeTo(
@@ -347,7 +353,7 @@ export function useWebContainer(
 
           const s8 = addStep?.("Checking node modules", "build");
           const ls = await wc.spawn("ls", ["node_modules"]);
-          ls.exit;
+          await ls.exit;
           completeStep?.(s8);
 
           ls.output.pipeTo(
@@ -384,16 +390,12 @@ export function useWebContainer(
         if (isPatchingRef?.current) return;
         // Small debounce — if another sync is already pending, skip this one
         // The final sync after animation completes will have the correct content
-        const syncFiles = Object.entries(files);
+        const syncFiles = Object.entries(files) as [string, ProjectFile][];
+
         for (const [filePath, file] of syncFiles) {
-          const content =
-            typeof file === "string"
-              ? file
-              : (file as any)?.content || "";
+          if (!file.content || file.content.length < 10) continue;
 
-          if (!content || content.length < 10) continue;
-
-          await wc.fs.writeFile(filePath, content);
+          await wc.fs.writeFile(filePath, file.content);
         }
       } catch (err) {
         console.error("❌ SYNC ERROR:", err);
@@ -404,6 +406,7 @@ export function useWebContainer(
     syncTimeoutRef.current = setTimeout(() => {
       run();
     }, 100);
+    
   }, [files, isReady, wcReady]);
 
   return { url, wcRef, status, progress };

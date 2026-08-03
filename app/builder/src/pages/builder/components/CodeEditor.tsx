@@ -1,6 +1,23 @@
 import { applyFixPipeline } from "@/utils/fixFiles";
 import Editor from "@monaco-editor/react";
+import type * as monaco from "monaco-editor";
+import type { editor } from "monaco-editor";
+import type { ProjectFiles } from "@shared/types";
 import { useEffect, useMemo, useRef } from "react";
+import type { RefObject } from "react";
+
+interface CodeEditorProps {
+  activeFile: string | null;
+  files: ProjectFiles;
+  updateFileContent: (
+    path: string,
+    content: string,
+    fromStream?: boolean
+  ) => void;
+  editorRef: RefObject<editor.IStandaloneCodeEditor | null>;
+  monacoRef: RefObject<typeof monaco | null>;
+}
+
 
 export default function CodeEditor({
   activeFile,
@@ -8,7 +25,7 @@ export default function CodeEditor({
   updateFileContent,
   editorRef,
   monacoRef,
-}: any) {
+}: CodeEditorProps) {
 
   const isProgrammaticUpdate = useRef(false);
 
