@@ -19,61 +19,7 @@ type Props = {
 
 
 
-function humanizeStep(step: string, completed = false) {
-    const s = step.toLowerCase();
 
-    if (s.includes("install"))
-        return completed
-            ? "Dependencies installed."
-            : "Installing required dependencies...";
-
-    if (s.includes("component"))
-        return completed
-            ? "UI components built."
-            : "Building UI components...";
-
-    if (s.includes("preview"))
-        return completed
-            ? "Preview environment started."
-            : "Starting live preview environment...";
-
-    if (s.includes("route"))
-        return completed
-            ? "Application routing configured."
-            : "Configuring application routing...";
-
-    if (s.includes("tailwind"))
-        return completed
-            ? "Interface styled."
-            : "Styling the interface...";
-
-    if (s.includes("file"))
-        return completed
-            ? "Project files generated."
-            : "Generating project files...";
-
-    if (s.includes("webcontainer"))
-        return completed
-            ? "Development environment ready."
-            : "Booting development environment...";
-
-    if (s.includes("editor"))
-        return completed
-            ? "Editor ready."
-            : "Preparing code editor...";
-
-    if (s.includes("patch"))
-        return completed
-            ? "Requested changes applied."
-            : "Applying requested changes...";
-
-    if (s.includes("dependency"))
-        return completed
-            ? "Dependencies resolved."
-            : "Resolving package dependencies...";
-
-    return step;
-}
 
 export default function BuilderAgent({
     isReady,
@@ -101,8 +47,12 @@ export default function BuilderAgent({
     const currentMessage = url
         ? "Preview is ready. You can now explore and iterate on your app."
         : activeStep
-            ? humanizeStep(activeStep.text)
+            ? (activeStep.loadingText)
             : "Preparing your workspace...";
+
+
+    // console.log(completedStep);
+    
 
     return (
         <div className="flex items-start gap-3">
@@ -252,7 +202,7 @@ export default function BuilderAgent({
                                 animate={{ opacity: 1 }}
                                 className="mt-3 text-xs text-emerald-400/70"
                             >
-                                ✓ {humanizeStep(completedStep.text, true)}
+                                ✓ {(completedStep.completedText)}
                             </motion.div>
                         )}
 

@@ -35,7 +35,11 @@ export function useWebContainer(
   files: ProjectFiles,
   isReady: boolean,
   onLog?: (msg: string, type?: string) => void,
-  addStep?: (text: string, type?: string) => number,
+  addStep: (
+    loadingText: string,
+    completedText: string,
+    group?: string
+  ) => number,
   completeStep?: (id: number) => void,
   isPatchingRef?: React.RefObject<boolean>
 ) {
@@ -132,7 +136,11 @@ export function useWebContainer(
         try {
           console.log("🚀 Initializing WebContainer");
 
-          const s1 = addStep?.("Building file tree", "build");
+          const s1 = addStep(
+            "Building file tree...",
+            "Built file tree.",
+            "build"
+          );
           setStatus("Preparing project files...");
           setProgress(1);
           await wc.mount(buildTree(files));
@@ -168,7 +176,11 @@ export function useWebContainer(
           // await wc.fs.writeFile("package.json", pkgContent);
           // console.log("📦 package.json written");
           // completeStep?.(s2);
-          const s2 = addStep?.("Writing package.json", "build");
+          const s2 = addStep(
+            "Writing package.json...",
+            "Wrote package.json.",
+            "build"
+          );
           await wc.fs.writeFile("package.json", TEMPLATE_PACKAGE_JSON);
           console.log("📦 package.json written from hardcoded template");
           completeStep?.(s2);
@@ -178,7 +190,11 @@ export function useWebContainer(
           console.log("📦 PKG ON DISK:", readPkg);
 
 
-          const s3 = addStep?.("Installing dependencies", "build");
+          const s3 = addStep(
+            "Installing dependencies...",
+            "Installed dependencies.",
+            "build"
+          );
           setStatus("Installing dependencies...");
           setProgress(2);
 
@@ -213,7 +229,11 @@ export function useWebContainer(
           completeStep?.(s3);
 
 
-          const s4 = addStep?.("Checking dependencies", "build");
+          const s4 = addStep(
+            "Checking dependencies...",
+            "Verified dependencies.",
+            "build"
+          );
           const check = await wc.spawn("npm", ["ls", "react-router-dom"]);
           await check.exit;
           completeStep?.(s4);
@@ -226,7 +246,11 @@ export function useWebContainer(
             })
           );
 
-          const s5 = addStep?.("Checking node modules", "build");
+          const s5 = addStep(
+            "Checking node modules...",
+            "Verified node modules.",
+            "build"
+          );
           const lsNodeModules = await wc.spawn("ls", ["node_modules"]);
           await lsNodeModules.exit;
           completeStep?.(s5);
@@ -239,7 +263,11 @@ export function useWebContainer(
             })
           );
 
-          const s6 = addStep?.("Running dev server", "build");
+          const s6 = addStep(
+            "Starting development server...",
+            "Development server started.",
+            "build"
+          );
           setStatus("Starting development server...");
           clearTimeout(progressTimer);
           setProgress(90);
@@ -293,22 +321,38 @@ export function useWebContainer(
       // 🔁 PACKAGE CHANGED → reinstall
       if (pkgChanged) {
         try {
-          const s1 = addStep?.("Change in package detected", "build");
+          const s1 = addStep(
+            "Package changes detected...",
+            "Package changes detected.",
+            "build"
+          );
           console.log("🔁 package.json changed → reinstall");
           completeStep?.(s1);
 
-          const s2 = addStep?.("Stopping dev server", "build");
+          const s2 = addStep(
+            "Stopping development server...",
+            "Stopped development server.",
+            "build"
+          );
           await wc.spawn("pkill", ["node"]);
           completeStep?.(s2);
 
-          const s3 = addStep?.("Rebuilding file tree", "build");
+          const s3 = addStep(
+            "Rebuilding file tree...",
+            "Rebuilt file tree.",
+            "build"
+          );
           await wc.mount(buildTree(files));
           completeStep?.(s3);
 
           console.log("🔁 PKG RAW:", files["package.json"]);
 
           // 🔥 FORCE package.json write again
-          const s4 = addStep?.("Rewriting package.json", "build");
+          const s4 = addStep(
+            "Rewriting package.json...",
+            "Rewrote package.json.",
+            "build"
+          );
           await wc.fs.writeFile("package.json", TEMPLATE_PACKAGE_JSON);
           console.log("🔁 package.json rewritten from hardcoded template");
           completeStep?.(s4);
@@ -317,12 +361,20 @@ export function useWebContainer(
           const readPkg = await wc.fs.readFile("package.json", "utf-8");
           console.log("🔁 PKG ON DISK:", readPkg);
 
-          const s5 = addStep?.("Removing deprecated files from node modules", "build");
+          const s5 = addStep(
+            "Removing old dependencies...",
+            "Removed old dependencies.",
+            "build"
+          );
           const rm = await wc.spawn("rm", ["-rf", "node_modules"]);
           await rm.exit;
           completeStep?.(s5);
 
-          const s6 = addStep?.("Reinstalling dependencies", "build");
+          const s6 = addStep(
+            "Reinstalling dependencies...",
+            "Reinstalled dependencies.",
+            "build"
+          );
           const install = await wc.spawn("npm", ["install"]);
 
           install.output.pipeTo(
@@ -338,7 +390,11 @@ export function useWebContainer(
           completeStep?.(s6);
 
 
-          const s7 = addStep?.("Checking package.json with new file updates", "build");
+          const s7 = addStep(
+            "Checking updated dependencies...",
+            "Verified updated dependencies.",
+            "build"
+          );
           const check = await wc.spawn("npm", ["ls", "react-router-dom"]);
           await check.exit;
           completeStep?.(s7);
@@ -351,7 +407,11 @@ export function useWebContainer(
             })
           );
 
-          const s8 = addStep?.("Checking node modules", "build");
+          const s8 = addStep(
+            "Checking node modules...",
+            "Verified node modules.",
+            "build"
+          );
           const ls = await wc.spawn("ls", ["node_modules"]);
           await ls.exit;
           completeStep?.(s8);
@@ -364,7 +424,11 @@ export function useWebContainer(
             })
           );
 
-          const s9 = addStep?.("Running dev server", "build");
+          const s9 = addStep(
+            "Starting development server...",
+            "Development server started.",
+            "build"
+          );
           const dev = await wc.spawn("npm", ["run", "dev"]);
           completeStep?.(s9);
 
@@ -406,7 +470,7 @@ export function useWebContainer(
     syncTimeoutRef.current = setTimeout(() => {
       run();
     }, 100);
-    
+
   }, [files, isReady, wcReady]);
 
   return { url, wcRef, status, progress };

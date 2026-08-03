@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import type { Step } from "@shared/types";
 
-type Step = {
-    id: number;
-    text: string;
-    status: "loading" | "done";
-};
+
 
 export default function StepHistory({ steps }: { steps: Step[] }) {
     const [open, setOpen] = useState(false);
@@ -54,7 +51,11 @@ export default function StepHistory({ steps }: { steps: Step[] }) {
                                         <div className="w-3 h-3 rounded-full border border-white/20 shrink-0" />
                                     )}
                                     <span className="text-[11px] text-white/30 truncate">
-                                        {step.text}
+                                        {
+                                            step.status === "done"
+                                                ? step.completedText
+                                                : step.loadingText
+                                        }
                                     </span>
                                 </div>
                             ))}

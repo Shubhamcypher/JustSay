@@ -1,6 +1,34 @@
-import { useEffect, useRef, useState } from "react";
+import type { ProjectFile, ProjectFiles } from "@shared/types";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
 const CURSOR_CHAR = "█";
+
+interface UseFileStreamingProps {
+    mode: "new" | "followup";
+    prompt: string;
+    addFile: (file: ProjectFile) => void;
+    updateFileContent: (
+        path: string,
+        content: string,
+        fromStream?: boolean
+    ) => void;
+    setActiveFile: (path: string) => void;
+    activeFile: string | null;
+    addStep: (
+        loadingText: string,
+        completedText: string,
+        group?: string
+    ) => number;
+    completeStep: (id: number) => void;
+    files: ProjectFiles;
+    userSelectedRef: RefObject<boolean>;
+}
+
+interface StreamFileEvent {
+    type: "file";
+    path: string;
+    content: string;
+}
 
 export function useFileStreaming({
     mode,
@@ -13,12 +41,12 @@ export function useFileStreaming({
     completeStep,
     files,
     userSelectedRef
-}: any) {
+}: UseFileStreamingProps) {
     const [isReady, setIsReady] = useState(false);
     const markReady = () => setIsReady(true);
-    const [finalFiles, setFinalFiles] = useState<any>(null);
+    const [finalFiles, setFinalFiles] = useState<ProjectFiles | null>(null);
 
-    const streamQueueRef = useRef<any[]>([]);
+    const streamQueueRef = useRef<StreamFileEvent[]>([]);
     const isStreamingRef = useRef(false);
     const hasStreamStartedRef = useRef(false);
     const filesRef = useRef(files);
@@ -122,7 +150,13 @@ export function useFileStreaming({
         while (streamQueueRef.current.length > 0) {
             const file = streamQueueRef.current.shift();
 
-            const step = addStep(`Generating ${getFileName(file.path)}`, "file");
+            const fileName = getFileName(file.path);
+
+            const step2 = addStep(
+                `Generating ${fileName}...`,
+                `Generated ${fileName}.`,
+                "file"
+            );
 
             if (!userSelectedRef.current) {
                 setActiveFile(file.path);
@@ -130,7 +164,7 @@ export function useFileStreaming({
 
             await streamFile(file.path, file.content);
 
-            completeStep(step);
+            completeStep(step2);
         }
 
         isStreamingRef.current = false;
@@ -140,7 +174,11 @@ export function useFileStreaming({
         if (mode !== "new") return;
         if (!prompt) return;
 
-        const s1 = addStep("🤖 Understanding your idea...", "ai");
+        const s1 = addStep(
+            "🤖 Understanding your idea...",
+            "Understood your idea.",
+            "ai"
+        );
 
         const controller = new AbortController();
 
@@ -150,7 +188,7 @@ export function useFileStreaming({
                 headers: {
                     "Content-Type": "application/json",
                 },
-                credentials:"include",
+                credentials: "include",
                 body: JSON.stringify({ prompt }),
                 signal: controller.signal,
             });
@@ -195,8 +233,12 @@ export function useFileStreaming({
                                 await sleep(50);
                             }
 
-                            const step = addStep("Finalizing project...");
-                            completeStep(step);
+                            const step3 = addStep(
+                                "Finalizing project...",
+                                "Project finalized.",
+                                "build"
+                            );
+                            completeStep(step3);
 
                             const snapshot = JSON.parse(JSON.stringify(filesRef.current));
                             Object.keys(snapshot).forEach((path) => {
@@ -207,7 +249,7 @@ export function useFileStreaming({
                             setFinalFiles(snapshot);
                             setIsReady(true);
                         };
-                        
+
                         waitForQueue();
                     }
                 }

@@ -1,12 +1,8 @@
+import type { Step } from "@shared/types";
 import { AnimatePresence, motion } from "framer-motion";
 // import { useRef } from "react";
 
-type Step = {
-  id: number;
-  text: string;
-  status: "loading" | "done";
-  group?: string;
-};
+
 
 export default function StepsPanel({ steps }: { steps: Step[] }) {
   const overflowCount = Math.max(0, steps.length - 5);
@@ -86,7 +82,7 @@ export default function StepsPanel({ steps }: { steps: Step[] }) {
                   )}
 
                   <span className={`text-[11px] ${isDone ? "text-white/30" : "text-white/60"}`}>
-                    {step.text}
+                  {isDone ? step.completedText : step.loadingText}
                   </span>
                 </motion.div>
               );

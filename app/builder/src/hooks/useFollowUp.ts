@@ -17,7 +17,11 @@ interface UseFollowUpProps {
     ) => void;
     setActiveFile: (path: string) => void;
     userSelectedRef: RefObject<boolean>;
-    addStep: (text: string, type?: string) => number;
+    addStep: (
+        loadingText: string,
+        completedText: string,
+        group?: string
+    ) => number;
     completeStep: (id: number) => void;
     addChatMessage: (
         role: "ai" | "user",
@@ -142,7 +146,11 @@ export function useFollowUp({
             console.warn("⚠️ Follow-up safety timeout fired — unlocking UI");
         }, 60_000);
 
-        const s1 = addStep("🤖 Analyzing your request...", "ai");
+        const s1 = addStep(
+            "Analyzing your request...",
+            "Request analyzed.",
+            "ai"
+        );
 
         try {
             // Only send file paths + content — skip protected files to reduce payload
@@ -200,7 +208,11 @@ export function useFollowUp({
                         (data.filesToChange ?? []).forEach((filePath: string) => {
                             const fileName = filePath.split("/").pop();
                             fileSteps[filePath] =
-                                addStep(`Updating ${fileName}`, "file");
+                                addStep(
+                                    `Updating ${fileName}...`,
+                                    `${fileName} updated.`,
+                                    "file"
+                                );
                         });
                     }
 
