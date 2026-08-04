@@ -104,7 +104,7 @@ export default function MobileMenu({ onClose }: Props) {
                 visible={!!hovered}
                 top={position.top}
                 left={position.left}
-                content={<div className="flex items-center justify-center h-full">{hovered}</div>}
+                project={hovered}
             />
         </div>
     );

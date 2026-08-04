@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import Auth3DBackground from "@/components/customComponents/backgrounds/Auth3DBackground";
 import AuthCard from "@/components/customComponents/cards/AuthCard";
 import { useAuth } from "@/context/AuthContext";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -53,10 +54,15 @@ export default function Login() {
       setEmail("");
       setPassword("");
       navigate("/");
-    } catch (err: any) {
+    } catch (err: unknown) {
+
+      const message = axios.isAxiosError(err)
+      ? err.response?.data?.message
+      : "Something went wrong";
+
       toast({
         title: "Login Failed",
-        description: err.response?.data?.message || "Something went wrong",
+        description: message,
         variant: "error",
       });
       setPassword("");

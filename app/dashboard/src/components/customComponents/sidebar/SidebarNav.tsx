@@ -9,11 +9,19 @@ const navItems = [
   { label: "Shared", icon: Share2 },
 ];
 
+type NavLabel = (typeof navItems)[number]["label"];
+
+interface SidebarNavProps {
+  collapsed: boolean;
+  active: NavLabel;
+  setActive: React.Dispatch<React.SetStateAction<NavLabel>>;
+}
+
 export default function SidebarNav({
   collapsed,
   active,
   setActive,
-}: any) {
+}: SidebarNavProps) {
   const navigate = useNavigate();
 
   return (

@@ -1,5 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Plus, Image, Paperclip } from "lucide-react";
+
+interface MenuItemProps {
+  icon: ReactNode;
+  label: string;
+}
 
 export default function AddMenu() {
   const [open, setOpen] = useState(false);
@@ -7,8 +12,8 @@ export default function AddMenu() {
 
   // 🔒 Close on outside click
   useEffect(() => {
-    const handleClickOutside = (e: any) => {
-      if (ref.current && !ref.current.contains(e.target)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
@@ -47,7 +52,7 @@ export default function AddMenu() {
   );
 }
 
-function MenuItem({ icon, label }: any) {
+function MenuItem({ icon, label }: MenuItemProps) {
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 cursor-pointer text-sm">
       {icon}

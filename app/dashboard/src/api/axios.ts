@@ -12,7 +12,7 @@ let isRefreshing = false;
 
 let refreshSubscribers: {
   resolve: () => void;
-  reject: (err: any) => void;
+  reject: (err: unknown) => void;
 }[] = [];
 
 function onRefreshed() {
@@ -20,12 +20,12 @@ function onRefreshed() {
   refreshSubscribers = [];
 }
 
-function onRefreshFailed(err: any) {
+function onRefreshFailed(err: unknown) {
   refreshSubscribers.forEach(({ reject }) => reject(err));
   refreshSubscribers = [];
 }
 
-function addSubscriber(resolve: () => void, reject: (err: any) => void) {
+function addSubscriber(resolve: () => void, reject: (err: unknown) => void) {
   refreshSubscribers.push({ resolve, reject });
 }
 

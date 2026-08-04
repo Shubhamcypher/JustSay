@@ -2,7 +2,12 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-export default function PasswordField({value, onChange }: any) {
+interface PasswordFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export default function PasswordField({value, onChange }: PasswordFieldProps) {
   const [show, setShow] = useState(false);
 
   return (

@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, type RefObject } from "react";
 
-export function useAutoResize(ref: any, value: string) {
+export function useAutoResize<T extends HTMLElement>(ref: RefObject<T | null>, value: string) {
   useEffect(() => {
     if (ref.current) {
       ref.current.style.height = "auto";

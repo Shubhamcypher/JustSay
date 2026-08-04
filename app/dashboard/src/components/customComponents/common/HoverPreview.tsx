@@ -1,14 +1,14 @@
 import { useState } from "react";
 import type { HoveredProject } from "@/hooks/useHoverPreview";
 
-type Props = {
+type HoverPreviewProps = {
   visible: boolean;
   top: number;
   left: number;
   project: HoveredProject | null;
 };
 
-export default function HoverPreview({ visible, top, left, project }: Props) {
+export default function HoverPreview({ visible, top, left, project }: HoverPreviewProps) {
   const [imgError, setImgError] = useState(false);
 
   if (!visible || !project) return null;

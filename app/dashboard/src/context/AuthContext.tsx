@@ -1,10 +1,10 @@
 
-
-
 import { createContext, useContext, useState, useEffect } from "react";
 import { login, register, getMe, logout } from "@/api/auth.api";
 import { authStore } from "@/authStore";
 import { hideBootScreen } from "@/utils/boot";
+import type { ReactNode } from "react";
+import type { SessionStatus } from "@shared/types";
 
 type User = {
     id: string;
@@ -13,18 +13,12 @@ type User = {
     img?: string;
 };
 
-type SessionStatus =
-    | "idle"
-    | "checking"
-    | "expired"
-    | "refreshing"
-    | "authenticated"
-    | "failed";
+
 
 type AuthContextType = {
     user: User | null;
     loading: boolean;
-    sessionStatus: string;
+    sessionStatus: SessionStatus;
     loginUser: (data: { email: string; password: string }) => Promise<void>;
     registerUser: (data: { email: string; password: string }) => Promise<void>;
     logoutUser: () => void;
@@ -33,7 +27,12 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: any) {
+
+interface AuthProviderProps {
+    children: ReactNode;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [sessionStatus, setSessionStatus] = useState<SessionStatus>("idle");

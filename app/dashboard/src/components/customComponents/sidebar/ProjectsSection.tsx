@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import ProjectItem from "./ProjectItem";
 import type { HoveredProject } from "@/hooks/useHoverPreview";
 import { useProjects } from "@/context/ProjectContext";
+import type { Project } from "@shared/types";
 
 type SectionKey = "created" | "shared" | "starred";
 
@@ -31,7 +32,7 @@ const sections = [
   },
 ] as const;
 
-type Props = {
+type ProjectSectionProps = {
   collapsed?: boolean;
   variant?: "desktop" | "mobile";
   onHover?: (e: React.MouseEvent, project: HoveredProject) => void;
@@ -45,7 +46,7 @@ export default function ProjectsSection({
   variant = "desktop",
   onHover,
   onLeave,
-}: Props) {
+}: ProjectSectionProps) {
   const isMobile = variant === "mobile";
 
   const { projects } = useProjects();
@@ -195,7 +196,7 @@ export default function ProjectsSection({
                 >
                   <div className="flex flex-col gap-0.5 ml-3">
 
-                    {visibleProjects.map((project: any) => (
+                    {visibleProjects.map((project: Project) => (
                       <ProjectItem
                         key={project.id}
                         project={{

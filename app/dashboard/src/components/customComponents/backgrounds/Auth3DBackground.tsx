@@ -1,4 +1,10 @@
-export default function Auth3DBackground({ children }: any) {
+import type { ReactNode } from "react";
+
+interface Auth3DBackgroundProps {
+  children: ReactNode;
+}
+
+export default function Auth3DBackground({ children }: Auth3DBackgroundProps) {
   return (
     <div className="relative w-full h-screen overflow-hidden">
 
