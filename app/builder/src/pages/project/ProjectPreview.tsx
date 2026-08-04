@@ -10,6 +10,7 @@ import { getProject, getProjectFiles, } from "@/api/project.api";
 import ProjectHeader from "./components/ProjectHeader";
 import ProjectFrame from "./components/ProjectFrame";
 import ProjectLoader from "./components/ProjectLoader";
+import type { ProjectFile, ProjectMeta } from "@shared/types";
 
 
 
@@ -25,7 +26,7 @@ export default function ProjectPreview() {
 
     
 
-    const [projectMeta, setProjectMeta] = useState<any>(null);
+    const [projectMeta, setProjectMeta] = useState<ProjectMeta | null>(null);
     const [isReady, setIsReady] = useState(false);
 
 
@@ -49,7 +50,7 @@ export default function ProjectPreview() {
                 for (const [path, file] of Object.entries(files)) {
                     fileSystem.addFile({
                         path,
-                        content: (file as any).content,
+                        content: (file as ProjectFile).content,
                     });
                 }
 
@@ -63,7 +64,6 @@ export default function ProjectPreview() {
     const { url: previewUrl, status, progress } = useWebContainer(
         fileSystem.files,
         isReady,
-        undefined, //need to remove
         addStep,
         completeStep
     );

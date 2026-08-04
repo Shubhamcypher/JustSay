@@ -52,3 +52,13 @@ export interface FolderNode {
 export type TreeNode = FileNode | FolderNode;
 
 export type FileTree = Record<string, TreeNode>;
+
+
+//Session status types
+export type SessionStatus =
+    | "idle"
+    | "checking"
+    | "expired"
+    | "refreshing"
+    | "authenticated"
+    | "failed";

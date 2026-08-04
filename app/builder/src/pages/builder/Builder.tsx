@@ -20,6 +20,9 @@ import { getProject, getProjectFiles, screenshotProject, saveProject, } from "@/
 import { useProjects } from "@/context/ProjectContext";
 import SplashScreen from "../../components/SplashScreen";
 
+import type * as Monaco from "monaco-editor";
+import type { editor } from "monaco-editor";
+
 
 
 
@@ -72,7 +75,7 @@ export default function Builder() {
 
     const fileSystem = useFiles(userSelectedRef);
     const { steps, addStep, completeStep } = useSteps();
-    
+
     const fileTree = useFileTree(fileSystem.filePaths);
 
     const leftPanel = useResizable(400, 280, 600);
@@ -112,9 +115,8 @@ export default function Builder() {
         addChatMessage,
     });
 
-    const editorRef = useRef<any>(null);
-    const monacoRef = useRef<any>(null);
-    const activeStepRef = useRef<number | null>(null);
+    const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+    const monacoRef = useRef<typeof Monaco | null>(null);
 
     const handleSetActiveFile = (file: string) => {
         userSelectedRef.current = true;
@@ -124,15 +126,6 @@ export default function Builder() {
     const { url: previewUrl } = useWebContainer(
         fileSystem.files,
         streaming.isReady,
-        (msg, type) => {
-            if (type === "start") activeStepRef.current = addStep(msg);
-            if (type === "end") {
-                if (activeStepRef.current !== null) {
-                    completeStep(activeStepRef.current);
-                    activeStepRef.current = null;
-                }
-            }
-        },
         addStep,
         completeStep,
         isPatchingRef
@@ -416,8 +409,8 @@ export default function Builder() {
                                 fileTree={fileTree}
                                 activeFile={fileSystem.activeFile}
                                 setActiveFile={handleSetActiveFile}
-                                isProcessing={isProcessing}
-                                isReady={streaming.isReady}
+                                // isProcessing={isProcessing}
+                                // isReady={streaming.isReady}
                             />
                         </div>
 

@@ -1,4 +1,11 @@
-export function applyFixPipeline(files: Record<string, any>) {
+import type { ProjectFile, ProjectFiles } from "@shared/types";
+
+interface PackageJson {
+    dependencies?: Record<string, string>;
+    [key: string]: unknown;
+}
+
+export function applyFixPipeline(files: ProjectFiles) {
     let f = JSON.parse(JSON.stringify(files));
 
     // ✅ These are owned by the template — never touch them
@@ -15,7 +22,7 @@ export function applyFixPipeline(files: Record<string, any>) {
 
 
 
-    function fixExports(files: Record<string, any>) {
+    function fixExports(files: ProjectFiles) {
         const newFiles = { ...files };
         for (const path in newFiles) {
             if (TEMPLATE_FILES.has(path)) continue;
@@ -30,7 +37,7 @@ export function applyFixPipeline(files: Record<string, any>) {
 
             content = content.replace(
                 /const (\w+)\s*=\s*\(/g,
-                (match: any, fnName: any) => {
+                (match: string, fnName: string) => {
                     if (path.includes("hooks")) return `const ${fnName} = (`;
                     return match;
                 }
@@ -65,7 +72,7 @@ export function applyFixPipeline(files: Record<string, any>) {
         }
         return newFiles;
     }
-    function fixBrokenStyleImports(files: Record<string, any>) {
+    function fixBrokenStyleImports(files: ProjectFiles) {
         const newFiles = { ...files };
         for (const filePath in newFiles) {
             if (TEMPLATE_FILES.has(filePath)) continue; // ✅ skip template files
@@ -77,11 +84,11 @@ export function applyFixPipeline(files: Record<string, any>) {
         return newFiles;
     }
 
-    function detectDependencies(files: Record<string, any>) {
+    function detectDependencies(files: ProjectFiles) {
         const deps: Record<string, string> = {};
 
         const content = Object.values(files)
-            .map((f: any) => f.content)
+            .map((f: ProjectFile) => f.content)
             .join("\n");
 
         if (/from ["']react-redux["']/.test(content)) deps["react-redux"] = "^2.0.0";
@@ -101,16 +108,17 @@ export function applyFixPipeline(files: Record<string, any>) {
         return deps;
     }
 
-    function fixPackageJson(files: Record<string, any>) {
+    function fixPackageJson(files: ProjectFiles) {
         const newFiles = { ...files };
         const detectedDeps = detectDependencies(files);
 
-        let existing: any = {};
-        try {
-            existing = JSON.parse(newFiles["package.json"]?.content || "{}");
-        } catch {
-            existing = {};
-        }
+        const existing: PackageJson = (() => {
+            try {
+                return JSON.parse(newFiles["package.json"]?.content || "{}") as PackageJson;
+            } catch {
+                return {};
+            }
+        })();
 
         const dependencies = { ...existing.dependencies };
 
