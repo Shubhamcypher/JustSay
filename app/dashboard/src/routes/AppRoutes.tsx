@@ -8,8 +8,13 @@ import OAuthSuccess from "@/pages/OAuthSuccess";
 
 import { useAuth } from "@/context/AuthContext";
 import SessionHandler from "@/components/customComponents/SessionHandler";
+import type { ReactNode } from "react";
 
-function PrivateRoute({ children }: any) {
+interface PrivateRouteProps {
+  children: ReactNode;
+}
+
+function PrivateRoute({ children }: PrivateRouteProps) {
   const { user, loading } = useAuth();
 
   // Wait until auth state is resolved

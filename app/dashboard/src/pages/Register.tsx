@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import Auth3DBackground from '@/components/customComponents/backgrounds/Auth3DBackground';
 import AuthCard from '@/components/customComponents/cards/AuthCard';
 import { useAuth } from '@/context/AuthContext';
+import axios from 'axios';
 
 
 export default function Register() {
@@ -23,7 +24,7 @@ export default function Register() {
   const API_URL = `http://${window.location.hostname}:5000`;
   const CLIENT_URL = window.location.origin
 
-  
+
 
   const getStrength = (password: string) => {
     let score = 0;
@@ -87,10 +88,16 @@ export default function Register() {
       setEmail("")
       setPassword("")
       navigate('/');
-    } catch (err: any) {
+
+    } catch (err: unknown) {
+
+      const message = axios.isAxiosError(err)
+        ? err.response?.data?.message
+        : "Something went wrong";
+
       toast({
-        title: "Registration Failed",
-        description: err.response?.data?.message || "Something went wrong",
+        title: "Login Failed",
+        description: message,
         variant: "error",
       });
       setPassword("")
@@ -101,7 +108,7 @@ export default function Register() {
   };
 
   const handleOAuth = (provider: string) => {
-    window.location.href = `${API_URL}/api/auth/${provider}?clientUrl=${CLIENT_URL}`;    
+    window.location.href = `${API_URL}/api/auth/${provider}?clientUrl=${CLIENT_URL}`;
   };
 
   const handlePhoneLogin = () => {
@@ -154,7 +161,7 @@ export default function Register() {
                 Password
               </Label>
 
-              <PasswordField value = {password} onChange={(value: string) => setPassword(value)} />
+              <PasswordField value={password} onChange={(value: string) => setPassword(value)} />
               <p
                 className={`text-xs ${strength.text} transition-all duration-300 ${password.length === 0
                   ? "opacity-0  overflow-hidden"
