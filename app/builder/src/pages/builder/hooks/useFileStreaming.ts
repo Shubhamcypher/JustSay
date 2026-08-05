@@ -152,6 +152,8 @@ export function useFileStreaming({
         while (streamQueueRef.current.length > 0) {
             const file = streamQueueRef.current.shift();
 
+            if (!file) continue;
+            
             const fileName = getFileName(file.path);
 
             const step2 = addStep(

@@ -2,7 +2,7 @@
 interface FollowUpPayload {
     followUpPrompt: string;
     originalPrompt: string;
-    projectId: string;
+    projectId: string | undefined;
     files: Record<string, string>;
 }
 

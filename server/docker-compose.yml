@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: justsay_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d justsay_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+
+    ports:
+      - "8082:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  server:
+    build: .
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    env_file:
+      - .env
+
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/justsay_db
+
+    ports:
+      - "5000:5000"
+
+volumes:
+  postgres_data:

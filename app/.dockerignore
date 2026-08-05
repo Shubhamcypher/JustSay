@@ -1,0 +1,28 @@
+# Node
+**/node_modules
+
+# Build outputs
+**/dist
+**/build
+**/.vite
+
+# Git
+**/.git
+
+# TypeScript
+**/*.tsbuildinfo
+
+# IDE
+**/.vscode
+**/.idea
+
+# Environment
+**/.env
+**/.env.*
+
+# Logs
+**/*.log
+
+# OS
+**/.DS_Store
+**/Thumbs.db

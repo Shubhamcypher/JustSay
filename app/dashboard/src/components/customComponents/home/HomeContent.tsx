@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useProjects } from "@/context/ProjectContext";
+import type { Project } from "@shared/types";
 
 type TabType = "projects" | "recent" | "templates";
 type ProjectType = "created" | "shared" | "starred";
@@ -73,7 +74,7 @@ export default function HomeContent() {
           data.length === 0 ? (
             <div className="text-white/40 text-sm">No projects found</div>
           ) : (
-            data.map((p) => (
+            data.map((p: Project) => (
               <ProjectCard
                 key={p.id}
                 project={p}

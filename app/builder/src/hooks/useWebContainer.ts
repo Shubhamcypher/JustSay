@@ -34,7 +34,7 @@ const TEMPLATE_PACKAGE_JSON = JSON.stringify({
 export function useWebContainer(
   files: ProjectFiles,
   isReady: boolean,
-  addStep?: (
+  addStep: (
     loadingText: string,
     completedText: string,
     group?: string
@@ -176,7 +176,7 @@ export function useWebContainer(
           setProgress(2);
 
           //progress increser of loading project
-          let progressTimer: ReturnType<typeof setTimeout>;
+          let progressTimer: ReturnType<typeof setTimeout> | undefined;
 
           const increaseProgress = () => {
             setProgress((prev) => {
@@ -231,7 +231,9 @@ export function useWebContainer(
             "build"
           );
           setStatus("Starting development server...");
-          clearTimeout(progressTimer);
+          if (progressTimer) {
+            clearTimeout(progressTimer);
+          }
           setProgress(90);
           await wc.spawn("npm", ["run", "dev"]);
           completeStep?.(s6);
@@ -391,7 +393,7 @@ export function useWebContainer(
     syncTimeoutRef.current = setTimeout(() => {
       run();
     }, 100);
-    
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files, isReady, wcReady]);
 

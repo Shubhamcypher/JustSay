@@ -6,7 +6,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 type Props = {
-    projectId: string;
+    projectId: string | undefined;
     projectName?: string;
 };
 

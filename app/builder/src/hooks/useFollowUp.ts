@@ -9,7 +9,7 @@ import type { RefObject } from "react";
 interface UseFollowUpProps {
     files: ProjectFiles;
     originalPrompt: string;
-    projectId: string;
+    projectId: string | undefined;
     updateFileContent: (
         path: string,
         content: string,

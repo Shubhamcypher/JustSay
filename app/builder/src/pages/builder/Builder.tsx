@@ -45,7 +45,7 @@ export default function Builder() {
     const { refreshProjects } = useProjects();
     const { projectId } = useParams();
     const [searchParams] = useSearchParams();
-    const initialPrompt = searchParams.get("prompt");
+    const initialPrompt = searchParams.get("prompt") ?? "";
     const mode = projectId ? "followup" : "new";
 
 
