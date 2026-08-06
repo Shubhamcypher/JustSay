@@ -1,3 +1,4 @@
+import { DASHBOARD_URL } from "@/config/env";
 import {
     ArrowLeft,
     MonitorPlay,
@@ -24,7 +25,7 @@ export default function ProjectHeader({
             <div className="flex items-center gap-5">
 
                 <button
-                    onClick={() => (window.location.href = "http://localhost:5173")}
+                    onClick={() => (window.location.href = DASHBOARD_URL)}
                     className="group relative flex items-center justify-center w-10 h-10 rounded-lg hover:bg-white/5 transition"
                 >
                     <ArrowLeft

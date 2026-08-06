@@ -13,13 +13,14 @@ import Auth3DBackground from "@/components/customComponents/backgrounds/Auth3DBa
 import AuthCard from "@/components/customComponents/cards/AuthCard";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
+import { API_URL } from "@/config/env";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const API_URL = `http://${window.location.hostname}:5000`;
+
   const CLIENT_URL = window.location.origin
 
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ export default function Login() {
   };
 
   const handleOAuth = (provider: string) => {
-    window.location.href = `${API_URL}/api/auth/${provider}?clientUrl=${CLIENT_URL}`;    
+    window.location.href = `${API_URL}/auth/${provider}?clientUrl=${CLIENT_URL}`;    
   };
 
   return (

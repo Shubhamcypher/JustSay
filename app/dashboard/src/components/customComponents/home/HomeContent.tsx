@@ -2,6 +2,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useProjects } from "@/context/ProjectContext";
 import type { Project } from "@shared/types";
+import { BUILDER_URL } from "@/config/env";
 
 type TabType = "projects" | "recent" | "templates";
 type ProjectType = "created" | "shared" | "starred";
@@ -79,7 +80,7 @@ export default function HomeContent() {
                 key={p.id}
                 project={p}
                 onClick={() =>
-                  window.location.href = `http://localhost:5174/builder/project/${p.id}`
+                  window.location.href = `${BUILDER_URL}/builder/project/${p.id}`
                 }
               />
             ))

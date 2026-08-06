@@ -14,6 +14,8 @@ export function setAuthCookies(
   accessToken: string,
   refreshToken: string
 ) {
+  console.log("Access length:", accessToken.length);
+  console.log("Refresh length:", refreshToken.length);
   res.cookie("accessToken", accessToken, {
     ...cookieOptions,
     maxAge: 1000 * 60 * 60, // 1 hour

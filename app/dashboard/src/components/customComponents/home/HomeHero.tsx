@@ -2,6 +2,7 @@ import { useState } from "react";
 import AddMenu from "./AddMenu";
 import { useTypingEffect } from "@/hooks/useTypingEffect";
 import PromptInput from "../InputField/PromptField";
+import { BUILDER_URL } from "@/config/env";
 
 
 export default function HomeHero() {
@@ -19,7 +20,7 @@ export default function HomeHero() {
     const handleSubmit = () => {
         if (!prompt.trim()) return;
         window.location.href =
-            `http://localhost:5174/builder?prompt=${encodeURIComponent(prompt)}`;
+            `${BUILDER_URL}/builder?prompt=${encodeURIComponent(prompt)}`;
     };
 
     return (

@@ -8,6 +8,10 @@
     RUN npm ci
     
     COPY dashboard/ .
+    RUN echo "===== FILES ====="
+    RUN ls -la
+    RUN echo "===== ENV ====="
+    RUN cat .env.production
     COPY shared ../shared
     
     RUN npm run build

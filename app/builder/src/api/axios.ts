@@ -1,8 +1,9 @@
 import axios from "axios";
 import { authStore } from "@/authStore";
+import { API_URL } from "@/config/env";
 
 const API = axios.create({
-  baseURL: `http://${window.location.hostname}:5000/api`,
+  baseURL: API_URL,
   withCredentials: true,
 });
 
@@ -63,7 +64,7 @@ API.interceptors.response.use(
         authStore.setSessionStatus("refreshing");
 
         await axios.post(
-          `http://${window.location.hostname}:5000/api/auth/refresh`,
+          `${API_URL}/auth/refresh`,
           {},
           {
             withCredentials: true,
@@ -94,7 +95,7 @@ API.interceptors.response.use(
 
           // Silent OAuth fallback
           window.location.href =
-            `http://${window.location.hostname}:5000/api/auth/google?clientUrl=${clientUrl}`;
+            `${API_URL}/auth/google?clientUrl=${clientUrl}`;
         }
 
         return Promise.reject(err);

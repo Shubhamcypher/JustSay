@@ -1,10 +1,12 @@
+import { API_URL } from "@/config/env";
+
 export async function describeApp(
     prompt: string,
     fileList: string[],
     onChunk: (chunk: string) => void
   ): Promise<void> {
     const res = await fetch(
-      `http://${window.location.hostname}:5000/api/ai/describe`,
+      `${API_URL}/ai/describe`,
       {
         method: "POST",
         headers: {
@@ -67,7 +69,7 @@ export async function describeApp(
     diffMap: Record<string, { added: number; removed: number }>
 ) {
     const res = await fetch(
-        `http://${window.location.hostname}:5000/api/ai/summarize`,
+        `${API_URL}/ai/summarize`,
         {
             method: "POST",
             headers: {

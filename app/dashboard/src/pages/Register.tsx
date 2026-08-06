@@ -10,6 +10,7 @@ import Auth3DBackground from '@/components/customComponents/backgrounds/Auth3DBa
 import AuthCard from '@/components/customComponents/cards/AuthCard';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
+import { API_URL } from '@/config/env';
 
 
 export default function Register() {
@@ -21,7 +22,7 @@ export default function Register() {
   const { registerUser } = useAuth();
 
 
-  const API_URL = `http://${window.location.hostname}:5000`;
+
   const CLIENT_URL = window.location.origin
 
 
@@ -108,7 +109,7 @@ export default function Register() {
   };
 
   const handleOAuth = (provider: string) => {
-    window.location.href = `${API_URL}/api/auth/${provider}?clientUrl=${CLIENT_URL}`;
+    window.location.href = `${API_URL}/auth/${provider}?clientUrl=${CLIENT_URL}`;
   };
 
   const handlePhoneLogin = () => {

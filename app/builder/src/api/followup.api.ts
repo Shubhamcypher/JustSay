@@ -1,3 +1,4 @@
+import { API_URL } from "@/config/env";
 
 interface FollowUpPayload {
     followUpPrompt: string;
@@ -10,7 +11,7 @@ export async function followUpProject(
     payload: FollowUpPayload
 ) {
     const response = await fetch(
-        `http://${window.location.hostname}:5000/api/followup`,
+        `${API_URL}/followup`,
         {
             method: "POST",
             headers: {

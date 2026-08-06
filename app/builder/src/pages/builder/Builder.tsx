@@ -22,6 +22,7 @@ import SplashScreen from "../../components/SplashScreen";
 
 import type * as Monaco from "monaco-editor";
 import type { editor } from "monaco-editor";
+import { DASHBOARD_URL } from "@/config/env";
 
 
 
@@ -285,7 +286,7 @@ export default function Builder() {
                         <span className="text-[10px] font-bold">J</span>
                     </div>
                     <span className="text-sm font-semibold text-white/70 tracking-wide"
-                        onClick={() => window.location.href = `http://localhost:5173/`}>Justsay</span>
+                        onClick={() => window.location.href = DASHBOARD_URL}>Justsay</span>
                 </div>
 
                 {/* ── Scrollable chat area ─────────────────────────────────── */}

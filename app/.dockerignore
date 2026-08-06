@@ -19,6 +19,8 @@
 # Environment
 **/.env
 **/.env.*
+!dashboard/.env.production
+!builder/.env.production
 
 # Logs
 **/*.log

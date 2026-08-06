@@ -1,3 +1,4 @@
+import { API_URL } from "@/config/env";
 import type { ProjectFile, ProjectFiles } from "@shared/types";
 import { useEffect, useRef, useState, type RefObject } from "react";
 
@@ -187,7 +188,7 @@ export function useFileStreaming({
         const controller = new AbortController();
 
         const start = async () => {
-            const res = await fetch("http://localhost:5000/api/generate", {
+            const res = await fetch(`${API_URL}/generate`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
