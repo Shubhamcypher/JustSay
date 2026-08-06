@@ -1,0 +1,101 @@
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: justsay-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: justsay_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/migrations:/docker-entrypoint-initdb.d
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d justsay_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer
+    container_name: justsay-adminer
+    restart: unless-stopped
+
+    ports:
+      - "8082:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  server:
+    container_name: justsay-server
+
+    build:
+      context: ./server
+      dockerfile: ../docker/server.Dockerfile
+
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    env_file:
+      - ./server/.env
+
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/justsay_db
+
+    expose:
+      - "5000"
+
+  dashboard:
+    container_name: justsay-dashboard
+
+    build:
+      context: ./app
+      dockerfile: ../docker/dashboard.Dockerfile
+
+    restart: unless-stopped
+
+    expose:
+      - "80"
+
+  builder:
+    container_name: justsay-builder
+
+    build:
+      context: ./app
+      dockerfile: ../docker/builder.Dockerfile
+
+    restart: unless-stopped
+
+    expose:
+      - "80"
+
+  nginx:
+    container_name: justsay-nginx
+
+    build:
+      context: ./docker/nginx
+
+    restart: unless-stopped
+
+    depends_on:
+      - dashboard
+      - builder
+      - server
+
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
