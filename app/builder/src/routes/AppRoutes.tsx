@@ -13,7 +13,7 @@ export default function AppRoutes() {
         <Route path="/builder/:projectId" element={<Builder />} />
 
         {/* View existing project  */}
-        <Route path="/project/:projectId" element={<ProjectPreview />} />
+        <Route path="/builder/project/:projectId" element={<ProjectPreview />} />
 
         <Route path="*" element={<Navigate to="/builder" replace />} />
       </Routes>

@@ -15,7 +15,7 @@ export default function ProjectItem({
   return (
     <button
       onClick={() =>
-        (window.location.href = `http://localhost:5174/project/${project.id}`)
+        (window.location.href = `http://localhost:5174/builder/project/${project.id}`)
       }
       onMouseEnter={(e) => onHover?.(e, project)}
       onMouseLeave={onLeave}
