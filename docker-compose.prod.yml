@@ -86,7 +86,7 @@ services:
 
     build:
       context: .
-      dockerfile: docker/nginx/Dockerfile.dev
+      dockerfile: docker/nginx/Dockerfile.prod
 
     restart: unless-stopped
 
@@ -97,6 +97,7 @@ services:
 
     ports:
       - "80:80"
+      - "443:443"
 
 volumes:
-  postgres_data:
+  - /etc/letsencrypt/live/justsay-ai-shubh.duckdns.org:/etc/nginx/certs:ro
