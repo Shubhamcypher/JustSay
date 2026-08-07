@@ -98,6 +98,9 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      
+    volumes:
+      - /etc/letsencrypt/live/justsay-ai-shubh.duckdns.org:/etc/nginx/certs:ro  
 
 volumes:
-  - /etc/letsencrypt/live/justsay-ai-shubh.duckdns.org:/etc/nginx/certs:ro
+  postgres_data:
