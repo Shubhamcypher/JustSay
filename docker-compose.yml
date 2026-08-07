@@ -39,8 +39,8 @@ services:
     container_name: justsay-server
 
     build:
-      context: ./server
-      dockerfile: ../docker/server.Dockerfile
+      context: .
+      dockerfile: docker/Dockerfile.server
 
     restart: unless-stopped
 
@@ -61,8 +61,8 @@ services:
     container_name: justsay-dashboard
 
     build:
-      context: ./app
-      dockerfile: ../docker/dashboard.Dockerfile
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
 
     restart: unless-stopped
 
@@ -73,8 +73,8 @@ services:
     container_name: justsay-builder
 
     build:
-      context: ./app
-      dockerfile: ../docker/builder.Dockerfile
+      context: .
+      dockerfile: docker/Dockerfile.builder
 
     restart: unless-stopped
 
@@ -85,7 +85,8 @@ services:
     container_name: justsay-nginx
 
     build:
-      context: ./docker/nginx
+      context: .
+      dockerfile: docker/nginx/Dockerfile
 
     restart: unless-stopped
 

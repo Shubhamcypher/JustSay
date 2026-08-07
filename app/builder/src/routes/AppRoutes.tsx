@@ -3,19 +3,21 @@ import Builder from "../pages/builder/Builder";
 import ProjectPreview from "../pages/project/ProjectPreview";
 
 export default function AppRoutes() {
+  const basename =
+  import.meta.env.PROD ? "/builder" : "/";
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Routes>
-        {/* Create new project */}
-        <Route path="/builder" element={<Builder />} />
+        <Route path="/" element={<Builder />} />
 
-        {/* Edit existing project */}
-        <Route path="/builder/:projectId" element={<Builder />} />
+        <Route path="/:projectId" element={<Builder />} />
 
-        {/* View existing project  */}
-        <Route path="/builder/project/:projectId" element={<ProjectPreview />} />
+        <Route
+          path="/project/:projectId"
+          element={<ProjectPreview />}
+        />
 
-        <Route path="*" element={<Navigate to="/builder" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

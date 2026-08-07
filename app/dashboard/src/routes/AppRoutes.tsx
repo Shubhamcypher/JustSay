@@ -17,6 +17,11 @@ interface PrivateRouteProps {
 function PrivateRoute({ children }: PrivateRouteProps) {
   const { user, loading } = useAuth();
 
+  console.log("PrivateRoute", {
+    loading,
+    user,
+  });
+
   // Wait until auth state is resolved
   if (loading) {
     return null; // TODO: Replace with SplashScreen

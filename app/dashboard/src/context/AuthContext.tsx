@@ -64,7 +64,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         init();
     }, []);
 
+    useEffect(() => {
+        console.log("USER STATE:", user);
+    }, [user]);
 
+    useEffect(() => {
+        console.log("SESSION:", sessionStatus);
+    }, [sessionStatus]);
 
     const registerUser = async (data: {
         email: string;
@@ -95,8 +101,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const setUserFromToken = async () => {
         try {
             const res = await getMe();
+            console.log("getMe response:", res.data);
+
             setUser(res.data.data);
-        } catch {
+
+            console.log("Setting user to:", res.data.data);
+        } catch (e) {
+            console.log("getMe failed:", e);
             setUser(null);
         }
     };

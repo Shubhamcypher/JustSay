@@ -20,7 +20,7 @@ export default function HomeHero() {
     const handleSubmit = () => {
         if (!prompt.trim()) return;
         window.location.href =
-            `${BUILDER_URL}/builder?prompt=${encodeURIComponent(prompt)}`;
+            `${BUILDER_URL}?prompt=${encodeURIComponent(prompt)}`;
     };
 
     return (

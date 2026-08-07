@@ -80,7 +80,7 @@ export default function HomeContent() {
                 key={p.id}
                 project={p}
                 onClick={() =>
-                  window.location.href = `${BUILDER_URL}/builder/project/${p.id}`
+                  window.location.href = `${BUILDER_URL}/project/${p.id}`
                 }
               />
             ))

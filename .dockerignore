@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+
+# Node
+**/node_modules
+
+# Build
+**/dist
+**/build
+**/.vite
+
+# TypeScript
+**/*.tsbuildinfo
+
+# IDE
+.vscode
+.idea
+
+# Logs
+*.log
+**/*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+**/.env
+**/.env.*
+
+# Keep frontend production envs
+!app/dashboard/.env.production
+!app/builder/.env.production
