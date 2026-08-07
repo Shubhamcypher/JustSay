@@ -14,6 +14,7 @@ import generateRoutes from "./routes/generate.routes";
 import aiRoutes from "./routes/ai.routes";
 
 const app = express();
+app.set("trust proxy", true);
 const PORT = Number(process.env.PORT) || 5000;
 
 
